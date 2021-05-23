@@ -37,7 +37,7 @@ packages:
     source: hosted
     version: "1.1.0"
   collection:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: collection
       url: "https://pub.dartlang.org"
@@ -67,6 +67,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  go_router:
+    dependency: "direct main"
+    description:
+      path: "../.."
+      relative: true
+    source: path
+    version: "0.1.0"
   matcher:
     dependency: transitive
     description:
@@ -89,7 +96,7 @@ packages:
     source: hosted
     version: "1.8.0"
   path_to_regexp:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: path_to_regexp
       url: "https://pub.dartlang.org"

@@ -1,19 +1,23 @@
-name: go_router
-description: A declarative router for Flutter based on Navigation 2
+name: simple
+description: simple go_router example
 version: 0.1.0
-repository: https://github.com/csells/go_router
+publish_to: none
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
   flutter: ">=1.17.0"
 
 dependencies:
-  collection: ^1.15.0
   cupertino_icons: ^1.0.2
   flutter:
     sdk: flutter
-  path_to_regexp: ^0.4.0
+  go_router:
+    path: ../../
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+
+flutter:
+  uses-material-design: true
