@@ -30,7 +30,6 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
   @override
   Widget build(BuildContext context) {
-    // final locationPages = <LocPageInfo>[];
     final locPages = <Uri, Page<dynamic>>{};
     final location = _loc.toString().trim();
     final infos = goRouter.builder(context);
