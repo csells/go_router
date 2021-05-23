@@ -2,8 +2,11 @@ library go_router;
 
 import 'package:flutter/widgets.dart';
 import 'package:path_to_regexp/path_to_regexp.dart' as p2re;
-import 'src/go_router_impl.dart';
 
+import 'src/go_router_impl.dart';
+import 'src/path_strategy_nonweb.dart' if (dart.library.html) 'src/path_strategy_web.dart';
+
+enum UrlPathStrategy { hash, path }
 typedef GoRouteInfoBuilder = List<GoRoute> Function(BuildContext context);
 typedef GoRoutePageBuilder = Page<dynamic> Function(BuildContext context, Map<String, String> args);
 typedef GoRouteErrorPageBuilder = Page<dynamic> Function(BuildContext context, String location, Exception ex);
@@ -34,6 +37,7 @@ class GoRouter {
     _routerDelegate.go(location);
   }
 
+  static void setUrlPathStrategy(UrlPathStrategy strategy) => setUrlPathStrategyImpl(strategy);
   static String locationFor(String pattern, Map<String, String> args) => p2re.pathToFunction(pattern)(args);
   static GoRouter of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<InheritedGoRouter>()!.goRouter;
 }

@@ -4,7 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'data.dart';
 import 'pages.dart';
 
-void main() => runApp(App());
+void main() {
+  // turn off the # in the URLs on the web
+  // GoRouter.setUrlPathStrategy(UrlPathStrategy.path);
+
+  runApp(App());
+}
 
 class App extends StatelessWidget {
   App({Key? key}) : super(key: key);
