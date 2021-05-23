@@ -4,6 +4,7 @@
 - bake in support for [URL strategies](https://flutter.dev/docs/development/ui/navigation/url-strategies)
 - test different route groups, e.g. not logged in vs. logged in
 - test async id => object lookup
+- add custom transition support
 - implement nesting routing
 - publish
 - ...

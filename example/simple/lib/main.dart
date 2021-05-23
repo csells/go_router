@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'data.dart';
-import '../pages.dart';
+import 'pages.dart';
 
 void main() => runApp(App());
 
@@ -49,9 +49,9 @@ class App extends StatelessWidget {
         },
       ),
     ],
-    error: (context, args) => MaterialPage<Four04Page>(
+    error: (context, location, ex) => MaterialPage<Four04Page>(
       key: const ValueKey('ErrorPage'),
-      child: Four04Page(message: args['message']!),
+      child: Four04Page(message: ex.toString()),
     ),
   );
 }
