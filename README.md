@@ -1,6 +1,7 @@
 # go_router
 
 # TODO
+- add support for turning the location into a list of routes directly
 - test different route groups, e.g. not logged in vs. logged in
 - test async id => object lookup
 - add custom transition support
