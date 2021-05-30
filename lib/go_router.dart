@@ -59,7 +59,7 @@ class GoRouter {
     GoRouteErrorPageBuilder error,
   ) {
     print('location= $location');
-    
+
     // don't recreate the stack if we already have a list of pages that matches the location (popping)
     final popping = _locPages.isNotEmpty && _locPages.keys.last.toLowerCase() == location.toLowerCase();
 
@@ -85,7 +85,7 @@ class GoRouter {
         // if the last route doesn't match exactly, then we haven't got a valid stack of pages;
         // this allows '/' to match as part of a stack of pages but to fail on '/nonsense' OR
         // if we haven't found any matching routes, then we have an error
-        if (_locPages.keys.last.toString().toLowerCase() != location.toLowerCase() || _locPages.isEmpty) {
+        if (_locPages.isEmpty || _locPages.keys.last.toString().toLowerCase() != location.toLowerCase()) {
           throw Exception('page not found: $location');
         }
       } on Exception catch (ex) {

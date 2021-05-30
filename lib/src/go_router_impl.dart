@@ -6,7 +6,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         PopNavigatorRouterDelegateMixin<Uri>,
         // ignore: prefer_mixin
         ChangeNotifier {
-  Uri _loc = Uri.parse('/');
+  var _loc = Uri();
   final _key = GlobalKey<NavigatorState>();
   final GoRouteBuilder builder;
 
@@ -30,13 +30,11 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   Future<void> setNewRoutePath(Uri configuration) async {
     _loc = configuration;
   }
-
 }
 
 class GoRouteInformationParser extends RouteInformationParser<Uri> {
   @override
-  Future<Uri> parseRouteInformation(RouteInformation routeInformation) async =>
-      Uri.parse(routeInformation.location ?? '/');
+  Future<Uri> parseRouteInformation(RouteInformation routeInformation) async => Uri.parse(routeInformation.location!);
 
   @override
   RouteInformation restoreRouteInformation(Uri configuration) => RouteInformation(location: configuration.toString());

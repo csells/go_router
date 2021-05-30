@@ -28,7 +28,7 @@ class App extends StatelessWidget {
     final locPages = <String, Page<dynamic>>{};
 
     try {
-      final segments = (Uri.tryParse(location) ?? Uri.parse('/')).pathSegments;
+      final segments = Uri.parse(location).pathSegments;
 
       // home page, i.e. '/'
       {
@@ -73,7 +73,7 @@ class App extends StatelessWidget {
       // if the last route doesn't match exactly, then we haven't got a valid stack of pages;
       // this allows '/' to match as part of a stack of pages but to fail on '/nonsense' OR
       // if we haven't found any matching routes, then we have an error
-      if (locPages.keys.last.toString().toLowerCase() != location.toLowerCase() || locPages.isEmpty) {
+      if (locPages.isEmpty || locPages.keys.last.toString().toLowerCase() != location.toLowerCase()) {
         throw Exception('page not found: $location');
       }
     } on Exception catch (ex) {
