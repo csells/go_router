@@ -2,10 +2,10 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "simple",
+      "name": "builder-up",
       "request": "launch",
       "type": "dart",
-      "program": "example/simple/lib/main.dart"
+      "program": "example/builder-up/lib/main.dart"
     },
   ]
 }

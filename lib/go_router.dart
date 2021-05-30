@@ -1,6 +1,5 @@
 library go_router;
 
-import 'dart:collection';
 import 'package:flutter/widgets.dart';
 import 'package:path_to_regexp/path_to_regexp.dart' as p2re;
 
@@ -22,7 +21,6 @@ class GoRoute {
 class GoRouter {
   final _routeInformationParser = GoRouteInformationParser();
   late final GoRouterDelegate _routerDelegate;
-  final _locsForPopping = Stack<Uri>();
 
   GoRouter({required GoRouteBuilder builder}) {
     _routerDelegate = GoRouterDelegate(
@@ -109,21 +107,4 @@ extension GoRouterHelper on BuildContext {
   void go(String location) {
     GoRouter.of(this).go(location);
   }
-}
-
-class Stack<T> {
-  final _queue = Queue<T>();
-
-  Stack([Iterable<T>? init]) {
-    if (init != null) _queue.addAll(init);
-  }
-
-  void push(T item) => _queue.addLast(item);
-  void addAll(Iterable<T> items) => _queue.addAll(items);
-  T get top => _queue.last;
-  int get depth => _queue.length;
-  T pop() => _queue.removeLast();
-  void clear() => _queue.clear();
-  bool get isEmpty => _queue.isEmpty;
-  bool get isNotEmpty => _queue.isNotEmpty;
 }
