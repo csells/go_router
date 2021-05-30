@@ -2,16 +2,16 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "builder-up",
+      "name": "builder_up",
       "request": "launch",
       "type": "dart",
-      "program": "example/builder-up/lib/main.dart"
+      "program": "example/builder_up/lib/main.dart"
     },
     {
-      "name": "routes-up",
+      "name": "routes_up",
       "request": "launch",
       "type": "dart",
-      "program": "example/routes-up/lib/main.dart"
+      "program": "example/routes_up/lib/main.dart"
     },
   ]
 }

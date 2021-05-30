@@ -1,5 +1,5 @@
-name: simple
-description: simple go_router example
+name: routes_up
+description: go_router example
 version: 0.1.0
 publish_to: none
 

@@ -24,6 +24,7 @@ class App extends StatelessWidget {
 
   late final _router = GoRouter(builder: _builder);
   Widget _builder(BuildContext context, String location) {
+    print('location= $location');
     final locPages = <String, Page<dynamic>>{};
 
     try {

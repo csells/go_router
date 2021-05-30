@@ -35,6 +35,7 @@ class GoRouter {
 
   GoRouter.routes({required List<GoRoute> routes, required GoRouteErrorPageBuilder error}) {
     _routerDelegate = GoRouterDelegate(
+      // wrap the returned Navigator to enable GoRouter.of(context).go() and context.go()
       builder: (context, location) => InheritedGoRouter(
         goRouter: this,
         child: _builder(context, location, routes, error),
@@ -57,10 +58,15 @@ class GoRouter {
     List<GoRoute> routes,
     GoRouteErrorPageBuilder error,
   ) {
+    print('location= $location');
+    
     // don't recreate the stack if we already have a list of pages that matches the location (popping)
-    final popping = _locPages.isNotEmpty && _locPages.keys.last.toLowerCase() != location.toLowerCase();
+    final popping = _locPages.isNotEmpty && _locPages.keys.last.toLowerCase() == location.toLowerCase();
+
     if (!popping) {
       // create a new list of pages based on the new location (not popping)
+      _locPages.clear();
+
       try {
         for (final route in routes) {
           final params = <String>[];
@@ -97,7 +103,7 @@ class GoRouter {
         // remove the route for the page we're showing and go to the next location down
         assert(_locPages.isNotEmpty);
         _locPages.remove(_locPages.keys.last);
-        context.go(_locPages.keys.last);
+        _routerDelegate.go(_locPages.keys.last);
 
         return true;
       },
