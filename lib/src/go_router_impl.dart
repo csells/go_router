@@ -30,6 +30,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   Future<void> setNewRoutePath(Uri configuration) async {
     _loc = configuration;
   }
+
 }
 
 class GoRouteInformationParser extends RouteInformationParser<Uri> {
@@ -48,4 +49,3 @@ class InheritedGoRouter extends InheritedWidget {
   @override
   bool updateShouldNotify(covariant InheritedWidget oldWidget) => true;
 }
-

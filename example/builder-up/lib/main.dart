@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-// import 'package:path_to_regexp/path_to_regexp.dart';
 
 import 'data.dart';
 import 'pages.dart';
@@ -13,17 +12,17 @@ void main() {
 }
 
 class App extends StatelessWidget {
-  late final _router = GoRouter(builder: _builder);
-
+  static const title = 'Builder-Up GoRouter Example';
   App({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) => MaterialApp.router(
         routeInformationParser: _router.routeInformationParser,
         routerDelegate: _router.routerDelegate,
-        title: 'Builder-Up GoRouter Example',
+        title: App.title,
       );
 
+  late final _router = GoRouter(builder: _builder);
   Widget _builder(BuildContext context, String location) {
     final locPages = <String, Page<dynamic>>{};
 
@@ -71,10 +70,11 @@ class App extends StatelessWidget {
       }
 
       // if the last route doesn't match exactly, then we haven't got a valid stack of pages;
-      // this allows '/' to match as part of a stack of pages but to fail on '/nonsense'
-      if (location.toLowerCase() != locPages.keys.last.toString().toLowerCase()) locPages.clear();
-
-      if (locPages.isEmpty) throw Exception('page not found: $location');
+      // this allows '/' to match as part of a stack of pages but to fail on '/nonsense' OR
+      // if we haven't found any matching routes, then we have an error
+      if (locPages.keys.last.toString().toLowerCase() != location.toLowerCase() || locPages.isEmpty) {
+        throw Exception('page not found: $location');
+      }
     } on Exception catch (ex) {
       locPages.clear();
 
@@ -87,17 +87,14 @@ class App extends StatelessWidget {
       locPages[loc] = page;
     }
 
-    final pages = locPages.values.toList();
-    final locations = locPages.keys.toList();
-
     return Navigator(
-      pages: pages,
+      pages: locPages.values.toList(),
       onPopPage: (route, dynamic result) {
         if (!route.didPop(result)) return false;
 
         // remove the route for the page we're showing and go to the next location down
-        locations.remove(locations.last);
-        _router.go(locations.last);
+        locPages.remove(locPages.keys.last);
+        _router.go(locPages.keys.last);
 
         return true;
       },

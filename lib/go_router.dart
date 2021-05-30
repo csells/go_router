@@ -21,6 +21,7 @@ class GoRoute {
 class GoRouter {
   final _routeInformationParser = GoRouteInformationParser();
   late final GoRouterDelegate _routerDelegate;
+  final _locPages = <String, Page<dynamic>>{};
 
   GoRouter({required GoRouteBuilder builder}) {
     _routerDelegate = GoRouterDelegate(
@@ -32,75 +33,76 @@ class GoRouter {
     );
   }
 
-  // GoRouter.routes({required List<GoRoute> routes, required GoRouteErrorPageBuilder error})
-  //     : this(builder: (context) => routes, error: error);
+  GoRouter.routes({required List<GoRoute> routes, required GoRouteErrorPageBuilder error}) {
+    _routerDelegate = GoRouterDelegate(
+      builder: (context, location) => InheritedGoRouter(
+        goRouter: this,
+        child: _builder(context, location, routes, error),
+      ),
+    );
+  }
 
   RouteInformationParser<Object> get routeInformationParser => _routeInformationParser;
   RouterDelegate<Object> get routerDelegate => _routerDelegate;
 
-  void go(String location) {
-    _routerDelegate.go(location);
-  }
+  void go(String location) => _routerDelegate.go(location);
 
   static void setUrlPathStrategy(UrlPathStrategy strategy) => setUrlPathStrategyImpl(strategy);
   static String locationFor(String pattern, Map<String, String> args) => p2re.pathToFunction(pattern)(args);
   static GoRouter of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<InheritedGoRouter>()!.goRouter;
 
-  // Widget _builder(BuildContext context, String location, List<GoRoute> routes, GoRouteErrorPageBuilder error) {
-  //   final locPages = <Uri, Page<dynamic>>{};
-  //   Exception? ex;
+  Widget _builder(
+    BuildContext context,
+    String location,
+    List<GoRoute> routes,
+    GoRouteErrorPageBuilder error,
+  ) {
+    // don't recreate the stack if we already have a list of pages that matches the location (popping)
+    final popping = _locPages.isNotEmpty && _locPages.keys.last.toLowerCase() != location.toLowerCase();
+    if (!popping) {
+      // create a new list of pages based on the new location (not popping)
+      try {
+        for (final route in routes) {
+          final params = <String>[];
+          final re = p2re.pathToRegExp(route.pattern, prefix: true, caseSensitive: false, parameters: params);
+          final match = re.matchAsPrefix(location);
+          if (match == null) continue;
 
-  //   for (final info in routes) {
-  //     final params = <String>[];
-  //     final re = p2re.pathToRegExp(info.pattern, prefix: true, caseSensitive: false, parameters: params);
-  //     final match = re.matchAsPrefix(location);
-  //     if (match == null) continue;
+          final args = p2re.extract(params, match);
+          final pageLoc = GoRouter.locationFor(route.pattern, args);
+          final page = route.builder(context, args);
 
-  //     final args = p2re.extract(params, match);
-  //     final pageLoc = GoRouter.locationFor(info.pattern, args);
+          if (_locPages.containsKey(pageLoc)) throw Exception('duplicate location: $pageLoc');
+          _locPages[pageLoc] = page;
+        }
 
-  //     try {
-  //       final page = info.builder(context, args);
-  //       final uri = Uri.parse(pageLoc);
-  //       if (locPages.containsKey(uri)) throw Exception('duplicate location: $pageLoc');
-  //       locPages[Uri.parse(pageLoc)] = page;
-  //     } on Exception catch (ex2) {
-  //       // if can't add a page from their args, show an error
-  //       ex = ex2;
-  //       break;
-  //     }
-  //   }
+        // if the last route doesn't match exactly, then we haven't got a valid stack of pages;
+        // this allows '/' to match as part of a stack of pages but to fail on '/nonsense' OR
+        // if we haven't found any matching routes, then we have an error
+        if (_locPages.keys.last.toString().toLowerCase() != location.toLowerCase() || _locPages.isEmpty) {
+          throw Exception('page not found: $location');
+        }
+      } on Exception catch (ex) {
+        // if there's an error, show an error page
+        _locPages.clear();
+        _locPages[location] = error(context, location, ex);
+      }
+    }
 
-  //   // if the last route doesn't match exactly, then we haven't got a valid stack of pages;
-  //   // this allows '/' to match as part of a stack of pages but to fail on '/nonsense'
-  //   if (location.toLowerCase() != locPages.keys.last.toString().toLowerCase()) locPages.clear();
+    return Navigator(
+      pages: _locPages.values.toList(),
+      onPopPage: (route, dynamic result) {
+        if (!route.didPop(result)) return false;
 
-  //   // if no pages found, show an error
-  //   if (locPages.isEmpty) ex = Exception('page not found: $location');
+        // remove the route for the page we're showing and go to the next location down
+        assert(_locPages.isNotEmpty);
+        _locPages.remove(_locPages.keys.last);
+        context.go(_locPages.keys.last);
 
-  //   // if there's an error, show an error page
-  //   if (ex != null) {
-  //     locPages.clear();
-  //     locPages[Uri.parse(location)] = error(context, location, ex);
-  //   }
-
-  //   // keep the stack of locations for onPopPage
-  //   _locsForPopping.clear();
-  //   _locsForPopping.addAll(locPages.keys);
-
-  //   return Navigator(
-  //     pages: locPages.values.toList(),
-  //     onPopPage: (route, dynamic result) {
-  //       if (!route.didPop(result)) return false;
-
-  //       assert(_locsForPopping.depth >= 1);
-  //       _locsForPopping.pop(); // remove the route for the page we're showing
-  //       go(_locsForPopping.top.toString()); // go to the location for the next page down
-
-  //       return true;
-  //     },
-  //   );
-  // }
+        return true;
+      },
+    );
+  }
 }
 
 extension GoRouterHelper on BuildContext {

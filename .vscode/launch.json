@@ -7,5 +7,11 @@
       "type": "dart",
       "program": "example/builder-up/lib/main.dart"
     },
+    {
+      "name": "routes-up",
+      "request": "launch",
+      "type": "dart",
+      "program": "example/routes-up/lib/main.dart"
+    },
   ]
 }
