@@ -87,55 +87,20 @@ class App extends StatelessWidget {
       locPages[loc] = page;
     }
 
+    final pages = locPages.values.toList();
+    final locations = locPages.keys.toList();
+
     return Navigator(
-      pages: locPages.values.toList(),
+      pages: pages,
       onPopPage: (route, dynamic result) {
         if (!route.didPop(result)) return false;
 
-        locPages.remove(locPages.keys.last); // remove the route for the page we're showing
-        _router.go(locPages.keys.last.toString()); // go to the location for the next page down
+        // remove the route for the page we're showing and go to the next location down
+        locations.remove(locations.last);
+        _router.go(locations.last);
 
         return true;
       },
     );
   }
-
-  // final _router = GoRouter.routes(
-  //   routes: [
-  //     GoRoute(
-  //       pattern: '/',
-  //       builder: (context, args) => MaterialPage<FamiliesPage>(
-  //         key: const ValueKey('FamiliesPage'),
-  //         child: FamiliesPage(families: Families.data),
-  //       ),
-  //     ),
-  //     GoRoute(
-  //       pattern: '/family/:fid',
-  //       builder: (context, args) {
-  //         final family = Families.family(args['fid']!);
-
-  //         return MaterialPage<FamilyPage>(
-  //           key: ValueKey(family),
-  //           child: FamilyPage(family: family),
-  //         );
-  //       },
-  //     ),
-  //     GoRoute(
-  //       pattern: '/family/:fid/person/:pid',
-  //       builder: (context, args) {
-  //         final family = Families.family(args['fid']!);
-  //         final person = family.person(args['pid']!);
-
-  //         return MaterialPage<PersonPage>(
-  //           key: ValueKey(person),
-  //           child: PersonPage(family: family, person: person),
-  //         );
-  //       },
-  //     ),
-  //   ],
-  // error: (context, location, ex) => MaterialPage<Four04Page>(
-  //   key: const ValueKey('ErrorPage'),
-  //   child: Four04Page(message: ex.toString()),
-  // ),
-  // );
 }
