@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'data.dart';
-import 'main.dart';
 
 class FamiliesPage extends StatelessWidget {
   final List<Family> families;
@@ -10,7 +9,7 @@ class FamiliesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text(App.title)),
+        appBar: AppBar(title: const Text('GoRouter Example')),
         body: ListView(
           children: [
             for (final f in families)

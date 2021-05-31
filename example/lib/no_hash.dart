@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'data.dart';
-import 'pages.dart';
+import 'shared/data.dart';
+import 'shared/pages.dart';
 
 void main() {
   // turn off the # in the URLs on the web
-  // GoRouter.setUrlPathStrategy(UrlPathStrategy.path);
+  GoRouter.setUrlPathStrategy(UrlPathStrategy.path);
 
   runApp(App());
 }

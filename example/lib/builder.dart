@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'data.dart';
-import 'pages.dart';
+import 'shared/data.dart';
+import 'shared/pages.dart';
 
-void main() {
-  // turn off the # in the URLs on the web
-  // GoRouter.setUrlPathStrategy(UrlPathStrategy.path);
-
-  runApp(App());
-}
+void main() => runApp(App());
 
 class App extends StatelessWidget {
   static const title = 'Builder-Up GoRouter Example';
