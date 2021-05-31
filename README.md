@@ -11,3 +11,4 @@
 - profit!
 - BUG: navigating back too fast crashes
 - BUG: navigation to error page is slow when using package:url_strategy to remove # from URLs
+  "Loading app from service worker"

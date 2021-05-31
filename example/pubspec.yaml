@@ -1,4 +1,4 @@
-name: builder_up
+name: go_router_ex
 description: go_router example
 version: 0.1.0
 publish_to: none
@@ -12,12 +12,11 @@ dependencies:
   flutter:
     sdk: flutter
   go_router:
-    path: ../../
+    path: ..
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
 
 flutter:
   uses-material-design: true

@@ -2,16 +2,22 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "builder_up",
+      "name": "Builder",
       "request": "launch",
       "type": "dart",
-      "program": "example/builder_up/lib/main.dart"
+      "program": "example/lib/builder.dart"
     },
     {
-      "name": "routes_up",
+      "name": "Routes",
       "request": "launch",
       "type": "dart",
-      "program": "example/routes_up/lib/main.dart"
+      "program": "example/lib/routes.dart"
+    },
+    {
+      "name": "No #",
+      "request": "launch",
+      "type": "dart",
+      "program": "example/lib/no_hash.dart"
     },
   ]
 }
