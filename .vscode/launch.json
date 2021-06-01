@@ -14,10 +14,10 @@
       "program": "example/lib/routes.dart"
     },
     {
-      "name": "No #",
+      "name": "URL Strategy",
       "request": "launch",
       "type": "dart",
-      "program": "example/lib/no_hash.dart"
+      "program": "example/lib/url_strategy.dart"
     },
   ]
 }

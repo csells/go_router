@@ -9,7 +9,7 @@ class FamiliesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('GoRouter Example')),
+        appBar: AppBar(title: Text(_title(context))),
         body: ListView(
           children: [
             for (final f in families)
@@ -20,6 +20,9 @@ class FamiliesPage extends StatelessWidget {
           ],
         ),
       );
+
+  static String _title(BuildContext context) =>
+      (context as Element).findAncestorWidgetOfExactType<MaterialApp>()!.title;
 }
 
 class FamilyPage extends StatelessWidget {

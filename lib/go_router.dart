@@ -8,7 +8,6 @@ import 'src/path_strategy_nonweb.dart' if (dart.library.html) 'src/path_strategy
 
 enum UrlPathStrategy { hash, path }
 typedef GoRouteBuilder = Widget Function(BuildContext context, String location);
-typedef GoRouteInfoBuilder = List<GoRoute> Function(BuildContext context);
 typedef GoRoutePageBuilder = Page<dynamic> Function(BuildContext context, Map<String, String> args);
 typedef GoRouteErrorPageBuilder = Page<dynamic> Function(BuildContext context, String location, Exception ex);
 
@@ -58,9 +57,7 @@ class GoRouter {
     List<GoRoute> routes,
     GoRouteErrorPageBuilder error,
   ) {
-    print('location= $location');
-
-    // don't recreate the stack if we already have a stack of pages, i.e. top of the stack matches new location
+    // don't recreate the stack if top of the stack matches new location (popping)
     if (!_topMatches(location)) {
       // create a new list of pages based on the new location (not popping)
       _locPages.clear();
@@ -95,7 +92,7 @@ class GoRouter {
       onPopPage: (route, dynamic result) {
         if (!route.didPop(result)) return false;
 
-        // remove the route for the page we're showing and go to the next location down
+        // remove the route for the page we're showing and go to the next location up
         assert(_locPages.isNotEmpty);
         _locPages.remove(_locPages.keys.last);
         _routerDelegate.go(_locPages.keys.last);

@@ -7,14 +7,13 @@ import 'shared/pages.dart';
 void main() => runApp(App());
 
 class App extends StatelessWidget {
-  static const title = 'Routes-Up GoRouter Example';
   App({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) => MaterialApp.router(
         routeInformationParser: _router.routeInformationParser,
         routerDelegate: _router.routerDelegate,
-        title: App.title,
+        title: 'Routes GoRouter Example',
       );
 
   final _router = GoRouter.routes(

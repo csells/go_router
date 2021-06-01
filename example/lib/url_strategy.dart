@@ -5,6 +5,9 @@ import 'shared/data.dart';
 import 'shared/pages.dart';
 
 void main() {
+  // turn on the # in the URLs on the web (default)
+  // GoRouter.setUrlPathStrategy(UrlPathStrategy.hash);
+
   // turn off the # in the URLs on the web
   GoRouter.setUrlPathStrategy(UrlPathStrategy.path);
 
@@ -12,14 +15,13 @@ void main() {
 }
 
 class App extends StatelessWidget {
-  static const title = 'Routes-Up GoRouter Example';
   App({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) => MaterialApp.router(
         routeInformationParser: _router.routeInformationParser,
         routerDelegate: _router.routerDelegate,
-        title: App.title,
+        title: 'URL Strategy GoRouter Example',
       );
 
   final _router = GoRouter.routes(
