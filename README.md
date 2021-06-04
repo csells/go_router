@@ -258,6 +258,12 @@ Finally, when you deploy your Flutter web app to a web server, it needs to be co
 at index.html, otherwise the URL path strategy won't be able to route to your error page. If you're using Firebase
 hosting, [configuring your app as a "single page app" will cause all URLs to be rewritten to index.html](https://firebase.google.com/docs/hosting/full-config#rewrites).
 
+If you'd like to test locally before publishing, you can use [live-server](https://www.npmjs.com/package/live-server):
+
+```sh
+$ live-server --entry-file=index.html build/web
+```
+
 # Conditional Routes
 If you'd like to change the set of routes based on conditional app state, e.g. whether a user is logged in or not,
 you can do so using `InheritedWidget` or one of it's wrappers, e.g.
@@ -374,7 +380,7 @@ You can see the go_router in action via the following examples:
 You can run these examples from the command line like so:
 
 ```sh
-flutter run example/lib/builder.dart
+$ flutter run example/lib/builder.dart
 ```
 
 Or, if you're using Visual Studio Code, a [`launch.json`](.vscode/launch.json) file has been provided with
@@ -394,8 +400,3 @@ these examples configured.
 - ...
 - profit!
 - BUG: navigating back too fast crashes
-- BUG: navigation to error page is slow when using package:url_strategy to remove # from URLs
-  - "Loading app from service worker"
-  - doesn't seem to work at all in release mode, e.g. 'http-server build/web' then surf to error page
-  - need to configure all URLs to end up at index.html ala https://stackoverflow.com/a/65709246
-
