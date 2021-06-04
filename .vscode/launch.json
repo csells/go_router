@@ -19,5 +19,11 @@
       "type": "dart",
       "program": "example/lib/url_strategy.dart"
     },
+    {
+      "name": "Conditional Routes",
+      "request": "launch",
+      "type": "dart",
+      "program": "example/lib/conditional.dart"
+    },
   ]
 }

@@ -8,6 +8,7 @@ import 'src/path_strategy_nonweb.dart' if (dart.library.html) 'src/path_strategy
 
 enum UrlPathStrategy { hash, path }
 typedef GoRouteBuilder = Widget Function(BuildContext context, String location);
+typedef GoRouteRoutesBuilder = Iterable<GoRoute> Function(BuildContext context, String location);
 typedef GoRoutePageBuilder = Page<dynamic> Function(BuildContext context, Map<String, String> args);
 typedef GoRouteErrorPageBuilder = Page<dynamic> Function(BuildContext context, String location, Exception ex);
 
@@ -32,12 +33,12 @@ class GoRouter {
     );
   }
 
-  GoRouter.routes({required List<GoRoute> routes, required GoRouteErrorPageBuilder error}) {
+  GoRouter.routes({required GoRouteRoutesBuilder builder, required GoRouteErrorPageBuilder error}) {
     _routerDelegate = GoRouterDelegate(
       // wrap the returned Navigator to enable GoRouter.of(context).go() and context.go()
       builder: (context, location) => InheritedGoRouter(
         goRouter: this,
-        child: _builder(context, location, routes, error),
+        child: _builder(context, location, builder(context, location).toList(), error),
       ),
     );
   }
@@ -57,34 +58,31 @@ class GoRouter {
     List<GoRoute> routes,
     GoRouteErrorPageBuilder error,
   ) {
-    // don't recreate the stack if top of the stack matches new location (popping)
-    if (!_topMatches(location)) {
-      // create a new list of pages based on the new location (not popping)
-      _locPages.clear();
+    // create a new list of pages based on the new location
+    _locPages.clear();
 
-      try {
-        for (final route in routes) {
-          final params = <String>[];
-          final re = p2re.pathToRegExp(route.pattern, prefix: true, caseSensitive: false, parameters: params);
-          final match = re.matchAsPrefix(location);
-          if (match == null) continue;
+    try {
+      for (final route in routes) {
+        final params = <String>[];
+        final re = p2re.pathToRegExp(route.pattern, prefix: true, caseSensitive: false, parameters: params);
+        final match = re.matchAsPrefix(location);
+        if (match == null) continue;
 
-          final args = p2re.extract(params, match);
-          final pageLoc = GoRouter.locationFor(route.pattern, args);
-          final page = route.builder(context, args);
+        final args = p2re.extract(params, match);
+        final pageLoc = GoRouter.locationFor(route.pattern, args);
+        final page = route.builder(context, args);
 
-          if (_locPages.containsKey(pageLoc)) throw Exception('duplicate location: $pageLoc');
-          _locPages[pageLoc] = page;
-        }
-
-        // if the top location doesn't match the target location exactly, then we haven't got a valid stack of pages;
-        // this allows '/' to match as part of a stack of pages but to fail on '/nonsense'
-        if (!_topMatches(location)) throw Exception('page not found: $location');
-      } on Exception catch (ex) {
-        // if there's an error, show an error page
-        _locPages.clear();
-        _locPages[location] = error(context, location, ex);
+        if (_locPages.containsKey(pageLoc)) throw Exception('duplicate location: $pageLoc');
+        _locPages[pageLoc] = page;
       }
+
+      // if the top location doesn't match the target location exactly, then we haven't got a valid stack of pages;
+      // this allows '/' to match as part of a stack of pages but to fail on '/nonsense'
+      if (!_topMatches(location)) throw Exception('page not found: $location');
+    } on Exception catch (ex) {
+      // if there's an error, show an error page
+      _locPages.clear();
+      _locPages[location] = error(context, location, ex);
     }
 
     return Navigator(

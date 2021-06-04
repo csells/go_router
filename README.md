@@ -149,44 +149,44 @@ route name pattern, e.g.
 ```dart
 class App extends StatelessWidget {
   ...
-  final _router = GoRouter.routes(
-    routes: [
-      GoRoute(
-        pattern: '/',
-        builder: (context, args) => MaterialPage<FamiliesPage>(
-          key: const ValueKey('FamiliesPage'),
-          child: FamiliesPage(families: Families.data),
+  late final _router = GoRouter.routes(builder: _builder, error: _error);
+  List<GoRoute> _builder(BuildContext context, String location) => [
+        GoRoute(
+          pattern: '/',
+          builder: (context, args) => MaterialPage<FamiliesPage>(
+            key: const ValueKey('FamiliesPage'),
+            child: FamiliesPage(families: Families.data),
+          ),
         ),
-      ),
-      GoRoute(
-        pattern: '/family/:fid',
-        builder: (context, args) {
-          final family = Families.family(args['fid']!);
+        GoRoute(
+          pattern: '/family/:fid',
+          builder: (context, args) {
+            final family = Families.family(args['fid']!);
 
-          return MaterialPage<FamilyPage>(
-            key: ValueKey(family),
-            child: FamilyPage(family: family),
-          );
-        },
-      ),
-      GoRoute(
-        pattern: '/family/:fid/person/:pid',
-        builder: (context, args) {
-          final family = Families.family(args['fid']!);
-          final person = family.person(args['pid']!);
+            return MaterialPage<FamilyPage>(
+              key: ValueKey(family),
+              child: FamilyPage(family: family),
+            );
+          },
+        ),
+        GoRoute(
+          pattern: '/family/:fid/person/:pid',
+          builder: (context, args) {
+            final family = Families.family(args['fid']!);
+            final person = family.person(args['pid']!);
 
-          return MaterialPage<PersonPage>(
-            key: ValueKey(person),
-            child: PersonPage(family: family, person: person),
-          );
-        },
-      ),
-    ],
-    error: (context, location, ex) => MaterialPage<Four04Page>(
-      key: const ValueKey('ErrorPage'),
-      child: Four04Page(message: ex.toString()),
-    ),
-  );
+            return MaterialPage<PersonPage>(
+              key: ValueKey(person),
+              child: PersonPage(family: family, person: person),
+            );
+          },
+        ),
+      ];
+
+  MaterialPage<dynamic> _error(BuildContext context, String location, Exception ex) => MaterialPage<Four04Page>(
+        key: const ValueKey('ErrorPage'),
+        child: Four04Page(message: ex.toString()),
+      );
 }
 ```
 
@@ -199,7 +199,11 @@ In this case, you're doing the same three jobs, but you're doing them w/o a lot 
 1. Show an error page if any of that fails.
 
 The route name patterns are defined and implemented in the [`path_to_regexp`](https://pub.dev/packages/path_to_regexp)
-package.
+package, which gives you the ability to match regular expressions, e.g. a :fid must match 'f\d+'.
+
+The route builder is called each time that the location changes, in case you'd like to produce the set of declarative
+routes based on the current location. It will also be called when data associated with the context changes as described
+in the [Conditional Routes](#conditional-routes) section below.
 
 # MaterialApp.router Usage
 To configure a `Router` instance for use in your Flutter app, you use the `Material.router` constructor,
@@ -250,14 +254,122 @@ Setting the path instead of hash strategy turns off the # in the URLs as expecte
 
 ![URL Strategy w/o Hash](readme/url-strat-no-hash.png)
 
-Either way works the same from a routing standpoint, so you can pick the URL path strategy you like the best without
-changing any of the rest of your code.
+Finally, when you deploy your Flutter web app to a web server, it needs to be configured such that every URL ends up
+at index.html, otherwise the URL path strategy won't be able to route to your error page. If you're using Firebase
+hosting, [configuring your app as a "single page app" will cause all URLs to be rewritten to index.html](https://firebase.google.com/docs/hosting/full-config#rewrites).
+
+# Conditional Routes
+If you'd like to change the set of routes based on conditional app state, e.g. whether a user is logged in or not,
+you can do so using `InheritedWidget` or one of it's wrappers, e.g.
+[the provider package](https://pub.dev/packages/provider), to watch for changing state inside of the route builder.
+For example, imagine a simple class to track the app's current logged in state:
+
+```dart
+class LoginInfo extends ChangeNotifier {
+  var _userName = '';
+  bool get loggedIn => _userName.isNotEmpty;
+
+  void login(String userName) {
+    _userName = userName;
+    notifyListeners();
+  }
+}
+```
+
+Because the `LoginInfo` is a `ChangeNotifier`, it can accept listeners and notify them of data changes via the use of
+the `notifyListeners` method. We can then use the provider package to drop the login info into the widget tree like so:
+
+```dart
+class App extends StatelessWidget {
+  // add the login info into the tree as app state that can change over time
+  @override
+  Widget build(BuildContext context) => ChangeNotifierProvider<LoginInfo>(
+        create: (context) => LoginInfo(),
+        child: MaterialApp.router(
+          routeInformationParser: _router.routeInformationParser,
+          routerDelegate: _router.routerDelegate,
+          title: 'Conditional Routes GoRouter Example',
+        ),
+      );
+...
+}
+```
+
+The use of `ChangeNotifyProvider` creates a new `LoginInfo` object and puts it into the widget tree. Now imagine a login
+page that pulls the login info out of the widget tree and changes the login state as appropriate:
+
+```dart
+class LoginPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: Text(_title(context))),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: () => context.read<LoginInfo>().login('user1'),
+                child: const Text('Login'),
+              ),
+            ],
+          ),
+        ),
+      );
+...
+}
+```
+
+Notice the use of `context.read` from the provider package to walk the widget tree to find the login info and login a
+sample user. This causes the listeners to this data to be notified and for any widgets listening for this change to
+rebuild. We can then use this data when implementing the `GoRouter` builder, either the raw builder that produces a
+`Widget` (most likely a `Navigator`) or the a declarative builder that returns the list of routes to search. We can
+use the login info to decide which routes are allowed like so:
+
+```dart
+class App extends StatelessWidget {
+  // the routes when the user is logged in
+  final _loggedInRoutes = [
+    GoRoute(
+      pattern: '/',
+      builder: (context, args) => MaterialPage<FamiliesPage>(...),
+    ),
+    GoRoute(
+      pattern: '/family/:fid',
+      builder: (context, args) => MaterialPage<FamilyPage>(...),
+    ),
+    GoRoute(
+      pattern: '/family/:fid/person/:pid',
+      builder: (context, args) => MaterialPage<PersonPage>(...),
+    ),
+  ];
+
+  // the routes when the user is not logged in
+  final _loggedOutRoutes = [
+    GoRoute(
+      pattern: '/',
+      builder: (context, args) => MaterialPage<LoginPage>(...),
+    ),
+  ];
+
+  late final _router = GoRouter.routes(
+    // changes in the login info will rebuild the stack of routes
+    builder: (context, location) => context.watch<LoginInfo>().loggedIn ? _loggedInRoutes : _loggedOutRoutes,
+    ...
+  );
+}
+```
+
+Here we've defined two lists of routes, one for when the user is logged in and one for when they're not. Then, we use
+`context.watch` to read the login info to determine which list of routes to return. And because we used `context.watch`
+instead of `context.read`, whenever the login info object changes, the routes builder is automatically called for the
+correct list of routes based on the current app state.
 
 # Examples
 You can see the go_router in action via the following examples:
 - [`builder.dart`](example/lib/builder.dart): define routing policy by providing a custom builder
 - [`routes.dart`](example/lib/routes.dart): define a routing policy but using a set of declarative `GoRoute` objects
 - [`url_strategy.dart`](example/lib/url_strategy.dart): turn off the # in the Flutter web URL
+- [`conditional.dart`](example/lib/conditional.dart): provide different routes based on changing app state
 
 You can run these examples from the command line like so:
 
@@ -265,13 +377,12 @@ You can run these examples from the command line like so:
 flutter run example/lib/builder.dart
 ```
 
-Or, if you're using Visual Studio Code, a [`launch.json`](.vscode/launch.json) file has been provided with these
-examples configured.
+Or, if you're using Visual Studio Code, a [`launch.json`](.vscode/launch.json) file has been provided with
+these examples configured.
 
 # TODO
-- test different route groups, e.g. not logged in vs. logged in
-  - route guards to redirect when a page requires logging in first
-  - updates to the stack as a user goes from logged in/logged out
+- query parameters?
+- route guards and redirection
 - test async id => object lookup
 - add custom transition support
 - nesting routing
@@ -285,3 +396,6 @@ examples configured.
 - BUG: navigating back too fast crashes
 - BUG: navigation to error page is slow when using package:url_strategy to remove # from URLs
   - "Loading app from service worker"
+  - doesn't seem to work at all in release mode, e.g. 'http-server build/web' then surf to error page
+  - need to configure all URLs to end up at index.html ala https://stackoverflow.com/a/65709246
+

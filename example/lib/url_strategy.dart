@@ -25,7 +25,7 @@ class App extends StatelessWidget {
       );
 
   final _router = GoRouter.routes(
-    routes: [
+    builder: (context, location) => [
       GoRoute(
         pattern: '/',
         builder: (context, args) => MaterialPage<FamiliesPage>(
