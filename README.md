@@ -387,16 +387,16 @@ Or, if you're using Visual Studio Code, a [`launch.json`](.vscode/launch.json) f
 these examples configured.
 
 # TODO
-- query parameters?
 - route guards and redirection
 - test async id => object lookup
 - add custom transition support
 - nesting routing
 - supporting the concept of "back" as well as "up"
-- support for shorter locations that result in multiple pages for a single route, e.g. /person?pid=foo
+- support for shorter locations that result in multiple pages for a single route, e.g. /person/:pid
   could end up mapping to three pages (home, families and person) but will only match two routes
   (home and person). The mapping to person requires two pages to be returned (families and person).
 - publish
 - ...
 - profit!
 - BUG: navigating back too fast crashes
+- FEATURE: support for query parameters requires updates to [path_to_regexp](https://pub.dev/packages/path_to_regexp)
