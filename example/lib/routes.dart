@@ -50,7 +50,7 @@ class App extends StatelessWidget {
         ),
       ];
 
-  MaterialPage<dynamic> _error(BuildContext context, String location, Exception ex) => MaterialPage<Four04Page>(
+  Page<dynamic> _error(BuildContext context, String location, Exception ex) => MaterialPage<Four04Page>(
         key: const ValueKey('ErrorPage'),
         child: Four04Page(message: ex.toString()),
       );
