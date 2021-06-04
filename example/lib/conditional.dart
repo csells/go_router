@@ -73,8 +73,8 @@ class App extends StatelessWidget {
   List<GoRoute> _builder(BuildContext context, String location) =>
       context.watch<LoginInfo>().loggedIn ? _loggedInRoutes : _loggedOutRoutes;
 
-  Page<dynamic> _error(BuildContext context, String location, Exception ex) => MaterialPage<Four04Page>(
+  Page<dynamic> _error(BuildContext context, GoRouteException ex) => MaterialPage<Four04Page>(
         key: const ValueKey('ErrorPage'),
-        child: Four04Page(message: ex.toString()),
+        child: Four04Page(message: ex.nested.toString()),
       );
 }

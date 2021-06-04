@@ -10,7 +10,16 @@ enum UrlPathStrategy { hash, path }
 typedef GoRouteBuilder = Widget Function(BuildContext context, String location);
 typedef GoRouteRoutesBuilder = Iterable<GoRoute> Function(BuildContext context, String location);
 typedef GoRoutePageBuilder = Page<dynamic> Function(BuildContext context, Map<String, String> args);
-typedef GoRouteErrorPageBuilder = Page<dynamic> Function(BuildContext context, String location, Exception ex);
+typedef GoRouteErrorPageBuilder = Page<dynamic> Function(BuildContext context, GoRouteException ex);
+
+class GoRouteException implements Exception {
+  final String location;
+  final Exception nested;
+  GoRouteException(this.location, this.nested);
+
+  @override
+  String toString() => '${nested.toString()}: $location';
+}
 
 class GoRoute {
   final String pattern;
@@ -38,7 +47,7 @@ class GoRouter {
       // wrap the returned Navigator to enable GoRouter.of(context).go() and context.go()
       builder: (context, location) => InheritedGoRouter(
         goRouter: this,
-        child: _builder(context, location, builder(context, location).toList(), error),
+        child: _builder(context, location, builder(context, location), error),
       ),
     );
   }
@@ -55,7 +64,7 @@ class GoRouter {
   Widget _builder(
     BuildContext context,
     String location,
-    List<GoRoute> routes,
+    Iterable<GoRoute> routes,
     GoRouteErrorPageBuilder error,
   ) {
     // create a new list of pages based on the new location
@@ -72,17 +81,17 @@ class GoRouter {
         final pageLoc = GoRouter.locationFor(route.pattern, args);
         final page = route.builder(context, args);
 
-        if (_locPages.containsKey(pageLoc)) throw Exception('duplicate location: $pageLoc');
+        if (_locPages.containsKey(pageLoc)) throw Exception('duplicate location $pageLoc');
         _locPages[pageLoc] = page;
       }
 
       // if the top location doesn't match the target location exactly, then we haven't got a valid stack of pages;
       // this allows '/' to match as part of a stack of pages but to fail on '/nonsense'
-      if (!_topMatches(location)) throw Exception('page not found: $location');
+      if (!_topMatches(location)) throw Exception('page not found');
     } on Exception catch (ex) {
       // if there's an error, show an error page
       _locPages.clear();
-      _locPages[location] = error(context, location, ex);
+      _locPages[location] = error(context, GoRouteException(location, ex));
     }
 
     return Navigator(
