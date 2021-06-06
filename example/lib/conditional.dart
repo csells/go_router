@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'shared/data.dart';
-import 'shared/login.dart';
 import 'shared/pages.dart';
 
 void main() => runApp(App());
@@ -74,7 +73,7 @@ class App extends StatelessWidget {
       context.watch<LoginInfo>().loggedIn ? _loggedInRoutes : _loggedOutRoutes;
 
   Page<dynamic> _error(BuildContext context, GoRouteException ex) => MaterialPage<Four04Page>(
-        key: const ValueKey('ErrorPage'),
+        key: const ValueKey('Four04Page'),
         child: Four04Page(message: ex.nested.toString()),
       );
 }

@@ -25,5 +25,11 @@
       "type": "dart",
       "program": "example/lib/conditional.dart"
     },
+    {
+      "name": "Route Redirection",
+      "request": "launch",
+      "type": "dart",
+      "program": "example/lib/redirection.dart"
+    },
   ]
 }

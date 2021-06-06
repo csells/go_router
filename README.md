@@ -36,7 +36,7 @@ The go_router also provides a simplified version using Dart extension methods:
 onTap: () => context.go('/family/f1/person/p2')
 ```
 
-The simplified version maps directly to the more fully-specified version, so you may use either.
+The simplified version maps directly to the more fully-specified version, so you can use either.
 
 # Imperative Builder
 To implement the mapping between a location and a stack of pags, the app can create an instance of the
@@ -48,6 +48,9 @@ The following is an example implementation of the builder function that supports
 - `FamiliesPage` at `/`
 - `FamilyPage` as `/family/:fid`, e.g. `/family/f1`
 - `PersonPage` as `/family/:fid/person/:pid`, e.g. `/family/f1/person/p2`
+
+Furthermore, it creates a stack of pages for each route that's match, e.g. `/family/f1/person/p2` yields a stack of
+three pages: `FamiliesPage`, `FamilyPage(fid:f1)` and `PersonPage(fid:f1, pid:p2)`.
 
 ```dart
 class App extends StatelessWidget {
@@ -199,7 +202,7 @@ In this case, you're doing the same three jobs, but you're doing them w/o a lot 
 1. Show an error page if any of that fails.
 
 The route name patterns are defined and implemented in the [`path_to_regexp`](https://pub.dev/packages/path_to_regexp)
-package, which gives you the ability to match regular expressions, e.g. a :fid must match 'f\d+'.
+package, which gives you the ability to match regular expressions, e.g. `/family/:fid(f\d+)`.
 
 The route builder is called each time that the location changes, in case you'd like to produce the set of declarative
 routes based on the current location. It will also be called when data associated with the context changes as described
@@ -255,7 +258,7 @@ Setting the path instead of hash strategy turns off the # in the URLs as expecte
 ![URL Strategy w/o Hash](readme/url-strat-no-hash.png)
 
 Finally, when you deploy your Flutter web app to a web server, it needs to be configured such that every URL ends up
-at index.html, otherwise the URL path strategy won't be able to route to your error page. If you're using Firebase
+at index.html, otherwise the URL path strategy won't be able to route to your pages. If you're using Firebase
 hosting, [configuring your app as a "single page app" will cause all URLs to be rewritten to index.html](https://firebase.google.com/docs/hosting/full-config#rewrites).
 
 If you'd like to test locally before publishing, you can use [live-server](https://www.npmjs.com/package/live-server):
@@ -314,6 +317,7 @@ class LoginPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton(
+                // log a user in, letting all the listeners know
                 onPressed: () => context.read<LoginInfo>().login('user1'),
                 child: const Text('Login'),
               ),
@@ -328,7 +332,7 @@ class LoginPage extends StatelessWidget {
 Notice the use of `context.read` from the provider package to walk the widget tree to find the login info and login a
 sample user. This causes the listeners to this data to be notified and for any widgets listening for this change to
 rebuild. We can then use this data when implementing the `GoRouter` builder, either the raw builder that produces a
-`Widget` (most likely a `Navigator`) or the a declarative builder that returns the list of routes to search. We can
+`Navigator` or the a declarative builder that returns the list of routes to search. We can
 use the login info to decide which routes are allowed like so:
 
 ```dart
@@ -388,9 +392,13 @@ these examples configured.
 
 # TODO
 - route guards and redirection
-- test async id => object lookup
-- add custom transition support
+  - BUG: address bar not updating
+  - TODO: update README
+- rearrange README and rename ctors to make the routes case the default
+- query parameters via Uri.queryParameters and Uri.path
+- update README for async id => object lookup
 - nesting routing
+- custom transition support
 - supporting the concept of "back" as well as "up"
 - support for shorter locations that result in multiple pages for a single route, e.g. /person/:pid
   could end up mapping to three pages (home, families and person) but will only match two routes
@@ -399,4 +407,3 @@ these examples configured.
 - ...
 - profit!
 - BUG: navigating back too fast crashes
-- FEATURE: support for query parameters requires updates to [path_to_regexp](https://pub.dev/packages/path_to_regexp)

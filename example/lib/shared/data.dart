@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 class Person {
   final String id;
   final String name;
@@ -44,4 +46,18 @@ class Families {
         (f) => f.id == fid,
         orElse: () => throw Exception('unknown family $fid'),
       );
+}
+
+class LoginInfo extends ChangeNotifier {
+  var _userName = '';
+
+  bool get loggedIn => _userName.isNotEmpty;
+  String get userName => _userName;
+
+  void login(String userName) {
+    _userName = userName;
+    notifyListeners();
+  }
+
+  void logout() => login('');
 }

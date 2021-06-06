@@ -18,7 +18,15 @@ class GoRouteException implements Exception {
   GoRouteException(this.location, this.nested);
 
   @override
-  String toString() => '${nested.toString()}: $location';
+  String toString() => '$nested: $location';
+}
+
+class GoRedirect extends Page<dynamic> {
+  final String location;
+  const GoRedirect(this.location);
+
+  @override
+  Route createRoute(BuildContext context) => throw UnimplementedError();
 }
 
 class GoRoute {
@@ -67,32 +75,35 @@ class GoRouter {
     Iterable<GoRoute> routes,
     GoRouteErrorPageBuilder error,
   ) {
+    var loc = location;
+    Map<String, Page<dynamic>> locPages;
+    for (;;) {
+      // loop until there's no redirect
+      try {
+        locPages = _getLocPages(context, loc, routes);
+        assert(locPages.isNotEmpty); // an empty set of pages should throw an exception in _getLocPages
+
+        // if the top of the stack isn't a redirect, then stop looping and use this stack
+        if (locPages.entries.last.value is! GoRedirect) break;
+        assert(locPages.entries.length == 1); // _goLocPages should ensure this
+
+        // if the top page is a redirect, then loop back around to get a stack of new pages
+        final redirect = locPages.entries.last.value as GoRedirect;
+        final newLoc = redirect.location;
+        if (_locationsMatch(newLoc, loc)) throw Exception('redirecting to same location: $loc');
+
+        loc = newLoc;
+      } on Exception catch (ex) {
+        // if there's an error, show an error page
+        locPages = {loc: error(context, GoRouteException(loc, ex))};
+        break;
+      }
+    }
+
     // create a new list of pages based on the new location
     _locPages.clear();
-
-    try {
-      for (final route in routes) {
-        final params = <String>[];
-        final re = p2re.pathToRegExp(route.pattern, prefix: true, caseSensitive: false, parameters: params);
-        final match = re.matchAsPrefix(location);
-        if (match == null) continue;
-
-        final args = p2re.extract(params, match);
-        final pageLoc = GoRouter.locationFor(route.pattern, args);
-        final page = route.builder(context, args);
-
-        if (_locPages.containsKey(pageLoc)) throw Exception('duplicate location $pageLoc');
-        _locPages[pageLoc] = page;
-      }
-
-      // if the top location doesn't match the target location exactly, then we haven't got a valid stack of pages;
-      // this allows '/' to match as part of a stack of pages but to fail on '/nonsense'
-      if (!_topMatches(location)) throw Exception('page not found');
-    } on Exception catch (ex) {
-      // if there's an error, show an error page
-      _locPages.clear();
-      _locPages[location] = error(context, GoRouteException(location, ex));
-    }
+    _locPages.addAll(locPages);
+    assert(_locPages.isNotEmpty);
 
     return Navigator(
       pages: _locPages.values.toList(),
@@ -109,13 +120,44 @@ class GoRouter {
     );
   }
 
-  // check the top of the stack of locations to see if it matches the location argument
-  bool _topMatches(String location) =>
-      _locPages.isNotEmpty && _locPages.keys.last.toLowerCase() == location.toLowerCase();
+  static Map<String, Page<dynamic>> _getLocPages(BuildContext context, String location, Iterable<GoRoute> routes) {
+    final locPages = <String, Page<dynamic>>{};
+    for (final route in routes) {
+      final params = <String>[];
+      final re = p2re.pathToRegExp(route.pattern, prefix: true, caseSensitive: false, parameters: params);
+      final match = re.matchAsPrefix(location);
+      if (match == null) continue;
+
+      final args = p2re.extract(params, match);
+      final pageLoc = GoRouter.locationFor(route.pattern, args);
+      final page = route.builder(context, args);
+
+      if (locPages.containsKey(pageLoc)) throw Exception('duplicate location $pageLoc');
+      locPages[pageLoc] = page;
+    }
+
+    // if the top location doesn't match the target location exactly, then we haven't got a valid stack of pages;
+    // this allows '/' to match as part of a stack of pages but to fail on '/nonsense'
+    final topMatches = locPages.isNotEmpty && _locationsMatch(locPages.keys.last, location);
+    if (!topMatches) throw Exception('page not found');
+
+    // if the top page on the stack is a redirect, just return it
+    if (locPages.entries.last.value is GoRedirect) return Map.fromEntries([locPages.entries.last]);
+
+    // otherwise, ignore intermediate redirects and use this stack
+    locPages.removeWhere((key, value) => value is GoRedirect);
+    if (locPages.isEmpty) throw Exception('page not found');
+    return locPages;
+  }
+
+  static bool _locationsMatch(String loc1, String loc2) {
+    // check just the path w/o the queryParameters
+    final uri1 = Uri.tryParse(loc1);
+    final uri2 = Uri.tryParse(loc2);
+    return uri1 != null && uri2 != null && uri1.path.toLowerCase().trim() == uri2.path.toLowerCase().trim();
+  }
 }
 
 extension GoRouterHelper on BuildContext {
-  void go(String location) {
-    GoRouter.of(this).go(location);
-  }
+  void go(String location) => GoRouter.of(this).go(location);
 }

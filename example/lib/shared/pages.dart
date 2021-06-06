@@ -1,28 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 import 'data.dart';
+
+String _title(BuildContext context) => (context as Element).findAncestorWidgetOfExactType<MaterialApp>()!.title;
 
 class FamiliesPage extends StatelessWidget {
   final List<Family> families;
   const FamiliesPage({required this.families, Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: Text(_title(context))),
-        body: ListView(
-          children: [
-            for (final f in families)
-              ListTile(
-                title: Text(f.name),
-                onTap: () => context.go('/family/${f.id}'),
-              )
-          ],
-        ),
-      );
+  Widget build(BuildContext context) {
+    final info = _info(context);
 
-  static String _title(BuildContext context) =>
-      (context as Element).findAncestorWidgetOfExactType<MaterialApp>()!.title;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_title(context)),
+        actions: [
+          if (info != null)
+            IconButton(
+              onPressed: info.logout,
+              tooltip: 'Logout: ${info.userName}',
+              icon: const Icon(Icons.logout),
+            )
+        ],
+      ),
+      body: ListView(
+        children: [
+          for (final f in families)
+            ListTile(
+              title: Text(f.name),
+              onTap: () => context.go('/family/${f.id}'),
+            )
+        ],
+      ),
+    );
+  }
+
+  LoginInfo? _info(BuildContext context) {
+    try {
+      return context.read<LoginInfo>();
+    } on Exception catch (_) {
+      return null;
+    }
+  }
 }
 
 class FamilyPage extends StatelessWidget {
@@ -71,6 +93,27 @@ class Four04Page extends StatelessWidget {
               TextButton(
                 onPressed: () => context.go('/'),
                 child: const Text('Home'),
+              ),
+            ],
+          ),
+        ),
+      );
+}
+
+class LoginPage extends StatelessWidget {
+  const LoginPage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: Text(_title(context))),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                // log a user in, letting all the listeners know
+                onPressed: () => context.read<LoginInfo>().login('user1'),
+                child: const Text('Login'),
               ),
             ],
           ),
