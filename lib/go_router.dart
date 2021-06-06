@@ -1,5 +1,6 @@
 library go_router;
 
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:path_to_regexp/path_to_regexp.dart' as p2re;
 
@@ -75,35 +76,29 @@ class GoRouter {
     Iterable<GoRoute> routes,
     GoRouteErrorPageBuilder error,
   ) {
-    var loc = location;
-    Map<String, Page<dynamic>> locPages;
-    for (;;) {
-      // loop until there's no redirect
-      try {
-        locPages = _getLocPages(context, loc, routes);
-        assert(locPages.isNotEmpty); // an empty set of pages should throw an exception in _getLocPages
+    try {
+      final locPages = _getLocPages(context, location, routes);
+      assert(locPages.isNotEmpty); // _goLocPages should ensure this
 
-        // if the top of the stack isn't a redirect, then stop looping and use this stack
-        if (locPages.entries.last.value is! GoRedirect) break;
+      // if the single page on the stack is a redirect, then go there
+      if (locPages.entries.first.value is GoRedirect) {
         assert(locPages.entries.length == 1); // _goLocPages should ensure this
 
-        // if the top page is a redirect, then loop back around to get a stack of new pages
-        final redirect = locPages.entries.last.value as GoRedirect;
-        final newLoc = redirect.location;
-        if (_locationsMatch(newLoc, loc)) throw Exception('redirecting to same location: $loc');
-
-        loc = newLoc;
-      } on Exception catch (ex) {
-        // if there's an error, show an error page
-        locPages = {loc: error(context, GoRouteException(loc, ex))};
-        break;
+        final redirect = locPages.entries.first.value as GoRedirect;
+        if (_locationsMatch(redirect.location, location)) throw Exception('redirecting to same location: $location');
+        SchedulerBinding.instance?.addPostFrameCallback((_) => _routerDelegate.go(redirect.location));
       }
+      // otherwise use this stack as is
+      else {
+        assert(locPages.entries.whereType<GoRedirect>().isEmpty); // _goLocPages should ensure this
+        _locPages.clear();
+        _locPages.addAll(locPages);
+      }
+    } on Exception catch (ex) {
+      // if there's an error, show an error page
+      _locPages.clear();
+      _locPages[location] = error(context, GoRouteException(location, ex));
     }
-
-    // create a new list of pages based on the new location
-    _locPages.clear();
-    _locPages.addAll(locPages);
-    assert(_locPages.isNotEmpty);
 
     return Navigator(
       pages: _locPages.values.toList(),

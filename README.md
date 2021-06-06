@@ -392,7 +392,6 @@ these examples configured.
 
 # TODO
 - route guards and redirection
-  - BUG: address bar not updating
   - TODO: update README
 - rearrange README and rename ctors to make the routes case the default
 - query parameters via Uri.queryParameters and Uri.path
