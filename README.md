@@ -429,8 +429,6 @@ Or, if you're using Visual Studio Code, a [`launch.json`](.vscode/launch.json) f
 these examples configured.
 
 # TODO
-- route guards and redirection
-  - TODO: update README
 - rearrange README and rename ctors to make the routes case the default
 - query parameters via Uri.queryParameters and Uri.path
 - update README for async id => object lookup
