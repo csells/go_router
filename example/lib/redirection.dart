@@ -63,19 +63,19 @@ class App extends StatelessWidget {
             );
           },
         ),
-        GoRoute(
-          pattern: '/login',
-          builder: (context, args) {
-            final loggedIn = context.watch<LoginInfo>().loggedIn;
-            if (loggedIn) return const GoRedirect('/');
+    GoRoute(
+      pattern: '/login',
+      builder: (context, args) {
+        final loggedIn = context.watch<LoginInfo>().loggedIn;
+        if (loggedIn) return const GoRedirect('/');
 
-            return const MaterialPage<LoginPage>(
-              key: ValueKey('LoginPage'),
-              child: LoginPage(),
-            );
-          },
-        ),
-      ];
+        return const MaterialPage<LoginPage>(
+          key: ValueKey('LoginPage'),
+          child: LoginPage(),
+        );
+      },
+    ),
+  ];
 
   Page<dynamic> _error(BuildContext context, GoRouteException ex) => MaterialPage<Four04Page>(
         key: const ValueKey('Four04Page'),

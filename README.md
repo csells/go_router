@@ -15,7 +15,7 @@ and navigation policies at the cost of [complexity](https://www.reddit.com/r/Flu
 
 The go_router makes three simplifying assumptions to reduce complexity:
 - all routing in the app will happen via URI-compliant names, e.g. `/family/f1/person/p2`
-- an entire stack of pages can be constructed from the route name alone, e.g. `FamiliesPage`, `FamilyPage`, `PersonPage`
+- an entire stack of pages can be constructed from the route name alone
 - the concept of "back" in your app is "up", i.e. going back from `/family/f1/person/p2` goes up to `/family/f1`
   and not back to wherever the user was before they landed on `/family/f1/person/p2`.
 
@@ -374,12 +374,50 @@ Here we've defined two lists of routes, one for when the user is logged in and o
 instead of `context.read`, whenever the login info object changes, the routes builder is automatically called for the
 correct list of routes based on the current app state.
 
+# Redirection
+Sometimes you want to redirect one route to another one, e.g. if the user is not logged in. You can do that using
+an instance of the GoRedirect object, e.g.
+
+```dart
+List<GoRoute> _builder(BuildContext context, String location) => [
+    GoRoute(
+      pattern: '/',
+      builder: (context, args) {
+        final loggedIn = context.watch<LoginInfo>().loggedIn;
+        if (!loggedIn) return const GoRedirect('/login');
+
+        return MaterialPage<FamiliesPage>(
+          key: const ValueKey('FamiliesPage'),
+          child: FamiliesPage(families: Families.data),
+        );
+      },
+    ),
+    ...
+    GoRoute(
+      pattern: '/login',
+      builder: (context, args) {
+        final loggedIn = context.watch<LoginInfo>().loggedIn;
+        if (loggedIn) return const GoRedirect('/');
+
+        return const MaterialPage<LoginPage>(
+          key: ValueKey('LoginPage'),
+          child: LoginPage(),
+        );
+      },
+    ),
+  ];
+```
+
+In this code, if the user is not logged in, we redirect from the `/` to `/login`. Likewise, if the user is logged in,
+we redirect from `/login` to `/`.
+
 # Examples
 You can see the go_router in action via the following examples:
 - [`builder.dart`](example/lib/builder.dart): define routing policy by providing a custom builder
 - [`routes.dart`](example/lib/routes.dart): define a routing policy but using a set of declarative `GoRoute` objects
 - [`url_strategy.dart`](example/lib/url_strategy.dart): turn off the # in the Flutter web URL
 - [`conditional.dart`](example/lib/conditional.dart): provide different routes based on changing app state
+- [`redirection.dart`](example/lib/redirection.dart): redirect one route to another based on changing app state
 
 You can run these examples from the command line like so:
 
