@@ -536,11 +536,11 @@ Or, if you're using Visual Studio Code, a [`launch.json`](.vscode/launch.json) f
 these examples configured.
 
 # TODO
-- add doc comments
 - add docs showing async id => object lookup
 - add support for nested routing
 - custom transition support
-- supporting the concept of "back" as well as "up"
+- unit testing
+- widget testing
 - support for shorter locations that result in multiple pages for a single route, e.g. /person/:pid
   could end up mapping to three pages (home, families and person) but will only match two routes
   (home and person). The mapping to person requires two pages to be returned (families and person).
