@@ -41,22 +41,22 @@ class GoRouter {
   late final GoRouterDelegate _routerDelegate;
   final _locPages = <String, Page<dynamic>>{};
 
-  GoRouter({required GoRouteBuilder builder}) {
+  GoRouter({required GoRouteRoutesBuilder routes, required GoRouteErrorPageBuilder error}) {
+    _routerDelegate = GoRouterDelegate(
+      // wrap the returned Navigator to enable GoRouter.of(context).go() and context.go()
+      builder: (context, location) => InheritedGoRouter(
+        goRouter: this,
+        child: _builder(context, routes(context, location), error, location),
+      ),
+    );
+  }
+
+  GoRouter.builder({required GoRouteBuilder builder}) {
     _routerDelegate = GoRouterDelegate(
       // wrap the returned Navigator to enable GoRouter.of(context).go() and context.go()
       builder: (context, location) => InheritedGoRouter(
         goRouter: this,
         child: builder(context, location),
-      ),
-    );
-  }
-
-  GoRouter.routes({required GoRouteRoutesBuilder builder, required GoRouteErrorPageBuilder error}) {
-    _routerDelegate = GoRouterDelegate(
-      // wrap the returned Navigator to enable GoRouter.of(context).go() and context.go()
-      builder: (context, location) => InheritedGoRouter(
-        goRouter: this,
-        child: _builder(context, builder(context, location), error, location),
       ),
     );
   }

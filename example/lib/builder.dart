@@ -16,7 +16,7 @@ class App extends StatelessWidget {
         title: 'Builder GoRouter Example',
       );
 
-  late final _router = GoRouter(builder: _builder);
+  late final _router = GoRouter.builder(builder: _builder);
   Widget _builder(BuildContext context, String location) {
     final locPages = <String, Page<dynamic>>{};
 

@@ -22,7 +22,7 @@ class App extends StatelessWidget {
         ),
       );
 
-  late final _router = GoRouter.routes(builder: _builder, error: _error);
+  late final _router = GoRouter(routes: _builder, error: _error);
   List<GoRoute> _builder(BuildContext context, String location) => [
         GoRoute(
           pattern: '/',

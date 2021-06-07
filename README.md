@@ -16,22 +16,35 @@ and navigation policies at the cost of [complexity](https://www.reddit.com/r/Flu
 The go_router makes three simplifying assumptions to reduce complexity:
 - all routing in the app will happen via URI-compliant names, e.g. `/family/f1/person/p2`
 - an entire stack of pages can be constructed from the route name alone
-- the concept of "back" in your app is "up", i.e. going back from `/family/f1/person/p2` goes up to `/family/f1`
-  and not back to wherever the user was before they landed on `/family/f1/person/p2`
+- the concept of "back" in your app is "up" the stack of pages each route name
+  produces
 
 These assumptions allow go_router to provide a simpler implementation of your app's custom router.
 
 # Getting Started
-To use 
-While the builder implementation above is simpler than providing the three custom type implementations
-normally required for routing in a Flutter app, it's still picky and difficult to get right. Also, it's
-regular, so it can be simplied into a declarative format using a set of `GoRoute` objects, each matching a
-route name pattern, e.g.
+To use the go_router package, add go_router to your `pubspec.yaml`:
+
+```yaml
+...
+dependencies:
+  ...
+  go_router: ^CURRENT-VERSION
+```
+
+To use go_router, add the import to your Dart file:
+
+```dart
+import 'package:go_router/go_router.dart';
+```
+
+With these two pieces in place, you're ready to create your routes.
+
+# Declarative Routing
+The go_router is governed by a set of routes which you specify via a builder
+function:
 
 ```dart
 class App extends StatelessWidget {
-  ...
-  late final _router = GoRouter.routes(builder: _builder, error: _error);
   List<GoRoute> _builder(BuildContext context, String location) => [
         GoRoute(
           pattern: '/',
@@ -64,21 +77,48 @@ class App extends StatelessWidget {
           },
         ),
       ];
-
-  MaterialPage<dynamic> _error(BuildContext context, String location, GoRouteException ex) => MaterialPage<Four04Page>(
-        key: const ValueKey('ErrorPage'),
-        child: Four04Page(message: ex.toString()),
-      );
+  ...
 }
 ```
 
-In this case, you're doing the same three jobs, but you're doing them w/o a lot of boilerplate:
-1. Matching portions of the location to builders to create instance of the app's pages, e.g. `FamiliesPage`
-   `FamilyPage`, `PersonPage`, using route name patterns, e.g. `/family/:fid`, so that the go_router can
-   parse out the parameters for you. Each pattern is specified in order that the stack of pages will be
-   created.
-1. The go_router will create the stack of pages for you and implement `onPopPage` using that stack.
-1. Show an error page if any of that fails.
+In this case, we've defined three routes w/ the following patterns:
+
+- `/`: the home page that shows a list of familes
+- `/family/:fid`: a family details page identified by the `fid` variable and
+  parsed at run-time for a URI like this: `/family/f1`
+- `/family/:fid/person/:person`: a person details page,
+  e.g. `/family/f1/person/p2`
+
+These routes will be matched in order and every pattern that matches the location
+will be a page on the navigation stack. Each location is able to produce the
+entire stack, like so:
+
+location               | navigation stack
+-----------------------|-----------------
+`/`                    | `FamiliesPage()`
+`/family/f1`           | `FamiliesPage()`, `FamilyPage(f1)`
+`/family/f1/person/p2` | `FamiliesPage()`, `FamilyPage(f1)`, `PersonPage(p2)`
+
+The order of the patterns in the list of routes dictates the order in the
+navigation stack. The navigation stack is used to pop up to the previous page in
+the stack when the user press the Back button or your app calls
+`Navigation.pop()`.
+
+In addition to the pattern, a `GoRoute` contains a page builder function which
+is called to create the page when a pattern is matched. That function can use
+the arguments parsed from the pattern to do things like look up data to use
+to initialize each page.
+
+In addition, the go_router needs an error handler in case no page is found or
+if any of the page builder functions throws an exception, e.g.
+
+```dart
+```
+
+With these two functions in hand, you can establish your app's custom routing
+policy using the `MaterialApp.router` constructor:
+
+TODO:STARTHERE
 
 # Navigation
 You can navigate between pages in your app using the `GoRouter.go` method:

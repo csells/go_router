@@ -21,7 +21,7 @@ class App extends StatelessWidget {
         ),
       );
 
-  late final _router = GoRouter.routes(builder: _builder, error: _error);
+  late final _router = GoRouter(routes: _builder, error: _error);
 
   // the routes when the user is logged in
   final _loggedInRoutes = [
