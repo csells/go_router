@@ -25,22 +25,7 @@ your app, go_router is designed to be able to handle arbitrary locations while s
 developer experience.
 
 # Getting Started
-To use the go_router package, add go_router to your `pubspec.yaml`:
-
-```yaml
-...
-dependencies:
-  ...
-  go_router: ^CURRENT-VERSION
-```
-
-And add the import to your Dart file:
-
-```dart
-import 'package:go_router/go_router.dart';
-```
-
-With these two pieces in place, you're ready to create your app's custom routing policy.
+To use the go_router package, [follow these instructions](https://pub.dev/packages/go_router/install).
 
 # Declarative Routing
 The go_router is governed by a set of routes which you specify via a routes builder function:
