@@ -521,6 +521,7 @@ Or, if you're using Visual Studio Code, a [`launch.json`](.vscode/launch.json) f
 these examples configured.
 
 # TODO
+- test with dialogs and Navigator.pop() to make sure we didn't screw anything up there...
 - add docs showing async id => object lookup
 - add support for nested routing
 - custom transition support
