@@ -7,40 +7,68 @@ import 'package:path_to_regexp/path_to_regexp.dart' as p2re;
 import 'src/go_router_impl.dart';
 import 'src/path_strategy_nonweb.dart' if (dart.library.html) 'src/path_strategy_web.dart';
 
+/// for use in GoRouter.setUrlPathStrategy
 enum UrlPathStrategy { hash, path }
+
+/// the signature of the function to pass to the GoRouter.builder ctor
 typedef GoRouteBuilder = Widget Function(BuildContext context, String location);
+
+/// the signature of the routes builder function to pass to the GoRouter ctor
 typedef GoRouteRoutesBuilder = Iterable<GoRoute> Function(BuildContext context, String location);
+
+/// the signature of the page builder callback for a matched GoRoute
 typedef GoRoutePageBuilder = Page<dynamic> Function(BuildContext context, Map<String, String> args);
+
+/// the signature of the function to build an error page to pass to the GoRouter ctor
 typedef GoRouteErrorPageBuilder = Page<dynamic> Function(BuildContext context, GoRouteException ex);
 
+/// passed to the error builder function in the event of an error
 class GoRouteException implements Exception {
+  /// the route location that caused the exception
   final String location;
+
+  /// the exception that was thrown attempting to route to the location
   final Exception nested;
+
+  /// ctor
   GoRouteException(this.location, this.nested);
 
   @override
   String toString() => '$nested: $location';
 }
 
+/// a marker type indicating a redirection instead of an actual page
 class GoRedirect extends Page<dynamic> {
+  /// the location to redirect to
   final String location;
+
+  /// ctor
   const GoRedirect(this.location);
 
+  /// not implemented; should never be called
   @override
   Route createRoute(BuildContext context) => throw UnimplementedError();
 }
 
+/// a declarative mapping between a route name pattern and a route page builder
 class GoRoute {
+  /// the pattern in the form `/path/with/:var` interpretted using path_to_regexp package
   final String pattern;
+
+  /// a function to create a page when the route pattern is matched
   final GoRoutePageBuilder builder;
+
+  /// ctor
   GoRoute({required this.pattern, required this.builder});
 }
 
+/// top-level go_router class; create one of these to initialize your app's routing policy
 class GoRouter {
   final _routeInformationParser = GoRouteInformationParser();
   late final GoRouterDelegate _routerDelegate;
   final _locPages = <String, Page<dynamic>>{};
 
+  /// configure a GoRouter with a routes builder and an error page builder
   GoRouter({required GoRouteRoutesBuilder routes, required GoRouteErrorPageBuilder error}) {
     _routerDelegate = GoRouterDelegate(
       // wrap the returned Navigator to enable GoRouter.of(context).go() and context.go()
@@ -51,6 +79,7 @@ class GoRouter {
     );
   }
 
+  /// configure a GoRouter with a low-level builder
   GoRouter.builder({required GoRouteBuilder builder}) {
     _routerDelegate = GoRouterDelegate(
       // wrap the returned Navigator to enable GoRouter.of(context).go() and context.go()
@@ -61,13 +90,19 @@ class GoRouter {
     );
   }
 
+  /// the RouteInformationParser associated with this GoRouter
   RouteInformationParser<Object> get routeInformationParser => _routeInformationParser;
+
+  /// the RouterDelegate associated with this GoRouter
   RouterDelegate<Object> get routerDelegate => _routerDelegate;
 
+  /// navigate to a URI location w/ optional query parameters, e.g. /family/f1/person/p2?color=blue
   void go(String location) => _routerDelegate.go(location);
 
+  /// set the app's URL path strategy (defaults to hash). call before runApp().
   static void setUrlPathStrategy(UrlPathStrategy strategy) => setUrlPathStrategyImpl(strategy);
-  static String locationFor(String pattern, Map<String, String> args) => p2re.pathToFunction(pattern)(args);
+
+  /// find the current GoRouter in the widget tree
   static GoRouter of(BuildContext context) => context.dependOnInheritedWidgetOfExactType<InheritedGoRouter>()!.goRouter;
 
   Widget _builder(
@@ -130,7 +165,7 @@ class GoRouter {
       for (final param in uri.queryParameters.entries) if (!args.containsKey(param.key)) args[param.key] = param.value;
 
       // expand the route pattern with the current set of args to get location for a future pop
-      final pageLoc = GoRouter.locationFor(route.pattern, args);
+      final pageLoc = GoRouter._locationFor(route.pattern, args);
       final page = route.builder(context, args);
 
       if (locPages.containsKey(pageLoc)) throw Exception('duplicate location $pageLoc');
@@ -157,8 +192,11 @@ class GoRouter {
     final uri2 = Uri.tryParse(loc2);
     return uri1 != null && uri2 != null && uri1.path.toLowerCase().trim() == uri2.path.toLowerCase().trim();
   }
+
+  static String _locationFor(String pattern, Map<String, String> args) => p2re.pathToFunction(pattern)(args);
 }
 
+/// Dart extension to add the go() function to a BuildContext object, e.g. context.go('/');
 extension GoRouterHelper on BuildContext {
   void go(String location) => GoRouter.of(this).go(location);
 }
