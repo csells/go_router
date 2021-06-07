@@ -56,7 +56,7 @@ class GoRouter {
       // wrap the returned Navigator to enable GoRouter.of(context).go() and context.go()
       builder: (context, location) => InheritedGoRouter(
         goRouter: this,
-        child: _builder(context, location, builder(context, location), error),
+        child: _builder(context, builder(context, location), error, location),
       ),
     );
   }
@@ -72,9 +72,9 @@ class GoRouter {
 
   Widget _builder(
     BuildContext context,
-    String location,
     Iterable<GoRoute> routes,
     GoRouteErrorPageBuilder error,
+    String location,
   ) {
     try {
       final locPages = _getLocPages(context, location, routes);
@@ -118,12 +118,18 @@ class GoRouter {
   static Map<String, Page<dynamic>> _getLocPages(BuildContext context, String location, Iterable<GoRoute> routes) {
     final locPages = <String, Page<dynamic>>{};
     for (final route in routes) {
+      // pull the parameters out of the path of the location (w/o any query parameters)
       final params = <String>[];
       final re = p2re.pathToRegExp(route.pattern, prefix: true, caseSensitive: false, parameters: params);
-      final match = re.matchAsPrefix(location);
+      final uri = Uri.parse(location);
+      final match = re.matchAsPrefix(uri.path);
       if (match == null) continue;
-
       final args = p2re.extract(params, match);
+
+      // add any query parameters but don't override existing positional params
+      for (final param in uri.queryParameters.entries) if (!args.containsKey(param.key)) args[param.key] = param.value;
+
+      // expand the route pattern with the current set of args to get location for a future pop
       final pageLoc = GoRouter.locationFor(route.pattern, args);
       final page = route.builder(context, args);
 

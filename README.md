@@ -17,133 +17,12 @@ The go_router makes three simplifying assumptions to reduce complexity:
 - all routing in the app will happen via URI-compliant names, e.g. `/family/f1/person/p2`
 - an entire stack of pages can be constructed from the route name alone
 - the concept of "back" in your app is "up", i.e. going back from `/family/f1/person/p2` goes up to `/family/f1`
-  and not back to wherever the user was before they landed on `/family/f1/person/p2`.
+  and not back to wherever the user was before they landed on `/family/f1/person/p2`
 
 These assumptions allow go_router to provide a simpler implementation of your app's custom router.
 
-# Navigation
-You can navigate between pages in your app using the `GoRouter.go` method:
-
-```dart
-// navigation the hard way
-onTap: () => GoRouter.of(context).go('/family/f1/person/p2')
-```
-
-The go_router also provides a simplified version using Dart extension methods:
-
-```dart
-// navigation the easy way
-onTap: () => context.go('/family/f1/person/p2')
-```
-
-The simplified version maps directly to the more fully-specified version, so you can use either.
-
-# Imperative Builder
-To implement the mapping between a location and a stack of pags, the app can create an instance of the
-`GoRouter` class, passing in a builder function to translate from a route name (aka location) into a
-`Navigator` The `Navigator` includes a stack of pages and an implementation of `onPopPage`, which handles
-calls to `Navigator.pop` and is called by the Flutter implementation of the Back button.
-
-The following is an example implementation of the builder function that supports three pages:
-- `FamiliesPage` at `/`
-- `FamilyPage` as `/family/:fid`, e.g. `/family/f1`
-- `PersonPage` as `/family/:fid/person/:pid`, e.g. `/family/f1/person/p2`
-
-Furthermore, it creates a stack of pages for each route that's match, e.g. `/family/f1/person/p2` yields a stack of
-three pages: `FamiliesPage`, `FamilyPage(fid:f1)` and `PersonPage(fid:f1, pid:p2)`.
-
-```dart
-class App extends StatelessWidget {
-  ...
-  late final _router = GoRouter(builder: _builder);
-  Widget _builder(BuildContext context, String location) {
-    final locPages = <String, Page<dynamic>>{};
-
-    try {
-      final segments = Uri.parse(location).pathSegments;
-
-      // home page, i.e. '/'
-      {
-        const loc = '/';
-        final page = MaterialPage<FamiliesPage>(
-          key: const ValueKey('FamiliesPage'),
-          child: FamiliesPage(families: Families.data),
-        );
-        locPages[loc] = page;
-      }
-
-      // family page, e.g. '/family/:fid
-      if (segments.length >= 2 && segments[0] == 'family') {
-        final fid = segments[1];
-        final family = Families.family(fid);
-
-        final loc = '/family/$fid';
-        final page = MaterialPage<FamilyPage>(
-          key: ValueKey(family),
-          child: FamilyPage(family: family),
-        );
-
-        locPages[loc] = page;
-      }
-
-      // person page, e.g. '/family/:fid/person/:pid
-      if (segments.length >= 4 && segments[0] == 'family' && segments[2] == 'person') {
-        final fid = segments[1];
-        final pid = segments[3];
-        final family = Families.family(fid);
-        final person = family.person(pid);
-
-        final loc = '/family/$fid/person/$pid';
-        final page = MaterialPage<PersonPage>(
-          key: ValueKey(person),
-          child: PersonPage(family: family, person: person),
-        );
-
-        locPages[loc] = page;
-      }
-
-      // if we haven't found any matching routes OR
-      // if the last route doesn't match exactly, then we haven't got a valid stack of pages;
-      // the latter allows '/' to match as part of a stack of pages but to fail on '/nonsense'
-      if (locPages.isEmpty || locPages.keys.last.toString().toLowerCase() != location.toLowerCase()) {
-        throw Exception('page not found: $location');
-      }
-    } on Exception catch (ex) {
-      locPages.clear();
-
-      final loc = location;
-      final page = MaterialPage<Four04Page>(
-        key: const ValueKey('ErrorPage'),
-        child: Four04Page(message: ex.toString()),
-      );
-
-      locPages[loc] = page;
-    }
-
-    return Navigator(
-      pages: locPages.values.toList(),
-      onPopPage: (route, dynamic result) {
-        if (!route.didPop(result)) return false;
-
-        // remove the route for the page we're showing and go to the next location up
-        locPages.remove(locPages.keys.last);
-        _router.go(locPages.keys.last);
-
-        return true;
-      },
-    );
-  }
-}
-```
-
-There's a lot going on here, but it fundamentally boils down to three things:
-1. Matching portions of the location to instances of the app's pages using manually parsed URI segments for
-   arguments. This mapping is kept in an ordered map so it can be used as a stack of location=>page mappings.
-1. Providing an implementation of `onPopPage` that will translate `Navigation.pop` to use the
-   location=>page mappings to navigate to the previous page on the stack.
-1. Show an error page if any of that fails.
-
-# Declarative Routes
+# Getting Started
+To use 
 While the builder implementation above is simpler than providing the three custom type implementations
 normally required for routing in a Flutter app, it's still picky and difficult to get right. Also, it's
 regular, so it can be simplied into a declarative format using a set of `GoRoute` objects, each matching a
@@ -200,6 +79,24 @@ In this case, you're doing the same three jobs, but you're doing them w/o a lot 
    created.
 1. The go_router will create the stack of pages for you and implement `onPopPage` using that stack.
 1. Show an error page if any of that fails.
+
+# Navigation
+You can navigate between pages in your app using the `GoRouter.go` method:
+
+```dart
+// navigate using the GoRouter
+onTap: () => GoRouter.of(context).go('/family/f1/person/p2')
+```
+
+The go_router also provides a simplified version using Dart extension methods:
+
+```dart
+// simplified navigate using the GoRouter
+onTap: () => context.go('/family/f1/person/p2')
+```
+
+The simplified version maps directly to the more fully-specified version, so you can use either.
+
 
 The route name patterns are defined and implemented in the [`path_to_regexp`](https://pub.dev/packages/path_to_regexp)
 package, which gives you the ability to match regular expressions, e.g. `/family/:fid(f\d+)`.
@@ -411,18 +308,172 @@ List<GoRoute> _builder(BuildContext context, String location) => [
 In this code, if the user is not logged in, we redirect from the `/` to `/login`. Likewise, if the user is logged in,
 we redirect from `/login` to `/`.
 
+# Query Parameters
+If you'd like to use query parameters for navigation, you can and they will be considered as optional for the purpose
+of matching a route but passed along as arguments to any builder. For example, if you'd like to redirect to `/login`
+with the original location as a query parameter so that after a successful login, the user can be routed back to the
+original location, you can do that using query paramaters:
+
+```dart
+List<GoRoute> _builder(BuildContext context, String location) => [
+  ...
+  GoRoute(
+    pattern: '/family/:fid',
+    builder: (context, args) {
+      final loggedIn = context.watch<LoginInfo>().loggedIn;
+      if (!loggedIn) return GoRedirect('/login?from=$location');
+
+      final family = Families.family(args['fid']!);
+      return MaterialPage<FamilyPage>(
+        key: ValueKey(family),
+        child: FamilyPage(family: family),
+      );
+    },
+  ),
+  ...
+  GoRoute(
+    pattern: '/login',
+    builder: (context, args) {
+      final loggedIn = context.watch<LoginInfo>().loggedIn;
+      if (loggedIn) return const GoRedirect('/');
+
+      return MaterialPage<LoginPage>(
+        key: const ValueKey('LoginPage'),
+        child: LoginPage(from: args['from']),
+      );
+    },
+  ),
+];
+```
+
+In this example, if the user isn't logged in, they're redirected to `/login` with a `from` query parameter set to the
+original location. When the `/login` route is matched, the optional `from` parameter is passed to the `LoginPage`. In
+the `LoginPage` if the `from` parameter was passed, we use it to go to the original location:
+
+```dart
+```
+
+A query parameter will not override a positional parameter or another query parameter set earlier in the location
+string.
+
+# Custom Builder
+To implement the mapping between a location and a stack of pags, the app can create an instance of the
+`GoRouter` class, passing in a builder function to translate from a route name (aka location) into a
+`Navigator` The `Navigator` includes a stack of pages and an implementation of `onPopPage`, which handles
+calls to `Navigator.pop` and is called by the Flutter implementation of the Back button.
+
+The following is an example implementation of the builder function that supports three pages:
+- `FamiliesPage` at `/`
+- `FamilyPage` as `/family/:fid`, e.g. `/family/f1`
+- `PersonPage` as `/family/:fid/person/:pid`, e.g. `/family/f1/person/p2`
+
+Furthermore, it creates a stack of pages for each route that's match, e.g. `/family/f1/person/p2` yields a stack of
+three pages: `FamiliesPage`, `FamilyPage(fid:f1)` and `PersonPage(fid:f1, pid:p2)`.
+
+```dart
+class App extends StatelessWidget {
+  ...
+  late final _router = GoRouter(builder: _builder);
+  Widget _builder(BuildContext context, String location) {
+    final locPages = <String, Page<dynamic>>{};
+
+    try {
+      final segments = Uri.parse(location).pathSegments;
+
+      // home page, i.e. '/'
+      {
+        const loc = '/';
+        final page = MaterialPage<FamiliesPage>(
+          key: const ValueKey('FamiliesPage'),
+          child: FamiliesPage(families: Families.data),
+        );
+        locPages[loc] = page;
+      }
+
+      // family page, e.g. '/family/:fid
+      if (segments.length >= 2 && segments[0] == 'family') {
+        final fid = segments[1];
+        final family = Families.family(fid);
+
+        final loc = '/family/$fid';
+        final page = MaterialPage<FamilyPage>(
+          key: ValueKey(family),
+          child: FamilyPage(family: family),
+        );
+
+        locPages[loc] = page;
+      }
+
+      // person page, e.g. '/family/:fid/person/:pid
+      if (segments.length >= 4 && segments[0] == 'family' && segments[2] == 'person') {
+        final fid = segments[1];
+        final pid = segments[3];
+        final family = Families.family(fid);
+        final person = family.person(pid);
+
+        final loc = '/family/$fid/person/$pid';
+        final page = MaterialPage<PersonPage>(
+          key: ValueKey(person),
+          child: PersonPage(family: family, person: person),
+        );
+
+        locPages[loc] = page;
+      }
+
+      // if we haven't found any matching routes OR
+      // if the last route doesn't match exactly, then we haven't got a valid stack of pages;
+      // the latter allows '/' to match as part of a stack of pages but to fail on '/nonsense'
+      if (locPages.isEmpty || locPages.keys.last.toString().toLowerCase() != location.toLowerCase()) {
+        throw Exception('page not found: $location');
+      }
+    } on Exception catch (ex) {
+      locPages.clear();
+
+      final loc = location;
+      final page = MaterialPage<Four04Page>(
+        key: const ValueKey('ErrorPage'),
+        child: Four04Page(message: ex.toString()),
+      );
+
+      locPages[loc] = page;
+    }
+
+    return Navigator(
+      pages: locPages.values.toList(),
+      onPopPage: (route, dynamic result) {
+        if (!route.didPop(result)) return false;
+
+        // remove the route for the page we're showing and go to the next location up
+        locPages.remove(locPages.keys.last);
+        _router.go(locPages.keys.last);
+
+        return true;
+      },
+    );
+  }
+}
+```
+
+There's a lot going on here, but it fundamentally boils down to three things:
+1. Matching portions of the location to instances of the app's pages using manually parsed URI segments for
+   arguments. This mapping is kept in an ordered map so it can be used as a stack of location=>page mappings.
+1. Providing an implementation of `onPopPage` that will translate `Navigation.pop` to use the
+   location=>page mappings to navigate to the previous page on the stack.
+1. Show an error page if any of that fails.
+
 # Examples
 You can see the go_router in action via the following examples:
-- [`builder.dart`](example/lib/builder.dart): define routing policy by providing a custom builder
 - [`routes.dart`](example/lib/routes.dart): define a routing policy but using a set of declarative `GoRoute` objects
 - [`url_strategy.dart`](example/lib/url_strategy.dart): turn off the # in the Flutter web URL
 - [`conditional.dart`](example/lib/conditional.dart): provide different routes based on changing app state
 - [`redirection.dart`](example/lib/redirection.dart): redirect one route to another based on changing app state
+- [`query_params.dart`](example/lib/query_params.dart): optional query parameters will be passed to all page builders
+- [`builder.dart`](example/lib/builder.dart): define routing policy by providing a custom builder
 
 You can run these examples from the command line like so:
 
 ```sh
-$ flutter run example/lib/builder.dart
+$ flutter run example/lib/routes.dart
 ```
 
 Or, if you're using Visual Studio Code, a [`launch.json`](.vscode/launch.json) file has been provided with
@@ -430,7 +481,6 @@ these examples configured.
 
 # TODO
 - rearrange README and rename ctors to make the routes case the default
-- query parameters via Uri.queryParameters and Uri.path
 - update README for async id => object lookup
 - nesting routing
 - custom transition support

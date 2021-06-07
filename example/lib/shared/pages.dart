@@ -101,7 +101,8 @@ class Four04Page extends StatelessWidget {
 }
 
 class LoginPage extends StatelessWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  final String? from;
+  const LoginPage({this.from, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -112,7 +113,10 @@ class LoginPage extends StatelessWidget {
             children: [
               ElevatedButton(
                 // log a user in, letting all the listeners know
-                onPressed: () => context.read<LoginInfo>().login('user1'),
+                onPressed: () {
+                  context.read<LoginInfo>().login('user1');
+                  if (from != null) context.go(from!);
+                },
                 child: const Text('Login'),
               ),
             ],

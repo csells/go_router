@@ -31,5 +31,11 @@
       "type": "dart",
       "program": "example/lib/redirection.dart"
     },
+    {
+      "name": "Query Parameters",
+      "request": "launch",
+      "type": "dart",
+      "program": "example/lib/query_params.dart"
+    },
   ]
 }
