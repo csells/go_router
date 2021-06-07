@@ -16,8 +16,8 @@ class App extends StatelessWidget {
         title: 'Routes GoRouter Example',
       );
 
-  late final _router = GoRouter(routes: _builder, error: _error);
-  List<GoRoute> _builder(BuildContext context, String location) => [
+  late final _router = GoRouter(routes: _routesBuilder, error: _errorBuilder);
+  List<GoRoute> _routesBuilder(BuildContext context, String location) => [
         GoRoute(
           pattern: '/',
           builder: (context, args) => MaterialPage<FamiliesPage>(
@@ -50,7 +50,7 @@ class App extends StatelessWidget {
         ),
       ];
 
-  Page<dynamic> _error(BuildContext context, GoRouteException ex) => MaterialPage<Four04Page>(
+  Page<dynamic> _errorBuilder(BuildContext context, GoRouteException ex) => MaterialPage<Four04Page>(
         key: const ValueKey('Four04Page'),
         child: Four04Page(message: ex.nested.toString()),
       );

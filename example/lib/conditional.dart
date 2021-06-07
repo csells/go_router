@@ -21,7 +21,7 @@ class App extends StatelessWidget {
         ),
       );
 
-  late final _router = GoRouter(routes: _builder, error: _error);
+  late final _router = GoRouter(routes: _routeBuilder, error: _errorBuilder);
 
   // the routes when the user is logged in
   final _loggedInRoutes = [
@@ -69,10 +69,10 @@ class App extends StatelessWidget {
   ];
 
   // changes in the login info will rebuild the stack of routes
-  List<GoRoute> _builder(BuildContext context, String location) =>
+  List<GoRoute> _routeBuilder(BuildContext context, String location) =>
       context.watch<LoginInfo>().loggedIn ? _loggedInRoutes : _loggedOutRoutes;
 
-  Page<dynamic> _error(BuildContext context, GoRouteException ex) => MaterialPage<Four04Page>(
+  Page<dynamic> _errorBuilder(BuildContext context, GoRouteException ex) => MaterialPage<Four04Page>(
         key: const ValueKey('Four04Page'),
         child: Four04Page(message: ex.nested.toString()),
       );

@@ -17,13 +17,13 @@ class App extends StatelessWidget {
         child: MaterialApp.router(
           routeInformationParser: _router.routeInformationParser,
           routerDelegate: _router.routerDelegate,
-          title: 'Conditional Routes GoRouter Example',
+          title: 'Query Parameters GoRouter Example',
           debugShowCheckedModeBanner: false,
         ),
       );
 
-  late final _router = GoRouter(routes: _builder, error: _error);
-List<GoRoute> _builder(BuildContext context, String location) => [
+  late final _router = GoRouter(routes: _routeBuilder, error: _errorBuilder);
+List<GoRoute> _routeBuilder(BuildContext context, String location) => [
     GoRoute(
       pattern: '/',
       builder: (context, args) {
@@ -77,7 +77,7 @@ List<GoRoute> _builder(BuildContext context, String location) => [
     ),
   ];
 
-  Page<dynamic> _error(BuildContext context, GoRouteException ex) => MaterialPage<Four04Page>(
+  Page<dynamic> _errorBuilder(BuildContext context, GoRouteException ex) => MaterialPage<Four04Page>(
         key: const ValueKey('Four04Page'),
         child: Four04Page(message: ex.nested.toString()),
       );
