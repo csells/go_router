@@ -2,12 +2,6 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Builder",
-      "request": "launch",
-      "type": "dart",
-      "program": "example/lib/builder.dart"
-    },
-    {
       "name": "Routes",
       "request": "launch",
       "type": "dart",
@@ -36,6 +30,12 @@
       "request": "launch",
       "type": "dart",
       "program": "example/lib/query_params.dart"
+    },
+    {
+      "name": "Builder",
+      "request": "launch",
+      "type": "dart",
+      "program": "example/lib/builder.dart"
     },
   ]
 }

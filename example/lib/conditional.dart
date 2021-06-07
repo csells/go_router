@@ -18,6 +18,7 @@ class App extends StatelessWidget {
           routeInformationParser: _router.routeInformationParser,
           routerDelegate: _router.routerDelegate,
           title: 'Conditional Routes GoRouter Example',
+          debugShowCheckedModeBanner: false,
         ),
       );
 

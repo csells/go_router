@@ -34,7 +34,7 @@ dependencies:
   go_router: ^CURRENT-VERSION
 ```
 
-To use go_router, add the import to your Dart file:
+And add the import to your Dart file:
 
 ```dart
 import 'package:go_router/go_router.dart';
@@ -43,7 +43,7 @@ import 'package:go_router/go_router.dart';
 With these two pieces in place, you're ready to create your app's custom routing policy.
 
 # Declarative Routing
-The go_router is governed by a set of routes which you specify via a route builder function:
+The go_router is governed by a set of routes which you specify via a routes builder function:
 
 ```dart
 class App extends StatelessWidget {
@@ -85,15 +85,9 @@ class App extends StatelessWidget {
 }
 ```
 
-In this case, we've defined 3 routes w/ the following patterns:
-
-- `/`: the home page that shows a list of familes
-- `/family/:fid`: a family details page identified by the `fid` variable
-- `/family/:fid/person/:pid`: a person details page with `fid` and `pid` variables
-
-The route name patterns are defined and implemented in the
+In this case, we've defined 3 routes. The route name patterns are defined and implemented in the
 [`path_to_regexp`](https://pub.dev/packages/path_to_regexp)
-package, which gives you the ability to include regular expressions, e.g. `/family/:fid(f\d+)`. These route name patterns will be matched in order and every pattern that matches the prefix of the
+package, which gives you the ability to include regular expressions, e.g. `/family/:fid(f\d+)`. These route name patterns will be matched in order and every pattern that matches a prefix of the
 location will be a page on the navigation stack like so:
 
 pattern                    | example location       | navigation stack
@@ -149,8 +143,10 @@ class App extends StatelessWidget {
 }
 ```
 
+With the router in place, your app can now navigate between pages.
+
 # Navigation
-With the router in place, you can navigate between pages in your app using the `GoRouter.go` method:
+To navigate between pages, use the `GoRouter.go` method:
 
 ```dart
 // navigate using the GoRouter
@@ -171,8 +167,9 @@ By default, Flutter adds a hash (#) into the URL for web apps:
 
 ![URL Strategy w/ Hash](readme/url-strat-hash.png)
 
-The process for turning off the hash is [documented](https://flutter.dev/docs/development/ui/navigation/url-strategies) but fiddly. The go_router has built-in support for setting the URL path strategy, however, so you can
-simply call `GoRouter.setUrlPathStrategy` and make your choice:
+The process for turning off the hash is [documented](https://flutter.dev/docs/development/ui/navigation/url-strategies)
+but fiddly. The go_router has built-in support for setting the URL path strategy, however, so you can
+simply call `GoRouter.setUrlPathStrategy` before calling `runApp` and make your choice:
 
 ```dart
 void main() {
@@ -186,13 +183,13 @@ void main() {
 }
 ```
 
-Setting the path instead of hash strategy turns off the # in the URLs:
+Setting the path instead of the hash strategy turns off the # in the URLs:
 
 ![URL Strategy w/o Hash](readme/url-strat-no-hash.png)
 
 Finally, when you deploy your Flutter web app to a web server, it needs to be configured such that every URL ends up
 at your Flutter web app's `index.html`, otherwise Flutter won't be able to route to your pages.
-If you're using Firebase hosting, [configuring your app as a "single page app" will cause all URLs to be rewritten to index.html](https://firebase.google.com/docs/hosting/full-config#rewrites).
+If you're using Firebase hosting, you can [configure rewrites](https://firebase.google.com/docs/hosting/full-config#rewrites) to cause all URLs to be rewritten to `index.html`.
 
 If you'd like to test locally before publishing, you can use [live-server](https://www.npmjs.com/package/live-server)
 like so:
@@ -204,10 +201,10 @@ $ live-server --entry-file=index.html build/web
 Of course, any local web server that can be configured to redirect all traffic to `index.html` will do.
 
 # Conditional Routes
-The route builder is called each time that the location changes, which allows you to change the routes based on the
-location. Furthermore, if you'd like to change the set of routes based on conditional app state, e.g. whether a user
-is logged in or not, you can do so using `InheritedWidget` or one of it's wrappers. For example, imagine a simple
-class to track the app's current logged in state:
+The routes builder is called each time that the location changes, which allows you to change the routes based on the
+location. Furthermore, if you'd like to change the set of routes based on conditional app state, you can do so using
+`InheritedWidget` or one of it's wrappers. For example, imagine a simple class to track the app's current logged in
+state:
 
 ```dart
 class LoginInfo extends ChangeNotifier {
@@ -343,12 +340,12 @@ List<GoRoute> _routesBuilder(BuildContext context, String location) => [
 ];
 ```
 
-In this code, if the user is not logged in, we redirect from the `/` to `/login`. Likewise, if the user is logged in,
+In this code, if the user is not logged in, we redirect from the `/` to `/login`. Likewise, if the user *is* logged in,
 we redirect from `/login` to `/`. And because we're using `context.watch`, when the login state changes, the routes
 builder will be called again to generate and match the routes.
 
 # Query Parameters
-If you'd like to use query parameters for navigation, you can and they will be considered as optional for the purpose
+If you'd like to use query parameters for navigation, you can; they will be considered as optional for the purpose
 of matching a route but passed along as arguments to the page builders. For example, if you'd like to redirect to
 `/login` with the original location as a query parameter so that after a successful login, the user can be routed
 back to the original location, you can do that using query paramaters:
@@ -539,6 +536,7 @@ Or, if you're using Visual Studio Code, a [`launch.json`](.vscode/launch.json) f
 these examples configured.
 
 # TODO
+- add doc comments
 - add docs showing async id => object lookup
 - add support for nested routing
 - custom transition support
