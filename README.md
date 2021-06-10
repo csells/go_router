@@ -521,9 +521,11 @@ Or, if you're using Visual Studio Code, a [`launch.json`](.vscode/launch.json) f
 these examples configured.
 
 # TODO
+- add a section on Deep Linking: https://flutter.dev/docs/development/ui/navigation/deep-linking
+- move the TODO items into the issues database
 - test with dialogs and Navigator.pop() to make sure we didn't screw anything up there...
 - add docs showing async id => object lookup
-- add support for nested routing
+- add support for nested routing ala https://github.com/flutter/samples/pull/832
 - custom transition support
 - unit testing
 - widget testing
