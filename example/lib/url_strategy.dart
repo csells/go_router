@@ -14,6 +14,7 @@ void main() {
   runApp(App());
 }
 
+/// sample app using the path URL strategy, i.e. no # in the URL path
 class App extends StatelessWidget {
   App({Key? key}) : super(key: key);
 
@@ -58,7 +59,8 @@ class App extends StatelessWidget {
         ),
       ];
 
-  Page<dynamic> _errorBuilder(BuildContext context, GoRouteException ex) => MaterialPage<Four04Page>(
+  Page<dynamic> _errorBuilder(BuildContext context, GoRouteException ex) =>
+      MaterialPage<Four04Page>(
         key: const ValueKey('Four04Page'),
         child: Four04Page(message: ex.nested.toString()),
       );

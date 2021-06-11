@@ -7,6 +7,7 @@ import 'shared/pages.dart';
 
 void main() => runApp(App());
 
+/// sample app using query parameters in the page builders
 class App extends StatelessWidget {
   App({Key? key}) : super(key: key);
 
@@ -23,61 +24,62 @@ class App extends StatelessWidget {
       );
 
   late final _router = GoRouter(routes: _routeBuilder, error: _errorBuilder);
-List<GoRoute> _routeBuilder(BuildContext context, String location) => [
-    GoRoute(
-      pattern: '/',
-      builder: (context, args) {
-        final loggedIn = context.watch<LoginInfo>().loggedIn;
-        if (!loggedIn) return const GoRedirect('/login');
+  List<GoRoute> _routeBuilder(BuildContext context, String location) => [
+        GoRoute(
+          pattern: '/',
+          builder: (context, args) {
+            final loggedIn = context.watch<LoginInfo>().loggedIn;
+            if (!loggedIn) return const GoRedirect('/login');
 
-        return MaterialPage<FamiliesPage>(
-          key: const ValueKey('FamiliesPage'),
-          child: FamiliesPage(families: Families.data),
-        );
-      },
-    ),
-    GoRoute(
-      pattern: '/family/:fid',
-      builder: (context, args) {
-        final loggedIn = context.watch<LoginInfo>().loggedIn;
-        if (!loggedIn) return GoRedirect('/login?from=$location');
+            return MaterialPage<FamiliesPage>(
+              key: const ValueKey('FamiliesPage'),
+              child: FamiliesPage(families: Families.data),
+            );
+          },
+        ),
+        GoRoute(
+          pattern: '/family/:fid',
+          builder: (context, args) {
+            final loggedIn = context.watch<LoginInfo>().loggedIn;
+            if (!loggedIn) return GoRedirect('/login?from=$location');
 
-        final family = Families.family(args['fid']!);
-        return MaterialPage<FamilyPage>(
-          key: ValueKey(family),
-          child: FamilyPage(family: family),
-        );
-      },
-    ),
-    GoRoute(
-      pattern: '/family/:fid/person/:pid',
-      builder: (context, args) {
-        final loggedIn = context.watch<LoginInfo>().loggedIn;
-        if (!loggedIn) return GoRedirect('/login?from=$location');
+            final family = Families.family(args['fid']!);
+            return MaterialPage<FamilyPage>(
+              key: ValueKey(family),
+              child: FamilyPage(family: family),
+            );
+          },
+        ),
+        GoRoute(
+          pattern: '/family/:fid/person/:pid',
+          builder: (context, args) {
+            final loggedIn = context.watch<LoginInfo>().loggedIn;
+            if (!loggedIn) return GoRedirect('/login?from=$location');
 
-        final family = Families.family(args['fid']!);
-        final person = family.person(args['pid']!);
-        return MaterialPage<PersonPage>(
-          key: ValueKey(person),
-          child: PersonPage(family: family, person: person),
-        );
-      },
-    ),
-    GoRoute(
-      pattern: '/login',
-      builder: (context, args) {
-        final loggedIn = context.watch<LoginInfo>().loggedIn;
-        if (loggedIn) return const GoRedirect('/');
+            final family = Families.family(args['fid']!);
+            final person = family.person(args['pid']!);
+            return MaterialPage<PersonPage>(
+              key: ValueKey(person),
+              child: PersonPage(family: family, person: person),
+            );
+          },
+        ),
+        GoRoute(
+          pattern: '/login',
+          builder: (context, args) {
+            final loggedIn = context.watch<LoginInfo>().loggedIn;
+            if (loggedIn) return const GoRedirect('/');
 
-        return MaterialPage<LoginPage>(
-          key: const ValueKey('LoginPage'),
-          child: LoginPage(from: args['from']),
-        );
-      },
-    ),
-  ];
+            return MaterialPage<LoginPage>(
+              key: const ValueKey('LoginPage'),
+              child: LoginPage(from: args['from']),
+            );
+          },
+        ),
+      ];
 
-  Page<dynamic> _errorBuilder(BuildContext context, GoRouteException ex) => MaterialPage<Four04Page>(
+  Page<dynamic> _errorBuilder(BuildContext context, GoRouteException ex) =>
+      MaterialPage<Four04Page>(
         key: const ValueKey('Four04Page'),
         child: Four04Page(message: ex.nested.toString()),
       );

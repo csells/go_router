@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import '../go_router.dart';
 
+/// GoRouter implementation of the RouterDelegate base class
 class GoRouterDelegate extends RouterDelegate<Uri>
     with
         PopNavigatorRouterDelegateMixin<Uri>,
@@ -24,7 +25,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   }
 
   @override
-  Widget build(BuildContext context) => builder(context, _loc.toString().trim());
+  Widget build(BuildContext context) =>
+      builder(context, _loc.toString().trim());
 
   @override
   Future<void> setNewRoutePath(Uri configuration) async {
@@ -32,17 +34,25 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   }
 }
 
+/// GoRouter implementation of the RouteInformationParser base class
 class GoRouteInformationParser extends RouteInformationParser<Uri> {
   @override
-  Future<Uri> parseRouteInformation(RouteInformation routeInformation) async => Uri.parse(routeInformation.location!);
+  Future<Uri> parseRouteInformation(RouteInformation routeInformation) async =>
+      Uri.parse(routeInformation.location!);
 
   @override
-  RouteInformation restoreRouteInformation(Uri configuration) => RouteInformation(location: configuration.toString());
+  RouteInformation restoreRouteInformation(Uri configuration) =>
+      RouteInformation(location: configuration.toString());
 }
 
+/// GoRouter implementation of InheritedWidget for purposes of finding the
+/// current GoRouter in the widget tree. This is useful when routing from
+/// anywhere in your app.
 class InheritedGoRouter extends InheritedWidget {
   final GoRouter goRouter;
-  const InheritedGoRouter({required Widget child, required this.goRouter, Key? key}) : super(child: child, key: key);
+  const InheritedGoRouter(
+      {required Widget child, required this.goRouter, Key? key})
+      : super(child: child, key: key);
 
   @override
   bool updateShouldNotify(covariant InheritedWidget oldWidget) => true;

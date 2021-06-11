@@ -185,6 +185,12 @@ $ live-server --entry-file=index.html build/web
 
 Of course, any local web server that can be configured to redirect all traffic to `index.html` will do.
 
+# Deep Linking
+Flutter defines "deep linking" as "opening a URL displays that screen in your app." Anything that's listed as a
+`GoRoute` can be accessed via deep linking across Android, iOS and the web. Support works out of the box for the web,
+of course, via the address bar, but requires additional configuration for Android and iOS as described in the
+[Flutter docs](https://flutter.dev/docs/development/ui/navigation/deep-linking).
+
 # Conditional Routes
 The routes builder is called each time that the location changes, which allows you to change the routes based on the
 location. Furthermore, if you'd like to change the set of routes based on conditional app state, you can do so using
@@ -504,7 +510,7 @@ route name patterns, redirection or query parameters.
 
 # Examples
 You can see the go_router in action via the following examples:
-- [`routes.dart`](example/lib/routes.dart): define a routing policy but using a set of declarative `GoRoute` objects
+- [`main.dart`](example/lib/main.dart): define a basic routing policy using a set of declarative `GoRoute` objects
 - [`url_strategy.dart`](example/lib/url_strategy.dart): turn off the # in the Flutter web URL
 - [`conditional.dart`](example/lib/conditional.dart): provide different routes based on changing app state
 - [`redirection.dart`](example/lib/redirection.dart): redirect one route to another based on changing app state
@@ -520,18 +526,6 @@ $ flutter run example/lib/routes.dart
 Or, if you're using Visual Studio Code, a [`launch.json`](.vscode/launch.json) file has been provided with
 these examples configured.
 
-# TODO
-- add a section on Deep Linking: https://flutter.dev/docs/development/ui/navigation/deep-linking
-- move the TODO items into the issues database
-- test with dialogs and Navigator.pop() to make sure we didn't screw anything up there...
-- add docs showing async id => object lookup
-- add support for nested routing ala https://github.com/flutter/samples/pull/832
-- custom transition support
-- unit testing
-- widget testing
-- support for shorter locations that result in multiple pages for a single route, e.g. /person/:pid
-  could end up mapping to three pages (home, families and person) but will only match two routes
-  (home and person). The mapping to person requires two pages to be returned (families and person).
-- ...
-- profit!
-- BUG: navigating back too fast crashes
+# Issues
+Do you have an issue with or feature request for go_router? Log it on the
+[issue tracker](https://github.com/csells/go_router/issues).

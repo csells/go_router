@@ -6,6 +6,7 @@ import 'shared/pages.dart';
 
 void main() => runApp(App());
 
+/// sample class using simple declarative routes
 class App extends StatelessWidget {
   App({Key? key}) : super(key: key);
 
@@ -13,7 +14,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp.router(
         routeInformationParser: _router.routeInformationParser,
         routerDelegate: _router.routerDelegate,
-        title: 'Routes GoRouter Example',
+        title: 'Declarative Routes GoRouter Example',
       );
 
   late final _router = GoRouter(routes: _routesBuilder, error: _errorBuilder);
@@ -50,7 +51,8 @@ class App extends StatelessWidget {
         ),
       ];
 
-  Page<dynamic> _errorBuilder(BuildContext context, GoRouteException ex) => MaterialPage<Four04Page>(
+  Page<dynamic> _errorBuilder(BuildContext context, GoRouteException ex) =>
+      MaterialPage<Four04Page>(
         key: const ValueKey('Four04Page'),
         child: Four04Page(message: ex.nested.toString()),
       );

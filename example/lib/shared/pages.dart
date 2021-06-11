@@ -4,8 +4,10 @@ import 'package:provider/provider.dart';
 
 import 'data.dart';
 
-String _title(BuildContext context) => (context as Element).findAncestorWidgetOfExactType<MaterialApp>()!.title;
+String _title(BuildContext context) =>
+    (context as Element).findAncestorWidgetOfExactType<MaterialApp>()!.title;
 
+/// sample page to show families
 class FamiliesPage extends StatelessWidget {
   final List<Family> families;
   const FamiliesPage({required this.families, Key? key}) : super(key: key);
@@ -47,6 +49,7 @@ class FamiliesPage extends StatelessWidget {
   }
 }
 
+/// sample page to show a single family
 class FamilyPage extends StatelessWidget {
   final Family family;
   const FamilyPage({required this.family, Key? key}) : super(key: key);
@@ -66,10 +69,12 @@ class FamilyPage extends StatelessWidget {
       );
 }
 
+/// sample page to show a single person
 class PersonPage extends StatelessWidget {
   final Family family;
   final Person person;
-  const PersonPage({required this.family, required this.person, Key? key}) : super(key: key);
+  const PersonPage({required this.family, required this.person, Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -78,6 +83,7 @@ class PersonPage extends StatelessWidget {
       );
 }
 
+/// sample error page
 class Four04Page extends StatelessWidget {
   final String message;
   const Four04Page({required this.message, Key? key}) : super(key: key);
@@ -100,6 +106,7 @@ class Four04Page extends StatelessWidget {
       );
 }
 
+/// sample login page
 class LoginPage extends StatelessWidget {
   final String? from;
   const LoginPage({this.from, Key? key}) : super(key: key);

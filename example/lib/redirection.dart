@@ -7,6 +7,7 @@ import 'shared/pages.dart';
 
 void main() => runApp(App());
 
+/// sample app using redirection to another location
 class App extends StatelessWidget {
   App({Key? key}) : super(key: key);
 
@@ -63,21 +64,22 @@ class App extends StatelessWidget {
             );
           },
         ),
-    GoRoute(
-      pattern: '/login',
-      builder: (context, args) {
-        final loggedIn = context.watch<LoginInfo>().loggedIn;
-        if (loggedIn) return const GoRedirect('/');
+        GoRoute(
+          pattern: '/login',
+          builder: (context, args) {
+            final loggedIn = context.watch<LoginInfo>().loggedIn;
+            if (loggedIn) return const GoRedirect('/');
 
-        return const MaterialPage<LoginPage>(
-          key: ValueKey('LoginPage'),
-          child: LoginPage(),
-        );
-      },
-    ),
-  ];
+            return const MaterialPage<LoginPage>(
+              key: ValueKey('LoginPage'),
+              child: LoginPage(),
+            );
+          },
+        ),
+      ];
 
-  Page<dynamic> _errorBuilder(BuildContext context, GoRouteException ex) => MaterialPage<Four04Page>(
+  Page<dynamic> _errorBuilder(BuildContext context, GoRouteException ex) =>
+      MaterialPage<Four04Page>(
         key: const ValueKey('Four04Page'),
         child: Four04Page(message: ex.nested.toString()),
       );

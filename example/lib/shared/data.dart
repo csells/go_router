@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+/// sample Person class
 class Person {
   final String id;
   final String name;
@@ -7,6 +8,7 @@ class Person {
   Person({required this.id, required this.name, required this.age});
 }
 
+/// sample Family class
 class Family {
   final String id;
   final String name;
@@ -19,6 +21,7 @@ class Family {
       );
 }
 
+/// sample families data
 class Families {
   static final data = [
     Family(
@@ -48,6 +51,7 @@ class Families {
       );
 }
 
+/// info about the current login state that notifies listens upon change
 class LoginInfo extends ChangeNotifier {
   var _userName = '';
 

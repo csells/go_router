@@ -7,6 +7,7 @@ import 'shared/pages.dart';
 
 void main() => runApp(App());
 
+/// sample app using conditional routes
 class App extends StatelessWidget {
   App({Key? key}) : super(key: key);
 
@@ -73,7 +74,8 @@ class App extends StatelessWidget {
   List<GoRoute> _routeBuilder(BuildContext context, String location) =>
       context.watch<LoginInfo>().loggedIn ? _loggedInRoutes : _loggedOutRoutes;
 
-  Page<dynamic> _errorBuilder(BuildContext context, GoRouteException ex) => MaterialPage<Four04Page>(
+  Page<dynamic> _errorBuilder(BuildContext context, GoRouteException ex) =>
+      MaterialPage<Four04Page>(
         key: const ValueKey('Four04Page'),
         child: Four04Page(message: ex.nested.toString()),
       );

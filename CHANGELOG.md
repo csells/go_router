@@ -1,3 +1,9 @@
+### 0.2.3
+- move outstanding issues to [issue tracker](https://github.com/csells/go_router/issues)
+- added explanation of Deep Linking to README
+- reformatting to meet pub.dev scoring guidelines
+
+
 ### 0.2.2
 - README updates
 
