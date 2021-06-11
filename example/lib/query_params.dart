@@ -27,22 +27,16 @@ class App extends StatelessWidget {
   List<GoRoute> _routeBuilder(BuildContext context, String location) => [
         GoRoute(
           pattern: '/',
-          builder: (context, args) {
-            final loggedIn = context.watch<LoginInfo>().loggedIn;
-            if (!loggedIn) return const GoRedirect('/login');
-
-            return MaterialPage<FamiliesPage>(
-              key: const ValueKey('FamiliesPage'),
-              child: FamiliesPage(families: Families.data),
-            );
-          },
+          redirect: (context) => _redirectToLogin(context, location),
+          builder: (context, args) => MaterialPage<FamiliesPage>(
+            key: const ValueKey('FamiliesPage'),
+            child: FamiliesPage(families: Families.data),
+          ),
         ),
         GoRoute(
           pattern: '/family/:fid',
+          redirect: (context) => _redirectToLogin(context, location),
           builder: (context, args) {
-            final loggedIn = context.watch<LoginInfo>().loggedIn;
-            if (!loggedIn) return GoRedirect('/login?from=$location');
-
             final family = Families.family(args['fid']!);
             return MaterialPage<FamilyPage>(
               key: ValueKey(family),
@@ -52,10 +46,8 @@ class App extends StatelessWidget {
         ),
         GoRoute(
           pattern: '/family/:fid/person/:pid',
+          redirect: (context) => _redirectToLogin(context, location),
           builder: (context, args) {
-            final loggedIn = context.watch<LoginInfo>().loggedIn;
-            if (!loggedIn) return GoRedirect('/login?from=$location');
-
             final family = Families.family(args['fid']!);
             final person = family.person(args['pid']!);
             return MaterialPage<PersonPage>(
@@ -66,17 +58,21 @@ class App extends StatelessWidget {
         ),
         GoRoute(
           pattern: '/login',
-          builder: (context, args) {
-            final loggedIn = context.watch<LoginInfo>().loggedIn;
-            if (loggedIn) return const GoRedirect('/');
-
-            return MaterialPage<LoginPage>(
-              key: const ValueKey('LoginPage'),
-              child: LoginPage(from: args['from']),
-            );
-          },
+          redirect: _redirectToHome,
+          builder: (context, args) => MaterialPage<LoginPage>(
+            key: const ValueKey('LoginPage'),
+            child: LoginPage(from: args['from']),
+          ),
         ),
       ];
+
+  // if the user is not logged in, redirect to /login
+  String? _redirectToLogin(BuildContext context, String location) =>
+      context.watch<LoginInfo>().loggedIn ? null : '/login?from=$location';
+
+  // if the user is logged in, no need to login again, so redirect to /
+  String? _redirectToHome(BuildContext context) =>
+      context.watch<LoginInfo>().loggedIn ? '/' : null;
 
   Page<dynamic> _errorBuilder(BuildContext context, GoRouteException ex) =>
       MaterialPage<Four04Page>(

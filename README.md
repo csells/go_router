@@ -298,37 +298,37 @@ instead of `context.read`, whenever the login info object changes, the routes bu
 correct list of routes based on the current app state.
 
 # Redirection
-Sometimes you want to redirect one route to another one, e.g. if the user is not logged in. You can do that using
-an instance of the `GoRedirect` object, e.g.
+Sometimes you want to redirect one route to another one, e.g. if the user is not logged in. You can do that by
+passing a redirect function to the `GoRoute` object, e.g.
 
 ```dart
 List<GoRoute> _routesBuilder(BuildContext context, String location) => [
   GoRoute(
     pattern: '/',
-    builder: (context, args) {
-      final loggedIn = context.watch<LoginInfo>().loggedIn;
-      if (!loggedIn) return const GoRedirect('/login');
-
-      return MaterialPage<FamiliesPage>(
-        key: const ValueKey('FamiliesPage'),
-        child: FamiliesPage(families: Families.data),
-      );
-    },
+    redirect: _redirectToLogin,
+    builder: (context, args) => MaterialPage<FamiliesPage>(
+      key: const ValueKey('FamiliesPage'),
+      child: FamiliesPage(families: Families.data),
+    ),
   ),
   ...
   GoRoute(
     pattern: '/login',
-    builder: (context, args) {
-      final loggedIn = context.watch<LoginInfo>().loggedIn;
-      if (loggedIn) return const GoRedirect('/');
-
-      return const MaterialPage<LoginPage>(
-        key: ValueKey('LoginPage'),
-        child: LoginPage(),
-      );
-    },
+    redirect: _redirectToHome,
+    builder: (context, args) => const MaterialPage<LoginPage>(
+      key: ValueKey('LoginPage'),
+      child: LoginPage(),
+    ),
   ),
 ];
+
+// if the user is not logged in, redirect to /login
+String? _redirectToLogin(BuildContext context) =>
+    context.watch<LoginInfo>().loggedIn ? null : '/login';
+
+// if the user is logged in, no need to login again, so redirect to /
+String? _redirectToHome(BuildContext context) =>
+    context.watch<LoginInfo>().loggedIn ? '/' : null;
 ```
 
 In this code, if the user is not logged in, we redirect from the `/` to `/login`. Likewise, if the user *is* logged in,
@@ -338,39 +338,37 @@ builder will be called again to generate and match the routes.
 # Query Parameters
 If you'd like to use query parameters for navigation, you can; they will be considered as optional for the purpose
 of matching a route but passed along as arguments to the page builders. For example, if you'd like to redirect to
-`/login` with the original location as a query parameter so that after a successful login, the user can be routed
+`/login` with the original location so that after a successful login, the user can be routed
 back to the original location, you can do that using query paramaters:
 
 ```dart
-List<GoRoute> _routesBuilder(BuildContext context, String location) => [
+List<GoRoute> _routeBuilder(BuildContext context, String location) => [
   ...
   GoRoute(
-    pattern: '/family/:fid',
+    pattern: '/family/:fid/person/:pid',
+    redirect: (context) => _redirectToLogin(context, location),
     builder: (context, args) {
-      final loggedIn = context.watch<LoginInfo>().loggedIn;
-      if (!loggedIn) return GoRedirect('/login?from=$location');
-
       final family = Families.family(args['fid']!);
-      return MaterialPage<FamilyPage>(
-        key: ValueKey(family),
-        child: FamilyPage(family: family),
+      final person = family.person(args['pid']!);
+      return MaterialPage<PersonPage>(
+        key: ValueKey(person),
+        child: PersonPage(family: family, person: person),
       );
     },
   ),
-  ...
   GoRoute(
     pattern: '/login',
-    builder: (context, args) {
-      final loggedIn = context.watch<LoginInfo>().loggedIn;
-      if (loggedIn) return const GoRedirect('/');
-
-      return MaterialPage<LoginPage>(
-        key: const ValueKey('LoginPage'),
-        child: LoginPage(from: args['from']),
-      );
-    },
+    redirect: _redirectToHome,
+    builder: (context, args) => MaterialPage<LoginPage>(
+      key: const ValueKey('LoginPage'),
+      child: LoginPage(from: args['from']),
+    ),
   ),
 ];
+
+// if the user is not logged in, redirect to /login
+String? _redirectToLogin(BuildContext context, String location) =>
+    context.watch<LoginInfo>().loggedIn ? null : '/login?from=$location';
 ```
 
 In this example, if the user isn't logged in, they're redirected to `/login` with a `from` query parameter set to the
@@ -449,7 +447,9 @@ class App extends StatelessWidget {
       }
 
       // person page, e.g. '/family/:fid/person/:pid
-      if (segments.length >= 4 && segments[0] == 'family' && segments[2] == 'person') {
+      if (segments.length >= 4 &&
+          segments[0] == 'family' &&
+          segments[2] == 'person') {
         final fid = segments[1];
         final pid = segments[3];
         final family = Families.family(fid);
@@ -464,10 +464,13 @@ class App extends StatelessWidget {
         locPages[loc] = page;
       }
 
-      // if we haven't found any matching routes OR
-      // if the last route doesn't match exactly, then we haven't got a valid stack of pages;
-      // the latter allows '/' to match as part of a stack of pages but to fail on '/nonsense'
-      if (locPages.isEmpty || locPages.keys.last.toString().toLowerCase() != location.toLowerCase()) {
+      // if we haven't found any matching routes OR if the last route doesn't
+      // match exactly, then we haven't got a valid stack of pages; the latter
+      // allows '/' to match as part of a stack of pages but to fail on
+      // '/nonsense'
+      if (locPages.isEmpty ||
+          locPages.keys.last.toString().toLowerCase() !=
+              location.toLowerCase()) {
         throw Exception('page not found: $location');
       }
     } on Exception catch (ex) {
@@ -487,7 +490,8 @@ class App extends StatelessWidget {
       onPopPage: (route, dynamic result) {
         if (!route.didPop(result)) return false;
 
-        // remove the route for the page we're showing and go to the next location up
+        // remove the route for the page we're showing and go to the next
+        // location up
         locPages.remove(locPages.keys.last);
         _router.go(locPages.keys.last);
 

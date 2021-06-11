@@ -45,6 +45,19 @@ class GoRouteInformationParser extends RouteInformationParser<Uri> {
       RouteInformation(location: configuration.toString());
 }
 
+/// a marker type indicating a redirection instead of an actual page
+class GoRedirect extends Page<dynamic> {
+  /// the location to redirect to
+  final String location;
+
+  /// ctor
+  const GoRedirect(this.location);
+
+  /// not implemented; should never be called
+  @override
+  Route createRoute(BuildContext context) => throw UnimplementedError();
+}
+
 /// GoRouter implementation of InheritedWidget for purposes of finding the
 /// current GoRouter in the widget tree. This is useful when routing from
 /// anywhere in your app.

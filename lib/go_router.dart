@@ -22,6 +22,9 @@ typedef GoRouteRoutesBuilder = Iterable<GoRoute> Function(
 typedef GoRoutePageBuilder = Page<dynamic> Function(
     BuildContext context, Map<String, String> args);
 
+/// the signature of the redirect builder callback for guarded routes
+typedef GoRouteRedirectBuilder = String? Function(BuildContext context);
+
 /// the signature of the function to build an error page to pass to the GoRouter
 /// ctor
 typedef GoRouteErrorPageBuilder = Page<dynamic> Function(
@@ -42,19 +45,6 @@ class GoRouteException implements Exception {
   String toString() => '$nested: $location';
 }
 
-/// a marker type indicating a redirection instead of an actual page
-class GoRedirect extends Page<dynamic> {
-  /// the location to redirect to
-  final String location;
-
-  /// ctor
-  const GoRedirect(this.location);
-
-  /// not implemented; should never be called
-  @override
-  Route createRoute(BuildContext context) => throw UnimplementedError();
-}
-
 /// a declarative mapping between a route name pattern and a route page builder
 class GoRoute {
   /// the pattern in the form `/path/with/:var` interpretted using
@@ -64,8 +54,17 @@ class GoRoute {
   /// a function to create a page when the route pattern is matched
   final GoRoutePageBuilder builder;
 
+  /// a function to provide redirection if necessary
+  final GoRouteRedirectBuilder redirect;
+
   /// ctor
-  GoRoute({required this.pattern, required this.builder});
+  GoRoute({
+    required this.pattern,
+    required this.builder,
+    this.redirect = _noop,
+  });
+
+  static String? _noop(BuildContext context) => null;
 }
 
 /// top-level go_router class; create one of these to initialize your app's
@@ -189,9 +188,12 @@ class GoRouter {
         if (!args.containsKey(param.key)) args[param.key] = param.value;
 
       // expand the route pattern with the current set of args to get location
-      // for a future pop
+      // for a future pop. get a redirect or page from the builder.
       final pageLoc = GoRouter._locationFor(route.pattern, args);
-      final page = route.builder(context, args);
+      final redirect = route.redirect(context);
+      final page = redirect == null || redirect.isEmpty
+          ? route.builder(context, args)
+          : GoRedirect(redirect);
 
       if (locPages.containsKey(pageLoc))
         throw Exception('duplicate location $pageLoc');
