@@ -1,3 +1,12 @@
+### 0.3.1
+- updated the CHANGELOG
+
+
+### 0.3.0
+- moved redirection into a `GoRoute` ctor arg
+- forgot to update the CHANGELOG
+
+
 ### 0.2.3
 - move outstanding issues to [issue tracker](https://github.com/csells/go_router/issues)
 - added explanation of Deep Linking to README
@@ -14,7 +23,7 @@
 
 ### 0.2.0
 - initial useful release
-- added support for declarative routes via GoRoute instances
+- added support for declarative routes via `GoRoute` instances
 - added support for imperative routing via `GoRoute.builder`
 - added support for setting the URL path strategy
 - added support for conditional routing
