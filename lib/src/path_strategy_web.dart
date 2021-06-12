@@ -5,5 +5,7 @@ import '../go_router.dart';
 /// forwarding implementation of the URL path strategy for the web target
 /// platform
 void setUrlPathStrategyImpl(UrlPathStrategy strategy) {
-  setUrlStrategy(strategy == UrlPathStrategy.path ? PathUrlStrategy() : const HashUrlStrategy());
+  setUrlStrategy(strategy == UrlPathStrategy.path
+      ? PathUrlStrategy()
+      : const HashUrlStrategy());
 }
