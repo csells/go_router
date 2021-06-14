@@ -1,3 +1,4 @@
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import '../go_router.dart';
 
@@ -7,12 +8,16 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         PopNavigatorRouterDelegateMixin<Uri>,
         // ignore: prefer_mixin
         ChangeNotifier {
-  Uri _loc;
+  var _loc = Uri();
   final _key = GlobalKey<NavigatorState>();
   final GoRouteBuilder builder;
 
-  GoRouterDelegate({required this.builder, Uri? initialLocation})
-      : _loc = initialLocation ?? Uri();
+  GoRouterDelegate({required this.builder, Uri? initialLocation}) {
+    // fix for https://github.com/csells/go_router/issues/12 (WTF?)
+    if (initialLocation != null && initialLocation.path != '/') {
+      _loc = initialLocation;
+    }
+  }
 
   @override
   GlobalKey<NavigatorState> get navigatorKey => _key;

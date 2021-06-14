@@ -103,8 +103,7 @@ class GoRouter {
     String initialLocation = '/',
   }) {
     _routerDelegate = GoRouterDelegate(
-      // wrap the returned Navigator to enable GoRouter.of(context).go() and
-      // context.go()
+      // wrap the returned Navigator to enable GoRouter.of(context).go()
       builder: (context, location) => InheritedGoRouter(
         goRouter: this,
         child: _builder(context, routes(context, location), error, location),
@@ -119,8 +118,7 @@ class GoRouter {
     String initialLocation = '/',
   }) {
     _routerDelegate = GoRouterDelegate(
-      // wrap the returned Navigator to enable GoRouter.of(context).go() and
-      // context.go()
+      // wrap the returned Navigator to enable GoRouter.of(context).go()
       builder: (context, location) => InheritedGoRouter(
         goRouter: this,
         child: builder(context, location),
@@ -168,8 +166,10 @@ class GoRouter {
         final redirect = locPages.entries.first.value as GoRedirect;
         if (_locationsMatch(redirect.location, location))
           throw Exception('redirecting to same location: $location');
+
         SchedulerBinding.instance?.addPostFrameCallback(
-            (_) => _routerDelegate.go(redirect.location));
+          (_) => _routerDelegate.go(redirect.location),
+        );
       }
       // otherwise use this stack as is
       else {
