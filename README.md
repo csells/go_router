@@ -145,7 +145,8 @@ The go_router also provides a simplified version using Dart extension methods:
 onTap: () => context.go('/family/f1/person/p2')
 ```
 
-The simplified version maps directly to the more fully-specified version, so you can use either.
+The simplified version maps directly to the more fully-specified version, so you can use either. If you're curious,
+the ability to just call `context.go(...)` and have the right thing happen is where the name of the go_router came from.
 
 # URL Path Strategy
 By default, Flutter adds a hash (#) into the URL for web apps:

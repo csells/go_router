@@ -1,3 +1,7 @@
+### 0.3.2
+- formatting update to appease the pub.deb gods...
+
+
 ### 0.3.1
 - updated the CHANGELOG
 
