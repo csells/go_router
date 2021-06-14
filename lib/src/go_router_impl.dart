@@ -7,11 +7,12 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         PopNavigatorRouterDelegateMixin<Uri>,
         // ignore: prefer_mixin
         ChangeNotifier {
-  var _loc = Uri();
+  Uri _loc;
   final _key = GlobalKey<NavigatorState>();
   final GoRouteBuilder builder;
 
-  GoRouterDelegate({required this.builder});
+  GoRouterDelegate({required this.builder, Uri? initialLocation})
+      : _loc = initialLocation ?? Uri();
 
   @override
   GlobalKey<NavigatorState> get navigatorKey => _key;

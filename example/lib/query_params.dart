@@ -27,7 +27,7 @@ class App extends StatelessWidget {
   List<GoRoute> _routeBuilder(BuildContext context, String location) => [
         GoRoute(
           pattern: '/',
-          redirect: (context) => _redirectToLogin(context, location),
+          redirect: (context, args) => _redirectToLogin(context, location),
           builder: (context, args) => MaterialPage<FamiliesPage>(
             key: const ValueKey('FamiliesPage'),
             child: FamiliesPage(families: Families.data),
@@ -35,7 +35,7 @@ class App extends StatelessWidget {
         ),
         GoRoute(
           pattern: '/family/:fid',
-          redirect: (context) => _redirectToLogin(context, location),
+          redirect: (context, args) => _redirectToLogin(context, location),
           builder: (context, args) {
             final family = Families.family(args['fid']!);
             return MaterialPage<FamilyPage>(
@@ -46,7 +46,7 @@ class App extends StatelessWidget {
         ),
         GoRoute(
           pattern: '/family/:fid/person/:pid',
-          redirect: (context) => _redirectToLogin(context, location),
+          redirect: (context, args) => _redirectToLogin(context, location),
           builder: (context, args) {
             final family = Families.family(args['fid']!);
             final person = family.person(args['pid']!);
@@ -58,7 +58,7 @@ class App extends StatelessWidget {
         ),
         GoRoute(
           pattern: '/login',
-          redirect: _redirectToHome,
+          redirect: (context, args) => _redirectToHome(context),
           builder: (context, args) => MaterialPage<LoginPage>(
             key: const ValueKey('LoginPage'),
             child: LoginPage(from: args['from']),

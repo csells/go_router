@@ -2,10 +2,10 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Routes",
+      "name": "Declarative Routes",
       "request": "launch",
       "type": "dart",
-      "program": "example/lib/routes.dart"
+      "program": "example/lib/main.dart"
     },
     {
       "name": "URL Strategy",
@@ -32,7 +32,13 @@
       "program": "example/lib/query_params.dart"
     },
     {
-      "name": "Builder",
+      "name": "Nested Routing",
+      "type": "dart",
+      "request": "launch",
+      "program": "example/lib/bookstore/main.dart"
+    },
+    {
+      "name": "Custom Builder",
       "request": "launch",
       "type": "dart",
       "program": "example/lib/builder.dart"

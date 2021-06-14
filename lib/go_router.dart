@@ -12,23 +12,35 @@ import 'src/path_strategy_nonweb.dart'
 enum UrlPathStrategy { hash, path }
 
 /// the signature of the function to pass to the GoRouter.builder ctor
-typedef GoRouteBuilder = Widget Function(BuildContext context, String location);
+typedef GoRouteBuilder = Widget Function(
+  BuildContext context,
+  String location,
+);
 
 /// the signature of the routes builder function to pass to the GoRouter ctor
 typedef GoRouteRoutesBuilder = Iterable<GoRoute> Function(
-    BuildContext context, String location);
+  BuildContext context,
+  String location,
+);
 
 /// the signature of the page builder callback for a matched GoRoute
 typedef GoRoutePageBuilder = Page<dynamic> Function(
-    BuildContext context, Map<String, String> args);
+  BuildContext context,
+  Map<String, String> args,
+);
 
 /// the signature of the redirect builder callback for guarded routes
-typedef GoRouteRedirectBuilder = String? Function(BuildContext context);
+typedef GoRouteRedirectBuilder = String? Function(
+  BuildContext context,
+  Map<String, String> args,
+);
 
 /// the signature of the function to build an error page to pass to the GoRouter
 /// ctor
 typedef GoRouteErrorPageBuilder = Page<dynamic> Function(
-    BuildContext context, GoRouteException ex);
+  BuildContext context,
+  GoRouteException ex,
+);
 
 /// passed to the error builder function in the event of an error
 class GoRouteException implements Exception {
@@ -64,7 +76,17 @@ class GoRoute {
     this.redirect = _noop,
   });
 
-  static String? _noop(BuildContext context) => null;
+  /// ctor for redirection only
+  GoRoute.redirectAlways({
+    required String pattern,
+    required GoRouteRedirectBuilder redirect,
+  }) : this(
+          pattern: pattern,
+          redirect: redirect,
+          builder: (context, args) => throw Exception('should always redirect'),
+        );
+
+  static String? _noop(BuildContext context, Map<String, String> args) => null;
 }
 
 /// top-level go_router class; create one of these to initialize your app's
@@ -75,9 +97,11 @@ class GoRouter {
   final _locPages = <String, Page<dynamic>>{};
 
   /// configure a GoRouter with a routes builder and an error page builder
-  GoRouter(
-      {required GoRouteRoutesBuilder routes,
-      required GoRouteErrorPageBuilder error}) {
+  GoRouter({
+    required GoRouteRoutesBuilder routes,
+    required GoRouteErrorPageBuilder error,
+    String initialLocation = '/',
+  }) {
     _routerDelegate = GoRouterDelegate(
       // wrap the returned Navigator to enable GoRouter.of(context).go() and
       // context.go()
@@ -85,11 +109,15 @@ class GoRouter {
         goRouter: this,
         child: _builder(context, routes(context, location), error, location),
       ),
+      initialLocation: Uri.parse(initialLocation),
     );
   }
 
   /// configure a GoRouter with a low-level builder
-  GoRouter.builder({required GoRouteBuilder builder}) {
+  GoRouter.builder({
+    required GoRouteBuilder builder,
+    String initialLocation = '/',
+  }) {
     _routerDelegate = GoRouterDelegate(
       // wrap the returned Navigator to enable GoRouter.of(context).go() and
       // context.go()
@@ -97,6 +125,7 @@ class GoRouter {
         goRouter: this,
         child: builder(context, location),
       ),
+      initialLocation: Uri.parse(initialLocation),
     );
   }
 
@@ -106,6 +135,9 @@ class GoRouter {
 
   /// the RouterDelegate associated with this GoRouter
   RouterDelegate<Object> get routerDelegate => _routerDelegate;
+
+  /// get the current location
+  String get location => _locPages.isEmpty ? '' : _locPages.keys.last;
 
   /// navigate to a URI location w/ optional query parameters, e.g.
   /// /family/f1/person/p2?color=blue
@@ -190,7 +222,7 @@ class GoRouter {
       // expand the route pattern with the current set of args to get location
       // for a future pop. get a redirect or page from the builder.
       final pageLoc = GoRouter._locationFor(route.pattern, args);
-      final redirect = route.redirect(context);
+      final redirect = route.redirect(context, args);
       final page = redirect == null || redirect.isEmpty
           ? route.builder(context, args)
           : GoRedirect(redirect);
