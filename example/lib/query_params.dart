@@ -27,17 +27,17 @@ class App extends StatelessWidget {
   List<GoRoute> _routeBuilder(BuildContext context, String location) => [
         GoRoute(
           pattern: '/',
-          redirect: (context, args) => _redirectToLogin(context, location),
-          builder: (context, args) => MaterialPage<FamiliesPage>(
+          redirect: (context, state) => _redirectToLogin(context, location),
+          builder: (context, state) => MaterialPage<FamiliesPage>(
             key: const ValueKey('FamiliesPage'),
             child: FamiliesPage(families: Families.data),
           ),
         ),
         GoRoute(
           pattern: '/family/:fid',
-          redirect: (context, args) => _redirectToLogin(context, location),
-          builder: (context, args) {
-            final family = Families.family(args['fid']!);
+          redirect: (context, state) => _redirectToLogin(context, location),
+          builder: (context, state) {
+            final family = Families.family(state.args['fid']!);
             return MaterialPage<FamilyPage>(
               key: ValueKey(family),
               child: FamilyPage(family: family),
@@ -46,10 +46,10 @@ class App extends StatelessWidget {
         ),
         GoRoute(
           pattern: '/family/:fid/person/:pid',
-          redirect: (context, args) => _redirectToLogin(context, location),
-          builder: (context, args) {
-            final family = Families.family(args['fid']!);
-            final person = family.person(args['pid']!);
+          redirect: (context, state) => _redirectToLogin(context, location),
+          builder: (context, state) {
+            final family = Families.family(state.args['fid']!);
+            final person = family.person(state.args['pid']!);
             return MaterialPage<PersonPage>(
               key: ValueKey(person),
               child: PersonPage(family: family, person: person),
@@ -58,10 +58,10 @@ class App extends StatelessWidget {
         ),
         GoRoute(
           pattern: '/login',
-          redirect: (context, args) => _redirectToHome(context),
-          builder: (context, args) => MaterialPage<LoginPage>(
+          redirect: (context, state) => _redirectToHome(context),
+          builder: (context, state) => MaterialPage<LoginPage>(
             key: const ValueKey('LoginPage'),
-            child: LoginPage(from: args['from']),
+            child: LoginPage(from: state.args['from']),
           ),
         ),
       ];
@@ -74,9 +74,9 @@ class App extends StatelessWidget {
   String? _redirectToHome(BuildContext context) =>
       context.watch<LoginInfo>().loggedIn ? '/' : null;
 
-  Page<dynamic> _errorBuilder(BuildContext context, GoRouteException ex) =>
+  Page<dynamic> _errorBuilder(BuildContext context, GoRouterState state) =>
       MaterialPage<Four04Page>(
         key: const ValueKey('Four04Page'),
-        child: Four04Page(message: ex.nested.toString()),
+        child: Four04Page(message: state.error.toString()),
       );
 }

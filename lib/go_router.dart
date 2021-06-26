@@ -12,49 +12,44 @@ import 'src/path_strategy_nonweb.dart'
 enum UrlPathStrategy { hash, path }
 
 /// the signature of the function to pass to the GoRouter.builder ctor
-typedef GoRouteBuilder = Widget Function(
+typedef GoRouterWidgetBuilder = Widget Function(
   BuildContext context,
   String location,
 );
 
 /// the signature of the routes builder function to pass to the GoRouter ctor
-typedef GoRouteRoutesBuilder = Iterable<GoRoute> Function(
+typedef GoRouterRoutesBuilder = Iterable<GoRoute> Function(
   BuildContext context,
   String location,
 );
 
 /// the signature of the page builder callback for a matched GoRoute
-typedef GoRoutePageBuilder = Page<dynamic> Function(
+typedef GoRouterPageBuilder = Page<dynamic> Function(
   BuildContext context,
-  Map<String, String> args,
+  GoRouterState state,
 );
 
 /// the signature of the redirect builder callback for guarded routes
 typedef GoRouteRedirectBuilder = String? Function(
   BuildContext context,
-  Map<String, String> args,
+  GoRouterState state,
 );
 
-/// the signature of the function to build an error page to pass to the GoRouter
-/// ctor
-typedef GoRouteErrorPageBuilder = Page<dynamic> Function(
-  BuildContext context,
-  GoRouteException ex,
-);
-
-/// passed to the error builder function in the event of an error
-class GoRouteException implements Exception {
-  /// the route location that caused the exception
+/// for route state during routing
+class GoRouterState {
+  final GoRouter router;
   final String location;
+  final String pattern;
+  final Map<String, String> args;
+  final Exception? error;
 
-  /// the exception that was thrown attempting to route to the location
-  final Exception nested;
-
-  /// ctor
-  GoRouteException(this.location, this.nested);
-
-  @override
-  String toString() => '$nested: $location';
+  GoRouterState({
+    required this.router,
+    required this.location,
+    this.pattern = '',
+    this.args = const <String, String>{},
+    this.error,
+  });
 }
 
 /// a declarative mapping between a route name pattern and a route page builder
@@ -64,7 +59,7 @@ class GoRoute {
   final String pattern;
 
   /// a function to create a page when the route pattern is matched
-  final GoRoutePageBuilder builder;
+  final GoRouterPageBuilder builder;
 
   /// a function to provide redirection if necessary
   final GoRouteRedirectBuilder redirect;
@@ -83,10 +78,11 @@ class GoRoute {
   }) : this(
           pattern: pattern,
           redirect: redirect,
-          builder: (context, args) => throw Exception('should always redirect'),
+          builder: (context, state) =>
+              throw UnsupportedError('should always redirect'),
         );
 
-  static String? _noop(BuildContext context, Map<String, String> args) => null;
+  static String? _noop(BuildContext context, GoRouterState state) => null;
 }
 
 /// top-level go_router class; create one of these to initialize your app's
@@ -98,8 +94,8 @@ class GoRouter {
 
   /// configure a GoRouter with a routes builder and an error page builder
   GoRouter({
-    required GoRouteRoutesBuilder routes,
-    required GoRouteErrorPageBuilder error,
+    required GoRouterRoutesBuilder routes,
+    required GoRouterPageBuilder error,
     String initialLocation = '/',
   }) {
     _routerDelegate = GoRouterDelegate(
@@ -114,7 +110,7 @@ class GoRouter {
 
   /// configure a GoRouter with a low-level builder
   GoRouter.builder({
-    required GoRouteBuilder builder,
+    required GoRouterWidgetBuilder builder,
     String initialLocation = '/',
   }) {
     _routerDelegate = GoRouterDelegate(
@@ -152,16 +148,18 @@ class GoRouter {
   Widget _builder(
     BuildContext context,
     Iterable<GoRoute> routes,
-    GoRouteErrorPageBuilder error,
+    GoRouterPageBuilder error,
     String location,
   ) {
     try {
       final locPages = _getLocPages(context, location, routes);
-      assert(locPages.isNotEmpty); // _goLocPages should ensure this
+      // _goLocPages should ensure this
+      assert(locPages.isNotEmpty);
 
       // if the single page on the stack is a redirect, then go there
       if (locPages.entries.first.value is GoRedirect) {
-        assert(locPages.entries.length == 1); // _goLocPages should ensure this
+        // _goLocPages should ensure this
+        assert(locPages.entries.length == 1);
 
         final redirect = locPages.entries.first.value as GoRedirect;
         if (_locationsMatch(redirect.location, location))
@@ -173,16 +171,16 @@ class GoRouter {
       }
       // otherwise use this stack as is
       else {
-        assert(locPages.entries
-            .whereType<GoRedirect>()
-            .isEmpty); // _goLocPages should ensure this
+        // _goLocPages should ensure this
+        assert(locPages.entries.whereType<GoRedirect>().isEmpty);
         _locPages.clear();
         _locPages.addAll(locPages);
       }
     } on Exception catch (ex) {
       // if there's an error, show an error page
       _locPages.clear();
-      _locPages[location] = error(context, GoRouteException(location, ex));
+      _locPages[location] = error(
+          context, GoRouterState(router: this, location: location, error: ex));
     }
 
     return Navigator(
@@ -201,8 +199,11 @@ class GoRouter {
     );
   }
 
-  static Map<String, Page<dynamic>> _getLocPages(
-      BuildContext context, String location, Iterable<GoRoute> routes) {
+  Map<String, Page<dynamic>> _getLocPages(
+    BuildContext context,
+    String location,
+    Iterable<GoRoute> routes,
+  ) {
     final locPages = <String, Page<dynamic>>{};
     for (final route in routes) {
       // pull the parameters out of the path of the location (w/o any query
@@ -222,9 +223,15 @@ class GoRouter {
       // expand the route pattern with the current set of args to get location
       // for a future pop. get a redirect or page from the builder.
       final pageLoc = GoRouter._locationFor(route.pattern, args);
-      final redirect = route.redirect(context, args);
+      final state = GoRouterState(
+        router: this,
+        location: location,
+        pattern: route.pattern,
+        args: args,
+      );
+      final redirect = route.redirect(context, state);
       final page = redirect == null || redirect.isEmpty
-          ? route.builder(context, args)
+          ? route.builder(context, state)
           : GoRedirect(redirect);
 
       if (locPages.containsKey(pageLoc))

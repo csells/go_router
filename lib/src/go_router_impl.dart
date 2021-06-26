@@ -9,7 +9,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         ChangeNotifier {
   var _loc = Uri();
   final _key = GlobalKey<NavigatorState>();
-  final GoRouteBuilder builder;
+  final GoRouterWidgetBuilder builder;
 
   GoRouterDelegate({required this.builder, Uri? initialLocation}) {
     // fix for https://github.com/csells/go_router/issues/12 (WTF?)

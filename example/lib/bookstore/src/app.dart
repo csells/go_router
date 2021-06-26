@@ -30,8 +30,8 @@ class Bookstore extends StatelessWidget {
         // /books/all
         GoRoute(
           pattern: '/',
-          redirect: (context, args) => _redirect(context, location),
-          builder: (context, args) => const MaterialPage<BookstoreScaffold>(
+          redirect: (context, state) => _redirect(context, location),
+          builder: (context, state) => const MaterialPage<BookstoreScaffold>(
             key: ValueKey('App scaffold'),
             child: BookstoreScaffold(),
           ),
@@ -39,10 +39,10 @@ class Bookstore extends StatelessWidget {
 
         GoRoute(
           pattern: '/book/:bookId',
-          redirect: (context, args) => _redirect(context, location),
-          builder: (context, args) {
+          redirect: (context, state) => _redirect(context, location),
+          builder: (context, state) {
             final library = context.read<Library>();
-            final bookId = int.tryParse(args['bookId'] ?? '') ?? -1;
+            final bookId = int.tryParse(state.args['bookId'] ?? '') ?? -1;
             final book = library.findBook(bookId);
 
             return MaterialPage<BookDetailsScreen>(
@@ -54,10 +54,10 @@ class Bookstore extends StatelessWidget {
 
         GoRoute(
           pattern: '/author/:authorId',
-          redirect: (context, args) => _redirect(context, location),
-          builder: (context, args) {
+          redirect: (context, state) => _redirect(context, location),
+          builder: (context, state) {
             final library = context.read<Library>();
-            final authorId = int.tryParse(args['authorId'] ?? '') ?? -1;
+            final authorId = int.tryParse(state.args['authorId'] ?? '') ?? -1;
             final author = library.findAuthor(authorId);
 
             return MaterialPage<void>(
@@ -69,19 +69,19 @@ class Bookstore extends StatelessWidget {
 
         GoRoute(
           pattern: '/signin',
-          redirect: (context, args) => _redirect(context, location),
-          builder: (context, args) => const MaterialPage<SignInScreen>(
+          redirect: (context, state) => _redirect(context, location),
+          builder: (context, state) => const MaterialPage<SignInScreen>(
             key: ValueKey('SignInScreen'),
             child: SignInScreen(),
           ),
         ),
       ];
 
-  Page<dynamic> _error(BuildContext context, GoRouteException ex) =>
+  Page<dynamic> _error(BuildContext context, GoRouterState state) =>
       MaterialPage<Four04Page>(
         child: Four04Page(
           key: const ValueKey('Four04Page'),
-          message: ex.toString(),
+          message: state.error.toString(),
         ),
       );
 

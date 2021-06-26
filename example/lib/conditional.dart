@@ -29,15 +29,15 @@ class App extends StatelessWidget {
   final _loggedInRoutes = [
     GoRoute(
       pattern: '/',
-      builder: (context, args) => MaterialPage<FamiliesPage>(
+      builder: (context, state) => MaterialPage<FamiliesPage>(
         key: const ValueKey('FamiliesPage'),
         child: FamiliesPage(families: Families.data),
       ),
     ),
     GoRoute(
       pattern: '/family/:fid',
-      builder: (context, args) {
-        final family = Families.family(args['fid']!);
+      builder: (context, state) {
+        final family = Families.family(state.args['fid']!);
 
         return MaterialPage<FamilyPage>(
           key: ValueKey(family),
@@ -47,9 +47,9 @@ class App extends StatelessWidget {
     ),
     GoRoute(
       pattern: '/family/:fid/person/:pid',
-      builder: (context, args) {
-        final family = Families.family(args['fid']!);
-        final person = family.person(args['pid']!);
+      builder: (context, state) {
+        final family = Families.family(state.args['fid']!);
+        final person = family.person(state.args['pid']!);
 
         return MaterialPage<PersonPage>(
           key: ValueKey(person),
@@ -63,7 +63,7 @@ class App extends StatelessWidget {
   final _loggedOutRoutes = [
     GoRoute(
       pattern: '/',
-      builder: (context, args) => const MaterialPage<LoginPage>(
+      builder: (context, state) => const MaterialPage<LoginPage>(
         key: ValueKey('LoginPage'),
         child: LoginPage(),
       ),
@@ -74,9 +74,9 @@ class App extends StatelessWidget {
   List<GoRoute> _routeBuilder(BuildContext context, String location) =>
       context.watch<LoginInfo>().loggedIn ? _loggedInRoutes : _loggedOutRoutes;
 
-  Page<dynamic> _errorBuilder(BuildContext context, GoRouteException ex) =>
+  Page<dynamic> _errorBuilder(BuildContext context, GoRouterState state) =>
       MaterialPage<Four04Page>(
         key: const ValueKey('Four04Page'),
-        child: Four04Page(message: ex.nested.toString()),
+        child: Four04Page(message: state.error.toString()),
       );
 }
