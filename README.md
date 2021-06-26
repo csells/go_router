@@ -77,9 +77,9 @@ location will be a page on the navigation stack like so:
 
 pattern                    | example location       | navigation stack
 ---------------------------|------------------------|-----------------
-`/`                        | `/`                    | `FamiliesPage()`
-`/family/:fid`             | `/family/f1`           | `FamiliesPage()`, `FamilyPage(f1)`
-`/family/:fid/person/:pid` | `/family/f1/person/p2` | `FamiliesPage()`, `FamilyPage(f1)`, `PersonPage(p2)`
+`/`                        | `/`                    | `FamiliesPage()` &larr;
+`/family/:fid`             | `/family/f1`           | `FamiliesPage()` <br/> `FamilyPage(f1)` &larr;
+`/family/:fid/person/:pid` | `/family/f1/person/p2` | `FamiliesPage()`<br/> `FamilyPage(f1)`<br/> `PersonPage(p2)` &larr;
 
 The order of the patterns in the list of routes dictates the order in the
 navigation stack. The navigation stack is used to pop up to the previous page in
