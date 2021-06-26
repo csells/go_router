@@ -54,6 +54,6 @@ class App extends StatelessWidget {
   Page<dynamic> _errorBuilder(BuildContext context, GoRouterState state) =>
       MaterialPage<Four04Page>(
         key: const ValueKey('Four04Page'),
-        child: Four04Page(message: state.toString()),
+        child: Four04Page(message: state.error.toString()),
       );
 }

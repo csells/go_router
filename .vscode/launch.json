@@ -32,12 +32,6 @@
       "program": "example/lib/query_params.dart"
     },
     {
-      "name": "Nested Routing",
-      "type": "dart",
-      "request": "launch",
-      "program": "example/lib/bookstore/main.dart"
-    },
-    {
       "name": "Custom Builder",
       "request": "launch",
       "type": "dart",

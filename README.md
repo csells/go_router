@@ -37,15 +37,15 @@ class App extends StatelessWidget {
   List<GoRoute> _routesBuilder(BuildContext context, String location) => [
         GoRoute(
           pattern: '/',
-          builder: (context, args) => MaterialPage<FamiliesPage>(
+          builder: (context, state) => MaterialPage<FamiliesPage>(
             key: const ValueKey('FamiliesPage'),
             child: FamiliesPage(families: Families.data),
           ),
         ),
         GoRoute(
           pattern: '/family/:fid',
-          builder: (context, args) {
-            final family = Families.family(args['fid']!);
+          builder: (context, state) {
+            final family = Families.family(state.args['fid']!);
 
             return MaterialPage<FamilyPage>(
               key: ValueKey(family),
@@ -55,9 +55,9 @@ class App extends StatelessWidget {
         ),
         GoRoute(
           pattern: '/family/:fid/person/:pid',
-          builder: (context, args) {
-            final family = Families.family(args['fid']!);
-            final person = family.person(args['pid']!);
+          builder: (context, state) {
+            final family = Families.family(state.args['fid']!);
+            final person = family.person(state.args['pid']!);
 
             return MaterialPage<PersonPage>(
               key: ValueKey(person),
@@ -99,14 +99,15 @@ class App extends StatelessWidget {
   ...
   late final _router = GoRouter(routes: _routesBuilder, error: _errorBuilder);
   ...
-  Page<dynamic> _errorBuilder(BuildContext context, GoRouteException ex) => MaterialPage<Four04Page>(
+  Page<dynamic> _errorBuilder(BuildContext context, GoRouterState state) =>
+      MaterialPage<Four04Page>(
         key: const ValueKey('Four04Page'),
-        child: Four04Page(message: ex.nested.toString()),
+        child: Four04Page(message: state.error.toString()),
       );
 }
 ```
 
-The `GoRouteException` object contains the location that caused the exception and a nested `Exception`
+The `GoRouterState` object contains the location that caused the exception and the `Exception`
 that was thrown attempting to navigate to that route.
 
 With these two functions in hand, you can establish your app's custom routing
@@ -124,7 +125,7 @@ class App extends StatelessWidget {
 
   late final _router = GoRouter(routes: _routesBuilder, error: _errorBuilder);
   List<GoRoute> _routesBuilder(BuildContext context, String location) => ...
-  Page<dynamic> _errorBuilder(BuildContext context, GoRouteException ex) => ...
+  Page<dynamic> _errorBuilder(BuildContext context, GoRouterState state) => ...
 }
 ```
 
@@ -177,14 +178,17 @@ Finally, when you deploy your Flutter web app to a web server, it needs to be co
 at your Flutter web app's `index.html`, otherwise Flutter won't be able to route to your pages.
 If you're using Firebase hosting, you can [configure rewrites](https://firebase.google.com/docs/hosting/full-config#rewrites) to cause all URLs to be rewritten to `index.html`.
 
-If you'd like to test locally before publishing, you can use [live-server](https://www.npmjs.com/package/live-server)
-like so:
+If you'd like to test your release build locally before publishing, and get that
+cool redirect to `index.html` feature, you can use `flutter run` itself:
 
 ```sh
-$ live-server --entry-file=index.html build/web
+$ flutter run -d chrome --release lib/url_strategy.dart
 ```
 
-Of course, any local web server that can be configured to redirect all traffic to `index.html` will do.
+Note that you have to run this command from a place where `flutter run` can find
+the `web/index.html` file.
+
+Of course, any local web server that can be configured to redirect all traffic to `index.html` will do, e.g. [live-server](https://www.npmjs.com/package/live-server).
 
 # Deep Linking
 Flutter defines "deep linking" as "opening a URL displays that screen in your app." Anything that's listed as a
@@ -261,19 +265,21 @@ rebuild. We can then use this data when implementing the `GoRouter` routes build
 ```dart
 class App extends StatelessWidget {
   ...
+  late final _router = GoRouter(routes: _routeBuilder, error: _errorBuilder);
+
   // the routes when the user is logged in
   final _loggedInRoutes = [
     GoRoute(
       pattern: '/',
-      builder: (context, args) => MaterialPage<FamiliesPage>(...),
+      builder: (context, state) => MaterialPage<FamiliesPage>(...),
     ),
     GoRoute(
       pattern: '/family/:fid',
-      builder: (context, args) => MaterialPage<FamilyPage>(...),
+      builder: (context, state) => MaterialPage<FamilyPage>(...),
     ),
     GoRoute(
       pattern: '/family/:fid/person/:pid',
-      builder: (context, args) => MaterialPage<PersonPage>(...),
+      builder: (context, state) => MaterialPage<PersonPage>(...),
     ),
   ];
 
@@ -281,15 +287,15 @@ class App extends StatelessWidget {
   final _loggedOutRoutes = [
     GoRoute(
       pattern: '/',
-      builder: (context, args) => MaterialPage<LoginPage>(...),
+      builder: (context, state) => MaterialPage<LoginPage>(...),
     ),
   ];
 
-  late final _router = GoRouter.routes(
-    // changes in the login info will rebuild the stack of routes
-    builder: (context, location) => context.watch<LoginInfo>().loggedIn ? _loggedInRoutes : _loggedOutRoutes,
-    ...
-  );
+  // changes in the login info will rebuild the stack of routes
+  List<GoRoute> _routeBuilder(BuildContext context, String location) =>
+      context.watch<LoginInfo>().loggedIn ? _loggedInRoutes : _loggedOutRoutes;
+
+  ...
 }
 ```
 
@@ -307,7 +313,7 @@ List<GoRoute> _routesBuilder(BuildContext context, String location) => [
   GoRoute(
     pattern: '/',
     redirect: _redirectToLogin,
-    builder: (context, args) => MaterialPage<FamiliesPage>(
+    builder: (context, state) => MaterialPage<FamiliesPage>(
       key: const ValueKey('FamiliesPage'),
       child: FamiliesPage(families: Families.data),
     ),
@@ -316,7 +322,7 @@ List<GoRoute> _routesBuilder(BuildContext context, String location) => [
   GoRoute(
     pattern: '/login',
     redirect: _redirectToHome,
-    builder: (context, args) => const MaterialPage<LoginPage>(
+    builder: (context, state) => const MaterialPage<LoginPage>(
       key: ValueKey('LoginPage'),
       child: LoginPage(),
     ),
@@ -324,11 +330,11 @@ List<GoRoute> _routesBuilder(BuildContext context, String location) => [
 ];
 
 // if the user is not logged in, redirect to /login
-String? _redirectToLogin(BuildContext context) =>
+String? _redirectToLogin(BuildContext context, GoRouterState state) =>
     context.watch<LoginInfo>().loggedIn ? null : '/login';
 
 // if the user is logged in, no need to login again, so redirect to /
-String? _redirectToHome(BuildContext context) =>
+String? _redirectToHome(BuildContext context, GoRouterState state) =>
     context.watch<LoginInfo>().loggedIn ? '/' : null;
 ```
 
@@ -347,10 +353,10 @@ List<GoRoute> _routeBuilder(BuildContext context, String location) => [
   ...
   GoRoute(
     pattern: '/family/:fid/person/:pid',
-    redirect: (context) => _redirectToLogin(context, location),
-    builder: (context, args) {
-      final family = Families.family(args['fid']!);
-      final person = family.person(args['pid']!);
+    redirect: _redirectToLogin,
+    builder: (context, state) {
+      final family = Families.family(state.args['fid']!);
+      final person = family.person(state.args['pid']!);
       return MaterialPage<PersonPage>(
         key: ValueKey(person),
         child: PersonPage(family: family, person: person),
@@ -360,16 +366,23 @@ List<GoRoute> _routeBuilder(BuildContext context, String location) => [
   GoRoute(
     pattern: '/login',
     redirect: _redirectToHome,
-    builder: (context, args) => MaterialPage<LoginPage>(
+    builder: (context, state) => MaterialPage<LoginPage>(
       key: const ValueKey('LoginPage'),
-      child: LoginPage(from: args['from']),
+      child: LoginPage(from: state.args['from']),
     ),
   ),
 ];
 
 // if the user is not logged in, redirect to /login
-String? _redirectToLogin(BuildContext context, String location) =>
-    context.watch<LoginInfo>().loggedIn ? null : '/login?from=$location';
+String? _redirectToLogin(BuildContext context, GoRouterState state) =>
+    context.watch<LoginInfo>().loggedIn
+        ? null
+        : '/login?from=${state.location}';
+
+// if the user is logged in, no need to login again, so redirect to /
+String? _redirectToHome(BuildContext context, GoRouterState state) =>
+    context.watch<LoginInfo>().loggedIn ? '/' : null;
+
 ```
 
 In this example, if the user isn't logged in, they're redirected to `/login` with a `from` query parameter set to the
@@ -409,8 +422,8 @@ string.
 # Custom Builder
 As described, the go_router uses the list of `GoRoute` objects to implement it's routing policy using patterns to
 match and using the order of matches to create the `Navigator.pop()` implementation, etc. If you'd like to implement
-the routing policy yourself, you can implement a lower level builder that is given a location and is responsible for
-producing a `Navigator`. For example, this lower level builder can be implemented and passed to the
+the routing policy yourself, you can implement a widget builder that is given a location and is responsible for
+producing a `Navigator`. For example, this builder can be implemented and passed to the
 `GoRouter.builder` constructor like so:
 
 ```dart

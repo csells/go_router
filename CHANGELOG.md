@@ -1,3 +1,9 @@
+### 0.4.0
+- bundled various useful route handling variables into the `GoRouterState` for
+  use when building pages and error pages
+-updated URL Strategy section of README to reference `flutter run`
+
+
 ### 0.3.2
 - formatting update to appease the pub.deb gods...
 

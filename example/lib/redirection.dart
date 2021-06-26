@@ -28,7 +28,7 @@ class App extends StatelessWidget {
   List<GoRoute> _routesBuilder(BuildContext context, String location) => [
         GoRoute(
           pattern: '/',
-          redirect: (context, state) => _redirectToLogin(context),
+          redirect: _redirectToLogin,
           builder: (context, state) => MaterialPage<FamiliesPage>(
             key: const ValueKey('FamiliesPage'),
             child: FamiliesPage(families: Families.data),
@@ -36,7 +36,7 @@ class App extends StatelessWidget {
         ),
         GoRoute(
           pattern: '/family/:fid',
-          redirect: (context, state) => _redirectToLogin(context),
+          redirect: _redirectToLogin,
           builder: (context, state) {
             final family = Families.family(state.args['fid']!);
             return MaterialPage<FamilyPage>(
@@ -47,7 +47,7 @@ class App extends StatelessWidget {
         ),
         GoRoute(
           pattern: '/family/:fid/person/:pid',
-          redirect: (context, state) => _redirectToLogin(context),
+          redirect: _redirectToLogin,
           builder: (context, state) {
             final family = Families.family(state.args['fid']!);
             final person = family.person(state.args['pid']!);
@@ -59,7 +59,7 @@ class App extends StatelessWidget {
         ),
         GoRoute(
           pattern: '/login',
-          redirect: (context, state) => _redirectToHome(context),
+          redirect: _redirectToHome,
           builder: (context, state) => const MaterialPage<LoginPage>(
             key: ValueKey('LoginPage'),
             child: LoginPage(),
@@ -68,11 +68,11 @@ class App extends StatelessWidget {
       ];
 
   // if the user is not logged in, redirect to /login
-  String? _redirectToLogin(BuildContext context) =>
+  String? _redirectToLogin(BuildContext context, GoRouterState state) =>
       context.watch<LoginInfo>().loggedIn ? null : '/login';
 
   // if the user is logged in, no need to login again, so redirect to /
-  String? _redirectToHome(BuildContext context) =>
+  String? _redirectToHome(BuildContext context, GoRouterState state) =>
       context.watch<LoginInfo>().loggedIn ? '/' : null;
 
   Page<dynamic> _errorBuilder(BuildContext context, GoRouterState state) =>

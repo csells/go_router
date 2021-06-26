@@ -1,6 +1,6 @@
-name: go_router_ex
+name: go_router_examples
 description: go_router examples
-version: 0.3.2
+version: 0.4.0
 publish_to: none
 
 environment:
@@ -14,7 +14,7 @@ dependencies:
   go_router:
     path: ..
   provider: ^5.0.0
-  url_launcher: ^6.0.6
+  url_launcher: ^6.0.7
 
 dev_dependencies:
   flutter_test:
