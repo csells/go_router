@@ -1,5 +1,5 @@
 # go_router
-The goal of the go_router package is to simplify use of
+The goal of the [go_router package](https://pub.dev/packages/go_router) is to simplify use of
 [the `Router` in Flutter](https://api.flutter.dev/flutter/widgets/Router-class.html)
 as specified by [the
 `MaterialApp.router` constructor](https://api.flutter.dev/flutter/material/MaterialApp/MaterialApp.router.html).
