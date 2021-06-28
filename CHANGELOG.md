@@ -1,4 +1,4 @@
-### 0.5
+### 0.5.0
 - moved redirect to top-level instead of per route for simplicity
 
 
