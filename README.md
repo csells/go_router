@@ -173,7 +173,6 @@ void main() {
 Setting the path instead of the hash strategy turns off the # in the URLs:
 
 ![URL Strategy w/o Hash](readme/url-strat-no-hash.png)
-
 Finally, when you deploy your Flutter web app to a web server, it needs to be configured such that every URL ends up
 at your Flutter web app's `index.html`, otherwise Flutter won't be able to route to your pages.
 If you're using Firebase hosting, you can [configure rewrites](https://firebase.google.com/docs/hosting/full-config#rewrites) to cause all URLs to be rewritten to `index.html`.
@@ -306,66 +305,61 @@ correct list of routes based on the current app state.
 
 # Redirection
 Sometimes you want to redirect one route to another one, e.g. if the user is not logged in. You can do that by
-passing a redirect function to the `GoRoute` object, e.g.
+passing a redirect function to the `GoRouter` object, e.g.
 
 ```dart
-List<GoRoute> _routesBuilder(BuildContext context, String location) => [
-  GoRoute(
-    pattern: '/',
-    redirect: _redirectToLogin,
-    builder: (context, state) => MaterialPage<FamiliesPage>(
-      key: const ValueKey('FamiliesPage'),
-      child: FamiliesPage(families: Families.data),
-    ),
-  ),
-  ...
-  GoRoute(
-    pattern: '/login',
-    redirect: _redirectToHome,
-    builder: (context, state) => const MaterialPage<LoginPage>(
-      key: ValueKey('LoginPage'),
-      child: LoginPage(),
-    ),
-  ),
-];
+late final _router = GoRouter(
+  routes: _routesBuilder,
+  error: _errorBuilder,
+  redirect: _redirect,
+);
 
-// if the user is not logged in, redirect to /login
-String? _redirectToLogin(BuildContext context, GoRouterState state) =>
-    context.watch<LoginInfo>().loggedIn ? null : '/login';
+...
 
-// if the user is logged in, no need to login again, so redirect to /
-String? _redirectToHome(BuildContext context, GoRouterState state) =>
-    context.watch<LoginInfo>().loggedIn ? '/' : null;
+// redirect based on app and routing state
+String? _redirect(BuildContext context, GoRouterState state) {
+  // watching LoginInfo will cause a change in LoginInfo to trigger routing
+  final loggedIn = context.watch<LoginInfo>().loggedIn;
+  final goingToLogin = state.pattern == '/login';
+
+  // the user is not logged in and not headed to /login, they need to login
+  if (!loggedIn && !goingToLogin) return '/login';
+
+  // the user is logged in and headed to /login, no need to login again
+  if (loggedIn && goingToLogin) return '/';
+
+  // no need to redirect at all
+  return null;
+}
 ```
 
-In this code, if the user is not logged in, we redirect from the `/` to `/login`. Likewise, if the user *is* logged in,
-we redirect from `/login` to `/`. And because we're using `context.watch`, when the login state changes, the routes
-builder will be called again to generate and match the routes.
+In this code, if the user is not logged in and not going to the `/login`
+pattern, we redirect to `/login`. Likewise, if the user *is* logged in but going
+`/login`, we redirect to `/`. And because we're using `context.watch`, when the
+login state changes, the routes builder will be called again to generate and
+match the routes.
 
 # Query Parameters
-If you'd like to use query parameters for navigation, you can; they will be considered as optional for the purpose
-of matching a route but passed along as arguments to the page builders. For example, if you'd like to redirect to
-`/login` with the original location so that after a successful login, the user can be routed
-back to the original location, you can do that using query paramaters:
+If you'd like to use query parameters for navigation, you can; they will be
+considered as optional for the purpose of matching a route but passed along as
+arguments to the page builders. For example, if you'd like to redirect to
+`/login` with the original location so that after a successful login, the user
+can be routed back to the original location, you can do that using query
+paramaters:
 
 ```dart
+late final _router = GoRouter(
+  routes: _routesBuilder,
+  error: _errorBuilder,
+  redirect: _redirect,
+);
+
+...
+
 List<GoRoute> _routeBuilder(BuildContext context, String location) => [
   ...
   GoRoute(
-    pattern: '/family/:fid/person/:pid',
-    redirect: _redirectToLogin,
-    builder: (context, state) {
-      final family = Families.family(state.args['fid']!);
-      final person = family.person(state.args['pid']!);
-      return MaterialPage<PersonPage>(
-        key: ValueKey(person),
-        child: PersonPage(family: family, person: person),
-      );
-    },
-  ),
-  GoRoute(
     pattern: '/login',
-    redirect: _redirectToHome,
     builder: (context, state) => MaterialPage<LoginPage>(
       key: const ValueKey('LoginPage'),
       child: LoginPage(from: state.args['from']),
@@ -373,21 +367,28 @@ List<GoRoute> _routeBuilder(BuildContext context, String location) => [
   ),
 ];
 
-// if the user is not logged in, redirect to /login
-String? _redirectToLogin(BuildContext context, GoRouterState state) =>
-    context.watch<LoginInfo>().loggedIn
-        ? null
-        : '/login?from=${state.location}';
+// redirect based on app and routing state
+String? _redirect(BuildContext context, GoRouterState state) {
+  // watching LoginInfo will cause a change in LoginInfo to trigger routing
+  final loggedIn = context.watch<LoginInfo>().loggedIn;
+  final goingToLogin = state.pattern == '/login';
 
-// if the user is logged in, no need to login again, so redirect to /
-String? _redirectToHome(BuildContext context, GoRouterState state) =>
-    context.watch<LoginInfo>().loggedIn ? '/' : null;
+  // the user is not logged in and not headed to /login, they need to login
+  if (!loggedIn && !goingToLogin) return '/login?from=${state.location}';
 
+  // the user is logged in and headed to /login, no need to login again
+  if (loggedIn && goingToLogin) return '/';
+
+  // no need to redirect at all
+  return null;
+}
 ```
 
-In this example, if the user isn't logged in, they're redirected to `/login` with a `from` query parameter set to the
-original location. When the `/login` route is matched, the optional `from` parameter is passed to the `LoginPage`. In
-the `LoginPage` if the `from` parameter was passed, we use it to go to the original location:
+In this example, if the user isn't logged in, they're redirected to `/login`
+with a `from` query parameter set to the original location. When the `/login`
+route is matched, the optional `from` parameter is passed to the `LoginPage`. In
+the `LoginPage` if the `from` parameter was passed, we use it to go to the
+original location after a successful login:
 
 ```dart
 class LoginPage extends StatelessWidget {
@@ -416,8 +417,8 @@ class LoginPage extends StatelessWidget {
 }
 ```
 
-A query parameter will not override a positional parameter or another query parameter set earlier in the location
-string.
+A query parameter will not override a positional parameter or another query
+parameter set earlier in the location string.
 
 # Custom Builder
 As described, the go_router uses the list of `GoRoute` objects to implement it's routing policy using patterns to

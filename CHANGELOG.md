@@ -1,3 +1,7 @@
+### 0.5
+- moved redirect to top-level instead of per route for simplicity
+
+
 ### 0.4.1
 - fixed CHANGELOG formatting
 

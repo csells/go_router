@@ -17,8 +17,12 @@ import 'screens/sign_in.dart';
 class Bookstore extends StatelessWidget {
   Bookstore({Key? key}) : super(key: key);
 
-  late final _router =
-      GoRouter(routes: _routes, error: _error, initialLocation: '/signin');
+  late final _router = GoRouter(
+    routes: _routes,
+    error: _error,
+    redirect: _redirect,
+    initialLocation: '/signin',
+  );
 
   Iterable<GoRoute> _routes(BuildContext context, String location) => [
         // handle all of these...
@@ -30,7 +34,6 @@ class Bookstore extends StatelessWidget {
         // /books/all
         GoRoute(
           pattern: '/',
-          redirect: (context, state) => _redirect(context, location),
           builder: (context, state) => const MaterialPage<BookstoreScaffold>(
             key: ValueKey('App scaffold'),
             child: BookstoreScaffold(),
@@ -39,7 +42,6 @@ class Bookstore extends StatelessWidget {
 
         GoRoute(
           pattern: '/book/:bookId',
-          redirect: (context, state) => _redirect(context, location),
           builder: (context, state) {
             final library = context.read<Library>();
             final bookId = int.tryParse(state.args['bookId'] ?? '') ?? -1;
@@ -54,7 +56,6 @@ class Bookstore extends StatelessWidget {
 
         GoRoute(
           pattern: '/author/:authorId',
-          redirect: (context, state) => _redirect(context, location),
           builder: (context, state) {
             final library = context.read<Library>();
             final authorId = int.tryParse(state.args['authorId'] ?? '') ?? -1;
@@ -69,7 +70,6 @@ class Bookstore extends StatelessWidget {
 
         GoRoute(
           pattern: '/signin',
-          redirect: (context, state) => _redirect(context, location),
           builder: (context, state) => const MaterialPage<SignInScreen>(
             key: ValueKey('SignInScreen'),
             child: SignInScreen(),
@@ -85,11 +85,12 @@ class Bookstore extends StatelessWidget {
         ),
       );
 
-  String? _redirect(BuildContext context, String loc) {
+  String? _redirect(BuildContext context, GoRouterState state) {
     final auth = context.watch<BookstoreAuth>();
     final signedIn = auth.signedIn;
     const homeLoc = '/';
     const signInLoc = '/signin';
+    final loc = state.location;
 
     // Go to /signin if the user is not signed in
     if (!signedIn && loc != signInLoc) return signInLoc;

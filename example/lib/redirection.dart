@@ -23,12 +23,15 @@ class App extends StatelessWidget {
         ),
       );
 
-  late final _router = GoRouter(routes: _routesBuilder, error: _errorBuilder);
+  late final _router = GoRouter(
+    routes: _routesBuilder,
+    error: _errorBuilder,
+    redirect: _redirect,
+  );
 
   List<GoRoute> _routesBuilder(BuildContext context, String location) => [
         GoRoute(
           pattern: '/',
-          redirect: _redirectToLogin,
           builder: (context, state) => MaterialPage<FamiliesPage>(
             key: const ValueKey('FamiliesPage'),
             child: FamiliesPage(families: Families.data),
@@ -36,7 +39,6 @@ class App extends StatelessWidget {
         ),
         GoRoute(
           pattern: '/family/:fid',
-          redirect: _redirectToLogin,
           builder: (context, state) {
             final family = Families.family(state.args['fid']!);
             return MaterialPage<FamilyPage>(
@@ -47,7 +49,6 @@ class App extends StatelessWidget {
         ),
         GoRoute(
           pattern: '/family/:fid/person/:pid',
-          redirect: _redirectToLogin,
           builder: (context, state) {
             final family = Families.family(state.args['fid']!);
             final person = family.person(state.args['pid']!);
@@ -59,7 +60,6 @@ class App extends StatelessWidget {
         ),
         GoRoute(
           pattern: '/login',
-          redirect: _redirectToHome,
           builder: (context, state) => const MaterialPage<LoginPage>(
             key: ValueKey('LoginPage'),
             child: LoginPage(),
@@ -67,13 +67,21 @@ class App extends StatelessWidget {
         ),
       ];
 
-  // if the user is not logged in, redirect to /login
-  String? _redirectToLogin(BuildContext context, GoRouterState state) =>
-      context.watch<LoginInfo>().loggedIn ? null : '/login';
+  // redirect based on app and routing state
+  String? _redirect(BuildContext context, GoRouterState state) {
+    // watching LoginInfo will cause a change in LoginInfo to trigger routing
+    final loggedIn = context.watch<LoginInfo>().loggedIn;
+    final goingToLogin = state.pattern == '/login';
 
-  // if the user is logged in, no need to login again, so redirect to /
-  String? _redirectToHome(BuildContext context, GoRouterState state) =>
-      context.watch<LoginInfo>().loggedIn ? '/' : null;
+    // the user is not logged in and not headed to /login, they need to login
+    if (!loggedIn && !goingToLogin) return '/login';
+
+    // the user is logged in and headed to /login, no need to login again
+    if (loggedIn && goingToLogin) return '/';
+
+    // no need to redirect at all
+    return null;
+  }
 
   Page<dynamic> _errorBuilder(BuildContext context, GoRouterState state) =>
       MaterialPage<Four04Page>(

@@ -61,28 +61,11 @@ class GoRoute {
   /// a function to create a page when the route pattern is matched
   final GoRouterPageBuilder builder;
 
-  /// a function to provide redirection if necessary
-  final GoRouteRedirectBuilder redirect;
-
   /// ctor
   GoRoute({
     required this.pattern,
     required this.builder,
-    this.redirect = _noop,
   });
-
-  /// ctor for redirection only
-  GoRoute.redirectAlways({
-    required String pattern,
-    required GoRouteRedirectBuilder redirect,
-  }) : this(
-          pattern: pattern,
-          redirect: redirect,
-          builder: (context, state) =>
-              throw UnsupportedError('should always redirect'),
-        );
-
-  static String? _noop(BuildContext context, GoRouterState state) => null;
 }
 
 /// top-level go_router class; create one of these to initialize your app's
@@ -96,17 +79,26 @@ class GoRouter {
   GoRouter({
     required GoRouterRoutesBuilder routes,
     required GoRouterPageBuilder error,
+    GoRouteRedirectBuilder redirect = _noop,
     String initialLocation = '/',
   }) {
     _routerDelegate = GoRouterDelegate(
       // wrap the returned Navigator to enable GoRouter.of(context).go()
       builder: (context, location) => InheritedGoRouter(
         goRouter: this,
-        child: _builder(context, routes(context, location), error, location),
+        child: _builder(
+          context: context,
+          routes: routes(context, location),
+          error: error,
+          redirect: redirect,
+          location: location,
+        ),
       ),
       initialLocation: Uri.parse(initialLocation),
     );
   }
+
+  static String? _noop(BuildContext context, GoRouterState state) => null;
 
   /// configure a GoRouter with a low-level builder
   GoRouter.builder({
@@ -145,14 +137,15 @@ class GoRouter {
   static GoRouter of(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<InheritedGoRouter>()!.goRouter;
 
-  Widget _builder(
-    BuildContext context,
-    Iterable<GoRoute> routes,
-    GoRouterPageBuilder error,
-    String location,
-  ) {
+  Widget _builder({
+    required BuildContext context,
+    required Iterable<GoRoute> routes,
+    required GoRouterPageBuilder error,
+    required GoRouteRedirectBuilder redirect,
+    required String location,
+  }) {
     try {
-      final locPages = _getLocPages(context, location, routes);
+      final locPages = _getLocPages(context, location, routes, redirect);
       // _goLocPages should ensure this
       assert(locPages.isNotEmpty);
 
@@ -203,6 +196,7 @@ class GoRouter {
     BuildContext context,
     String location,
     Iterable<GoRoute> routes,
+    GoRouteRedirectBuilder redirect,
   ) {
     final locPages = <String, Page<dynamic>>{};
     for (final route in routes) {
@@ -229,10 +223,10 @@ class GoRouter {
         pattern: route.pattern,
         args: args,
       );
-      final redirect = route.redirect(context, state);
-      final page = redirect == null || redirect.isEmpty
+      final redirectLoc = redirect(context, state);
+      final page = redirectLoc == null || redirectLoc.isEmpty
           ? route.builder(context, state)
-          : GoRedirect(redirect);
+          : GoRedirect(redirectLoc);
 
       if (locPages.containsKey(pageLoc))
         throw Exception('duplicate location $pageLoc');
