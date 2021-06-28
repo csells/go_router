@@ -1,3 +1,7 @@
+### 0.5.1
+- README and description updates
+
+
 ### 0.5.0
 - moved redirect to top-level instead of per route for simplicity
 
