@@ -9,7 +9,7 @@ void main() {
   // GoRouter.setUrlPathStrategy(UrlPathStrategy.hash);
 
   // turn off the # in the URLs on the web
-  GoRouter.setUrlPathStrategy(UrlPathStrategy.path);
+  // GoRouter.setUrlPathStrategy(UrlPathStrategy.path);
 
   runApp(App());
 }
@@ -25,7 +25,13 @@ class App extends StatelessWidget {
         title: 'URL Strategy GoRouter Example',
       );
 
-  late final _router = GoRouter(routes: _routesBuilder, error: _errorBuilder);
+  late final _router = GoRouter(
+    routes: _routesBuilder,
+    error: _errorBuilder,
+    // turn off the # in the URLs on the web
+    urlPathStrategy: UrlPathStrategy.path,
+  );
+
   List<GoRoute> _routesBuilder(BuildContext context, String location) => [
         GoRoute(
           pattern: '/',

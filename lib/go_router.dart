@@ -81,7 +81,10 @@ class GoRouter {
     required GoRouterPageBuilder error,
     GoRouteRedirectBuilder redirect = _noop,
     String initialLocation = '/',
+    UrlPathStrategy? urlPathStrategy = UrlPathStrategy.hash,
   }) {
+    if (urlPathStrategy != null) setUrlPathStrategy(urlPathStrategy);
+
     _routerDelegate = GoRouterDelegate(
       // wrap the returned Navigator to enable GoRouter.of(context).go()
       builder: (context, location) => InheritedGoRouter(
@@ -104,7 +107,10 @@ class GoRouter {
   GoRouter.builder({
     required GoRouterWidgetBuilder builder,
     String initialLocation = '/',
+    UrlPathStrategy? urlPathStrategy,
   }) {
+    if (urlPathStrategy != null) setUrlPathStrategy(urlPathStrategy);
+
     _routerDelegate = GoRouterDelegate(
       // wrap the returned Navigator to enable GoRouter.of(context).go()
       builder: (context, location) => InheritedGoRouter(

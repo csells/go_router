@@ -1,3 +1,7 @@
+### 0.5.2
+- add urlPathStrategy argument to GoRouter ctor
+
+
 ### 0.5.1
 - README and description updates
 
