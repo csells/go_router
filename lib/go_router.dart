@@ -61,10 +61,14 @@ class GoRoute {
   /// a function to create a page when the route pattern is matched
   final GoRouterPageBuilder builder;
 
+  /// a function to create the list of page route builders for a given location
+  final GoRouterRoutesBuilder? routes;
+
   /// ctor
   GoRoute({
     required this.pattern,
     required this.builder,
+    this.routes,
   });
 }
 

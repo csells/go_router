@@ -18,38 +18,42 @@ class App extends StatelessWidget {
       );
 
   late final _router = GoRouter(routes: _routesBuilder, error: _errorBuilder);
-  List<GoRoute> _routesBuilder(BuildContext context, String location) => [
-        GoRoute(
-          pattern: '/',
-          builder: (context, state) => MaterialPage<FamiliesPage>(
-            key: const ValueKey('FamiliesPage'),
-            child: FamiliesPage(families: Families.data),
+List<GoRoute> _routesBuilder(BuildContext context, String location) => [
+  GoRoute(
+    pattern: '/',
+    builder: (context, state) => MaterialPage<FamiliesPage>(
+      key: const ValueKey('FamiliesPage'),
+      child: FamiliesPage(families: Families.data),
+    ),
+    routes: (context, location) => [
+      GoRoute(
+        pattern: 'family/:fid',
+        builder: (context, state) {
+          final family = Families.family(state.args['fid']!);
+
+          return MaterialPage<FamilyPage>(
+            key: ValueKey(family),
+            child: FamilyPage(family: family),
+          );
+        },
+        routes: (context, location) => [
+          GoRoute(
+            pattern: 'person/:pid',
+            builder: (context, state) {
+              final family = Families.family(state.args['fid']!);
+              final person = family.person(state.args['pid']!);
+
+              return MaterialPage<PersonPage>(
+                key: ValueKey(person),
+                child: PersonPage(family: family, person: person),
+              );
+            },
           ),
-        ),
-        GoRoute(
-          pattern: '/family/:fid',
-          builder: (context, state) {
-            final family = Families.family(state.args['fid']!);
-
-            return MaterialPage<FamilyPage>(
-              key: ValueKey(family),
-              child: FamilyPage(family: family),
-            );
-          },
-        ),
-        GoRoute(
-          pattern: '/family/:fid/person/:pid',
-          builder: (context, state) {
-            final family = Families.family(state.args['fid']!);
-            final person = family.person(state.args['pid']!);
-
-            return MaterialPage<PersonPage>(
-              key: ValueKey(person),
-              child: PersonPage(family: family, person: person),
-            );
-          },
-        ),
-      ];
+        ],
+      ),
+    ],
+  ),
+];
 
   Page<dynamic> _errorBuilder(BuildContext context, GoRouterState state) =>
       MaterialPage<Four04Page>(

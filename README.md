@@ -43,58 +43,32 @@ class App extends StatelessWidget {
   ...
   late final _router = GoRouter(routes: _routesBuilder, error: _errorBuilder);
   List<GoRoute> _routesBuilder(BuildContext context, String location) => [
-        GoRoute(
-          pattern: '/',
-          builder: (context, state) => MaterialPage<FamiliesPage>(
-            key: const ValueKey('FamiliesPage'),
-            child: FamiliesPage(families: Families.data),
-          ),
-        ),
-        GoRoute(
-          pattern: '/family/:fid',
-          builder: (context, state) {
-            final family = Families.family(state.args['fid']!);
-
-            return MaterialPage<FamilyPage>(
-              key: ValueKey(family),
-              child: FamilyPage(family: family),
-            );
-          },
-        ),
-        GoRoute(
-          pattern: '/family/:fid/person/:pid',
-          builder: (context, state) {
-            final family = Families.family(state.args['fid']!);
-            final person = family.person(state.args['pid']!);
-
-            return MaterialPage<PersonPage>(
-              key: ValueKey(person),
-              child: PersonPage(family: family, person: person),
-            );
-          },
-        ),
-      ];
+    GoRoute(
+      pattern: '/',
+      builder: (context, state) => MaterialPage<FamiliesPage>(
+        key: const ValueKey('FamiliesPage'),
+        child: FamiliesPage(families: Families.data),
+      ),
+    ),
+    GoRoute(
+      pattern: '/login',
+      builder: (context, state) => MaterialPage<LoginPage>(
+        key: const ValueKey('LoginPage'),
+        child: LoginPage(),
+      ),
+    ),
+  ];
   ...
 }
 ```
 
-In this case, we've defined 3 routes. The route name patterns are defined and
+In this case, we've defined two routes. The route name patterns are defined and
 implemented in the [`path_to_regexp`](https://pub.dev/packages/path_to_regexp)
 package, which gives you the ability to include regular expressions, e.g.
 `/family/:fid(f\d+)`. These route name patterns will be matched in order and
-every pattern that matches a prefix of the location will be a page on the
-navigation stack like so:
-
-pattern                    | example location       | navigation stack
----------------------------|------------------------|-----------------
-`/`                        | `/`                    | `FamiliesPage()` &larr;
-`/family/:fid`             | `/family/f1`           | `FamiliesPage()` <br> `FamilyPage(f1)` &larr;
-`/family/:fid/person/:pid` | `/family/f1/person/p2` | `FamiliesPage()`<br> `FamilyPage(f1)`<br> `PersonPage(p2)` &larr;
-
-The order of the patterns in the list of routes dictates the order in the
-navigation stack. The navigation stack is used to pop up to the previous page in
-the stack when the user press the Back button or your app calls
-`Navigation.pop()`.
+only a single pattern will be matched, specifically the one that matches the
+entire route name (and so it doesn't matter in which order you list your
+routes).
 
 In addition to the pattern, a `GoRoute` contains a page builder function which
 is called to create the page when a pattern is matched. That function can use
@@ -159,6 +133,67 @@ onTap: () => context.go('/family/f1/person/p2')
 The simplified version maps directly to the more fully-specified version, so you
 can use either. If you're curious, the ability to just call `context.go(...)`
 and have the right thing happen is where the name of the go_router came from.
+
+# Sub-pages: building a navigation stack
+A route name, e.g. `/family/f1/person/p2`, can match be made to match multiple
+pages to create a navigation stack, e.g.
+
+```
+/         => FamiliesPage()
+family/f1 => FamilyPage('f1')
+person/p2 => PersonPage('p2') ← showing this page, Back pops the stack ↑
+```
+To specify a set of pages like this, you can use sub-page routing:
+
+```dart
+List<GoRoute> _routesBuilder(BuildContext context, String location) => [
+  GoRoute(
+    pattern: '/',
+    builder: (context, state) => MaterialPage<FamiliesPage>(
+      key: const ValueKey('FamiliesPage'),
+      child: FamiliesPage(families: Families.data),
+    ),
+    routes: (context, location) => [
+      GoRoute(
+        pattern: 'family/:fid',
+        builder: (context, state) {
+          final family = Families.family(state.args['fid']!);
+
+          return MaterialPage<FamilyPage>(
+            key: ValueKey(family),
+            child: FamilyPage(family: family),
+          );
+        },
+        routes: (context, location) => [
+          GoRoute(
+            pattern: 'person/:pid',
+            builder: (context, state) {
+              final family = Families.family(state.args['fid']!);
+              final person = family.person(state.args['pid']!);
+
+              return MaterialPage<PersonPage>(
+                key: ValueKey(person),
+                child: PersonPage(family: family, person: person),
+              );
+            },
+          ),
+        ],
+      ),
+    ],
+  ),
+  GoRoute(
+    pattern: '/login',
+    builder: (context, state) => MaterialPage<LoginPage>(
+      key: const ValueKey('LoginPage'),
+      child: LoginPage(),
+    ),
+  ),
+];
+```
+
+The go_router will match the routes all the way down the tree of sub-routes to
+build up a stack of pages. If the entire route name doesn't match, then the
+go_router will keep looking until it matches the whole route name.
 
 # URL Path Strategy
 By default, Flutter adds a hash (#) into the URL for web apps:
