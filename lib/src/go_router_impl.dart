@@ -30,8 +30,10 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   }
 
   @override
-  Widget build(BuildContext context) =>
-      builder(context, _loc.toString().trim());
+  Widget build(BuildContext context) {
+    print('build ${_loc}');
+    return builder(context, _loc.toString().trim());
+  }
 
   @override
   Future<void> setNewRoutePath(Uri configuration) async {
@@ -68,9 +70,11 @@ class GoRedirect extends Page<dynamic> {
 /// anywhere in your app.
 class InheritedGoRouter extends InheritedWidget {
   final GoRouter goRouter;
-  const InheritedGoRouter(
-      {required Widget child, required this.goRouter, Key? key})
-      : super(child: child, key: key);
+  const InheritedGoRouter({
+    required Widget child,
+    required this.goRouter,
+    Key? key,
+  }) : super(child: child, key: key);
 
   @override
   bool updateShouldNotify(covariant InheritedWidget oldWidget) => true;

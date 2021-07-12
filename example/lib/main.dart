@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'shared/data.dart';
 import 'shared/pages.dart';
 
 void main() => runApp(App());
@@ -18,42 +17,22 @@ class App extends StatelessWidget {
       );
 
   late final _router = GoRouter(routes: _routesBuilder, error: _errorBuilder);
-List<GoRoute> _routesBuilder(BuildContext context, String location) => [
-  GoRoute(
-    pattern: '/',
-    builder: (context, state) => MaterialPage<FamiliesPage>(
-      key: const ValueKey('FamiliesPage'),
-      child: FamiliesPage(families: Families.data),
-    ),
-    routes: (context, location) => [
-      GoRoute(
-        pattern: 'family/:fid',
-        builder: (context, state) {
-          final family = Families.family(state.args['fid']!);
-
-          return MaterialPage<FamilyPage>(
-            key: ValueKey(family),
-            child: FamilyPage(family: family),
-          );
-        },
-        routes: (context, location) => [
-          GoRoute(
-            pattern: 'person/:pid',
-            builder: (context, state) {
-              final family = Families.family(state.args['fid']!);
-              final person = family.person(state.args['pid']!);
-
-              return MaterialPage<PersonPage>(
-                key: ValueKey(person),
-                child: PersonPage(family: family, person: person),
-              );
-            },
+  List<GoRoute> _routesBuilder(BuildContext context, String location) => [
+        GoRoute(
+          pattern: '/',
+          builder: (context, state) => const MaterialPage<HomePage>(
+            key: ValueKey('HomePage'),
+            child: HomePage(),
           ),
-        ],
-      ),
-    ],
-  ),
-];
+        ),
+        GoRoute(
+          pattern: '/page2',
+          builder: (context, state) => const MaterialPage<Page2Page>(
+            key: ValueKey('Page2Page'),
+            child: Page2Page(),
+          ),
+        ),
+      ];
 
   Page<dynamic> _errorBuilder(BuildContext context, GoRouterState state) =>
       MaterialPage<Four04Page>(

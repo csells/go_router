@@ -64,12 +64,27 @@ class GoRoute {
   /// a function to create the list of page route builders for a given location
   final GoRouterRoutesBuilder? routes;
 
+  final _patterParams = <String>[];
+  late final RegExp _patternRE;
+
   /// ctor
   GoRoute({
     required this.pattern,
     required this.builder,
     this.routes,
-  });
+  }) {
+    // cache the pattern regexp and parameters
+    _patternRE = p2re.pathToRegExp(
+      pattern,
+      prefix: true,
+      caseSensitive: false,
+      parameters: _patterParams,
+    );
+  }
+
+  Match? matchPatternAsPrefix(String loc) => _patternRE.matchAsPrefix(loc);
+  Map<String, String> extractPatternParams(Match match) =>
+      p2re.extract(_patterParams, match);
 }
 
 /// top-level go_router class; create one of these to initialize your app's
@@ -81,16 +96,25 @@ class GoRouter {
 
   /// configure a GoRouter with a routes builder and an error page builder
   GoRouter({
+    /// a function to create the list of page route builders for a given
+    /// location
     required GoRouterRoutesBuilder routes,
+
+    /// a function to create the error page for a given location
     required GoRouterPageBuilder error,
+
+    /// a function to create the redirect for a given location
     GoRouteRedirectBuilder redirect = _noop,
+
+    /// the initial location to use for routing
     String initialLocation = '/',
+
+    /// the URL path strategy to use for routing
     UrlPathStrategy? urlPathStrategy = UrlPathStrategy.hash,
   }) {
-    if (urlPathStrategy != null) setUrlPathStrategy(urlPathStrategy);
-
-    _routerDelegate = GoRouterDelegate(
-      // wrap the returned Navigator to enable GoRouter.of(context).go()
+    _init(
+      initialLocation: initialLocation,
+      urlPathStrategy: urlPathStrategy,
       builder: (context, location) => InheritedGoRouter(
         goRouter: this,
         child: _builder(
@@ -101,17 +125,28 @@ class GoRouter {
           location: location,
         ),
       ),
-      initialLocation: Uri.parse(initialLocation),
     );
   }
 
   static String? _noop(BuildContext context, GoRouterState state) => null;
 
-  /// configure a GoRouter with a low-level builder
+  /// configure a GoRouter with a widget builder
   GoRouter.builder({
     required GoRouterWidgetBuilder builder,
     String initialLocation = '/',
     UrlPathStrategy? urlPathStrategy,
+  }) {
+    _init(
+      initialLocation: initialLocation,
+      urlPathStrategy: urlPathStrategy,
+      builder: builder,
+    );
+  }
+
+  void _init({
+    required GoRouterWidgetBuilder builder,
+    required String initialLocation,
+    required UrlPathStrategy? urlPathStrategy,
   }) {
     if (urlPathStrategy != null) setUrlPathStrategy(urlPathStrategy);
 
@@ -154,6 +189,13 @@ class GoRouter {
     required GoRouteRedirectBuilder redirect,
     required String location,
   }) {
+    // walk the routes tree looking for a match of the location at this level of
+    // the tree
+    if (route.pattern.match(location)) {}
+
+    // build the stack of pages that matches the location
+    // TODO
+
     try {
       final locPages = _getLocPages(context, location, routes, redirect);
       // _goLocPages should ensure this
@@ -202,6 +244,29 @@ class GoRouter {
     );
   }
 
+  Iterable<GoRoute> _getLocRoutes(
+    String root,
+    String location,
+    Iterable<GoRoute> routes,
+  ) {
+    final uri = Uri.parse(location);
+
+    for (final route in routes) {
+      // TODO:STARTHERE
+      final match = route.matchPatternAsPrefix(uri.path);
+      if (match == null) continue;
+      final args = route.extractPatternParams(match);
+
+      // add any query parameters but don't override existing positional params
+      for (final param in uri.queryParameters.entries)
+        if (!args.containsKey(param.key)) args[param.key] = param.value;
+
+      // expand the route pattern with the current set of args to get location
+      // for a future pop. get a redirect or page from the builder.
+      final pageLoc = GoRouter._locationFor(route.pattern, args);
+    }
+  }
+
   Map<String, Page<dynamic>> _getLocPages(
     BuildContext context,
     String location,
@@ -213,8 +278,12 @@ class GoRouter {
       // pull the parameters out of the path of the location (w/o any query
       // parameters)
       final params = <String>[];
-      final re = p2re.pathToRegExp(route.pattern,
-          prefix: true, caseSensitive: false, parameters: params);
+      final re = p2re.pathToRegExp(
+        route.pattern,
+        prefix: true,
+        caseSensitive: false,
+        parameters: params,
+      );
       final uri = Uri.parse(location);
       final match = re.matchAsPrefix(uri.path);
       if (match == null) continue;

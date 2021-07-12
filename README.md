@@ -143,7 +143,8 @@ pages to create a navigation stack, e.g.
 family/f1 => FamilyPage('f1')
 person/p2 => PersonPage('p2') ← showing this page, Back pops the stack ↑
 ```
-To specify a set of pages like this, you can use sub-page routing:
+To specify a set of pages like this, you can use sub-page routing via the
+`routes` parameter to the `GoRoute` constructor:
 
 ```dart
 List<GoRoute> _routesBuilder(BuildContext context, String location) => [
@@ -164,20 +165,6 @@ List<GoRoute> _routesBuilder(BuildContext context, String location) => [
             child: FamilyPage(family: family),
           );
         },
-        routes: (context, location) => [
-          GoRoute(
-            pattern: 'person/:pid',
-            builder: (context, state) {
-              final family = Families.family(state.args['fid']!);
-              final person = family.person(state.args['pid']!);
-
-              return MaterialPage<PersonPage>(
-                key: ValueKey(person),
-                child: PersonPage(family: family, person: person),
-              );
-            },
-          ),
-        ],
       ),
     ],
   ),
@@ -193,7 +180,8 @@ List<GoRoute> _routesBuilder(BuildContext context, String location) => [
 
 The go_router will match the routes all the way down the tree of sub-routes to
 build up a stack of pages. If the entire route name doesn't match, then the
-go_router will keep looking until it matches the whole route name.
+go_router will keep looking until it matches the whole route name. If it doesn't
+find a match of the entire route name, then the error handler will be called.
 
 # URL Path Strategy
 By default, Flutter adds a hash (#) into the URL for web apps:

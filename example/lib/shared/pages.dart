@@ -7,6 +7,48 @@ import 'data.dart';
 String _title(BuildContext context) =>
     (context as Element).findAncestorWidgetOfExactType<MaterialApp>()!.title;
 
+/// sample page to show home
+class HomePage extends StatelessWidget {
+  const HomePage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: Text(_title(context))),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: () => context.go('/page2'),
+                child: const Text('Go to page 2'),
+              ),
+            ],
+          ),
+        ),
+      );
+}
+
+/// sample page to show home
+class Page2Page extends StatelessWidget {
+  const Page2Page({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: Text(_title(context))),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: () => context.go('/'),
+                child: const Text('Go to home page'),
+              ),
+            ],
+          ),
+        ),
+      );
+}
+
 /// sample page to show families
 class FamiliesPage extends StatelessWidget {
   final List<Family> families;
