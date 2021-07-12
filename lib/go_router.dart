@@ -62,7 +62,7 @@ class GoRoute {
   final GoRouterPageBuilder builder;
 
   /// a function to create the list of page route builders for a given location
-  final GoRouterRoutesBuilder? routes;
+  final List<GoRoute>? routes;
 
   final _patterParams = <String>[];
   late final RegExp _patternRE;
@@ -191,7 +191,7 @@ class GoRouter {
   }) {
     // walk the routes tree looking for a match of the location at this level of
     // the tree
-    if (route.pattern.match(location)) {}
+    // TODO
 
     // build the stack of pages that matches the location
     // TODO
@@ -244,27 +244,43 @@ class GoRouter {
     );
   }
 
-  Iterable<GoRoute> _getLocRoutes(
-    String root,
-    String location,
+  @visibleForTesting
+  Iterable<GoRoute> getLocRoutes(
+    String relLoc,
     Iterable<GoRoute> routes,
   ) {
-    final uri = Uri.parse(location);
-
+    // find the set of matches at this level of the tree
+    final matchedRoutes = <GoRoute, Match>{};
     for (final route in routes) {
-      // TODO:STARTHERE
-      final match = route.matchPatternAsPrefix(uri.path);
-      if (match == null) continue;
-      final args = route.extractPatternParams(match);
-
-      // add any query parameters but don't override existing positional params
-      for (final param in uri.queryParameters.entries)
-        if (!args.containsKey(param.key)) args[param.key] = param.value;
-
-      // expand the route pattern with the current set of args to get location
-      // for a future pop. get a redirect or page from the builder.
-      final pageLoc = GoRouter._locationFor(route.pattern, args);
+      final match = route.matchPatternAsPrefix(relLoc);
+      if (match != null) matchedRoutes[route] = match;
     }
+
+    // no routes found
+    if (matchedRoutes.isEmpty) return [];
+
+    if (matchedRoutes.length > 1) {
+      final routesStr = matchedRoutes.keys.map((r) => r.pattern).join(', ');
+      throw Exception('matched too many routes: $routesStr');
+    }
+
+    // check to see if we have a complete or partial match
+    assert(matchedRoutes.length == 1);
+    final route = matchedRoutes.keys.first;
+    final match = matchedRoutes.values.first;
+    final params = route.extractPatternParams(match);
+    final loc = GoRouter._locationFor(route.pattern, params);
+
+    // if we have a complete match, then return the matched route
+    if (loc == relLoc) return [route];
+
+    // no routes found
+    if (route.routes == null) return [];
+
+    // recurse into the children of the matched route
+    assert(loc.length > relLoc.length);
+    final tail = loc.substring(relLoc.length);
+    return [route, ...getLocRoutes(tail, route.routes!)];
   }
 
   Map<String, Page<dynamic>> _getLocPages(
