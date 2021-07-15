@@ -6,7 +6,7 @@ void main() {
   test('match home route', () {
     const loc = '/';
     final routes = [
-      GoRoute(pattern: '/', builder: (context, state) => DummyPage()),
+      GoRoute(pattern: '/', builder: _dummy),
     ];
 
     final router = _router(routes);
@@ -18,8 +18,8 @@ void main() {
   test('match too many routes', () {
     const loc = '/';
     final routes = [
-      GoRoute(pattern: '/', builder: (context, state) => DummyPage()),
-      GoRoute(pattern: '/', builder: (context, state) => DummyPage()),
+      GoRoute(pattern: '/', builder: _dummy),
+      GoRoute(pattern: '/', builder: _dummy),
     ];
 
     final router = _router(routes);
@@ -29,7 +29,7 @@ void main() {
   test('match no routes', () {
     const loc = '/';
     final routes = [
-      GoRoute(pattern: '/', builder: (context, state) => DummyPage()),
+      GoRoute(pattern: '/', builder: _dummy),
     ];
 
     final router = _router(routes);
@@ -40,8 +40,8 @@ void main() {
   test('match 2nd top level route', () {
     const loc = '/login';
     final routes = [
-      GoRoute(pattern: '/', builder: (context, state) => DummyPage()),
-      GoRoute(pattern: '/login', builder: (context, state) => DummyPage()),
+      GoRoute(pattern: '/', builder: _dummy),
+      GoRoute(pattern: '/login', builder: _dummy),
     ];
 
     final router = _router(routes);
@@ -56,7 +56,7 @@ void main() {
         pattern: '/',
         builder: (context, state) => DummyPage(),
         routes: [
-          GoRoute(pattern: 'login', builder: (context, state) => DummyPage())
+          GoRoute(pattern: 'login', builder: _dummy),
         ],
       ),
     ];
@@ -78,3 +78,5 @@ class DummyPage extends Page<dynamic> {
   @override
   Route createRoute(BuildContext context) => throw UnimplementedError();
 }
+
+Page<dynamic> _dummy(BuildContext context, GoRouterState state) => DummyPage();
