@@ -30,10 +30,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   }
 
   @override
-  Widget build(BuildContext context) {
-    print('build ${_loc}');
-    return builder(context, _loc.toString().trim());
-  }
+  Widget build(BuildContext context) =>
+      builder(context, _loc.toString().trim());
 
   @override
   Future<void> setNewRoutePath(Uri configuration) async {

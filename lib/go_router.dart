@@ -80,6 +80,15 @@ class GoRoute {
       caseSensitive: false,
       parameters: _patterParams,
     );
+
+    // check sub-route patterns
+    for (final route in routes ?? <GoRoute>[]) {
+      if (route.pattern != '/' &&
+          (route.pattern.startsWith('/') || route.pattern.endsWith('/'))) {
+        throw Exception(
+            'sub-route pattern may not start or end with "/": $pattern');
+      }
+    }
   }
 
   Match? matchPatternAsPrefix(String loc) => _patternRE.matchAsPrefix(loc);
@@ -189,13 +198,6 @@ class GoRouter {
     required GoRouteRedirectBuilder redirect,
     required String location,
   }) {
-    // walk the routes tree looking for a match of the location at this level of
-    // the tree
-    // TODO
-
-    // build the stack of pages that matches the location
-    // TODO
-
     try {
       final locPages = _getLocPages(context, location, routes, redirect);
       // _goLocPages should ensure this
@@ -244,43 +246,60 @@ class GoRouter {
     );
   }
 
-  @visibleForTesting
-  Iterable<GoRoute> getLocRoutes(
-    String relLoc,
+  static List<GoRouteMatch> getLocRouteMatchStack(
+    String loc,
     Iterable<GoRoute> routes,
   ) {
+    final locRouteMatchStacks = _getLocRouteMatchStacks(loc, routes);
+    if (locRouteMatchStacks.isEmpty)
+      throw Exception('no routes for location: $loc');
+
+    if (locRouteMatchStacks.length > 1) {
+      final sb = StringBuffer();
+      sb.writeln('too many routes for location: $loc');
+
+      for (final stack in locRouteMatchStacks) {
+        sb.writeln('\t${stack.map((m) => m.route.pattern).join(' => ')}');
+      }
+
+      throw Exception(sb.toString());
+    }
+
+    return locRouteMatchStacks.first;
+  }
+
+  static Iterable<List<GoRouteMatch>> _getLocRouteMatchStacks(
+    String loc,
+    Iterable<GoRoute> routes,
+  ) sync* {
     // find the set of matches at this level of the tree
-    final matchedRoutes = <GoRoute, Match>{};
     for (final route in routes) {
-      final match = route.matchPatternAsPrefix(relLoc);
-      if (match != null) matchedRoutes[route] = match;
+      final match = GoRouteMatch.match(route, loc);
+      if (match == null) continue;
+
+      // if we have a complete match, then return the matched route
+      if (match.loc == loc) {
+        yield [match];
+        continue;
+      }
+
+      // if we have a partial match but no sub-routes, bail
+      if (route.routes == null) continue;
+
+      // otherwise recurse
+      final rest = loc.substring(match.loc.length + (match.loc == '/' ? 0 : 1));
+      assert(loc.startsWith(match.loc));
+      assert(rest.isNotEmpty);
+
+      // if there's no sub-route matches, then we don't have a match for this
+      // location
+      final subRouteMatchStacks =
+          _getLocRouteMatchStacks(rest, route.routes!).toList();
+      if (subRouteMatchStacks.isEmpty) continue;
+
+      // add the match to each of the sub-route match stacks and return them
+      for (final stack in subRouteMatchStacks) yield [match, ...stack];
     }
-
-    // no routes found
-    if (matchedRoutes.isEmpty) return [];
-
-    if (matchedRoutes.length > 1) {
-      final routesStr = matchedRoutes.keys.map((r) => r.pattern).join(', ');
-      throw Exception('matched too many routes: $routesStr');
-    }
-
-    // check to see if we have a complete or partial match
-    assert(matchedRoutes.length == 1);
-    final route = matchedRoutes.keys.first;
-    final match = matchedRoutes.values.first;
-    final params = route.extractPatternParams(match);
-    final loc = GoRouter._locationFor(route.pattern, params);
-
-    // if we have a complete match, then return the matched route
-    if (loc == relLoc) return [route];
-
-    // no routes found
-    if (route.routes == null) return [];
-
-    // recurse into the children of the matched route
-    assert(loc.length > relLoc.length);
-    final tail = loc.substring(relLoc.length);
-    return [route, ...getLocRoutes(tail, route.routes!)];
   }
 
   Map<String, Page<dynamic>> _getLocPages(
@@ -311,7 +330,7 @@ class GoRouter {
 
       // expand the route pattern with the current set of args to get location
       // for a future pop. get a redirect or page from the builder.
-      final pageLoc = GoRouter._locationFor(route.pattern, args);
+      final pageLoc = GoRouter.locationFor(route.pattern, args);
       final state = GoRouterState(
         router: this,
         location: location,
@@ -354,8 +373,23 @@ class GoRouter {
         uri1.path.toLowerCase().trim() == uri2.path.toLowerCase().trim();
   }
 
-  static String _locationFor(String pattern, Map<String, String> args) =>
+  static String locationFor(String pattern, Map<String, String> args) =>
       p2re.pathToFunction(pattern)(args);
+}
+
+class GoRouteMatch {
+  final GoRoute route;
+  final String loc;
+  final Map<String, String> params;
+  GoRouteMatch(this.route, this.loc, this.params);
+
+  static GoRouteMatch? match(GoRoute route, String location) {
+    final match = route.matchPatternAsPrefix(location);
+    if (match == null) return null;
+    final params = route.extractPatternParams(match);
+    final subloc = GoRouter.locationFor(route.pattern, params);
+    return GoRouteMatch(route, subloc, params);
+  }
 }
 
 /// Dart extension to add the go() function to a BuildContext object, e.g.
