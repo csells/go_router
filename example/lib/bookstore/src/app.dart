@@ -44,7 +44,7 @@ class Bookstore extends StatelessWidget {
           pattern: '/book/:bookId',
           builder: (context, state) {
             final library = context.read<Library>();
-            final bookId = int.tryParse(state.args['bookId'] ?? '') ?? -1;
+            final bookId = int.tryParse(state.params['bookId'] ?? '') ?? -1;
             final book = library.findBook(bookId);
 
             return MaterialPage<BookDetailsScreen>(
@@ -58,7 +58,7 @@ class Bookstore extends StatelessWidget {
           pattern: '/author/:authorId',
           builder: (context, state) {
             final library = context.read<Library>();
-            final authorId = int.tryParse(state.args['authorId'] ?? '') ?? -1;
+            final authorId = int.tryParse(state.params['authorId'] ?? '') ?? -1;
             final author = library.findAuthor(authorId);
 
             return MaterialPage<void>(

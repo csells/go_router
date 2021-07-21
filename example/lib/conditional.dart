@@ -37,7 +37,7 @@ class App extends StatelessWidget {
     GoRoute(
       pattern: '/family/:fid',
       builder: (context, state) {
-        final family = Families.family(state.args['fid']!);
+        final family = Families.family(state.params['fid']!);
 
         return MaterialPage<FamilyPage>(
           key: ValueKey(family),
@@ -48,8 +48,8 @@ class App extends StatelessWidget {
     GoRoute(
       pattern: '/family/:fid/person/:pid',
       builder: (context, state) {
-        final family = Families.family(state.args['fid']!);
-        final person = family.person(state.args['pid']!);
+        final family = Families.family(state.params['fid']!);
+        final person = family.person(state.params['pid']!);
 
         return MaterialPage<PersonPage>(
           key: ValueKey(person),

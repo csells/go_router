@@ -40,7 +40,7 @@ class App extends StatelessWidget {
         GoRoute(
           pattern: '/family/:fid',
           builder: (context, state) {
-            final family = Families.family(state.args['fid']!);
+            final family = Families.family(state.params['fid']!);
             return MaterialPage<FamilyPage>(
               key: ValueKey(family),
               child: FamilyPage(family: family),
@@ -50,8 +50,8 @@ class App extends StatelessWidget {
         GoRoute(
           pattern: '/family/:fid/person/:pid',
           builder: (context, state) {
-            final family = Families.family(state.args['fid']!);
-            final person = family.person(state.args['pid']!);
+            final family = Families.family(state.params['fid']!);
+            final person = family.person(state.params['pid']!);
             return MaterialPage<PersonPage>(
               key: ValueKey(person),
               child: PersonPage(family: family, person: person),
@@ -62,19 +62,20 @@ class App extends StatelessWidget {
           pattern: '/login',
           builder: (context, state) => MaterialPage<LoginPage>(
             key: const ValueKey('LoginPage'),
-            child: LoginPage(from: state.args['from']),
+            child: LoginPage(from: state.params['from']),
           ),
         ),
       ];
 
   // redirect based on app and routing state
-  String? _redirect(BuildContext context, GoRouterState state) {
+  String? _redirect(BuildContext context, String location) {
     // watching LoginInfo will cause a change in LoginInfo to trigger routing
     final loggedIn = context.watch<LoginInfo>().loggedIn;
-    final goingToLogin = state.pattern == '/login';
+    final loc = Uri.parse(location).path;
+    final goingToLogin = loc == '/login';
 
     // the user is not logged in and not headed to /login, they need to login
-    if (!loggedIn && !goingToLogin) return '/login?from=${state.location}';
+    if (!loggedIn && !goingToLogin) return '/login?from=$loc';
 
     // the user is logged in and headed to /login, no need to login again
     if (loggedIn && goingToLogin) return '/';

@@ -32,7 +32,7 @@ typedef GoRouterPageBuilder = Page<dynamic> Function(
 /// the signature of the redirect builder callback for guarded routes
 typedef GoRouteRedirectBuilder = String? Function(
   BuildContext context,
-  GoRouterState state,
+  String location,
 );
 
 /// for route state during routing
@@ -40,14 +40,14 @@ class GoRouterState {
   final GoRouter router;
   final String location;
   final String pattern;
-  final Map<String, String> args;
+  final Map<String, String> params;
   final Exception? error;
 
   GoRouterState({
     required this.router,
     required this.location,
     this.pattern = '',
-    this.args = const <String, String>{},
+    this.params = const <String, String>{},
     this.error,
   });
 }
@@ -134,7 +134,7 @@ class GoRouter {
     );
   }
 
-  static String? _noop(BuildContext context, GoRouterState state) => null;
+  static String? _noop(BuildContext context, String location) => null;
 
   /// configure a GoRouter with a widget builder
   GoRouter.builder({
@@ -191,32 +191,35 @@ class GoRouter {
   Widget _builder({
     required BuildContext context,
     required Iterable<GoRoute> routes,
-    required GoRouterPageBuilder error,
     required GoRouteRedirectBuilder redirect,
+    required GoRouterPageBuilder error,
     required String location,
   }) {
     try {
-      final locPages = _getLocPages(context, location, routes, redirect);
-      // _goLocPages should ensure this
-      assert(locPages.isNotEmpty);
-
-      // if the single page on the stack is a redirect, then go there
-      if (locPages.entries.first.value is GoRedirect) {
-        // _goLocPages should ensure this
-        assert(locPages.entries.length == 1);
-
-        final redirect = locPages.entries.first.value as GoRedirect;
-        if (_locationsMatch(redirect.location, location))
+      // check for redirect before building the stack of pages
+      final redirectLoc = redirect(context, location);
+      if (redirectLoc != null) {
+        // check for redirecting to same location
+        if (_locationsMatch(redirectLoc, location)) {
           throw Exception('redirecting to same location: $location');
+        }
 
+        // check for redirect redirecting
+        final redirectLoc2 = redirect(context, redirectLoc);
+        if (redirectLoc2 != null) {
+          throw Exception(
+            'redirect redirecting: $location => $redirectLoc => $redirectLoc2',
+          );
+        }
+
+        // schedule a new routing event
         SchedulerBinding.instance?.addPostFrameCallback(
-          (_) => _routerDelegate.go(redirect.location),
+          (_) => _routerDelegate.go(redirectLoc),
         );
-      }
-      // otherwise use this stack as is
-      else {
-        // _goLocPages should ensure this
-        assert(locPages.entries.whereType<GoRedirect>().isEmpty);
+      } else {
+        // no redirect, build the stack of pages
+        final locPages = _getLocPages(context, location, routes);
+        assert(locPages.isNotEmpty);
         _locPages.clear();
         _locPages.addAll(locPages);
       }
@@ -224,7 +227,9 @@ class GoRouter {
       // if there's an error, show an error page
       _locPages.clear();
       _locPages[location] = error(
-          context, GoRouterState(router: this, location: location, error: ex));
+        context,
+        GoRouterState(router: this, location: location, error: ex),
+      );
     }
 
     return Navigator(
@@ -243,28 +248,121 @@ class GoRouter {
     );
   }
 
+  /// get the stack of routes that matches the location and turn it into a stack
+  /// of sub-location, page pairs
+  /// e.g. routes: [
+  ///   /
+  ///     family/:fid
+  ///   /login
+  /// ]
+  ///
+  /// loc: /
+  /// pairs: [
+  ///   / => FamiliesPage()
+  /// ]
+  ///
+  /// loc: /login
+  /// pairs: [
+  ///   /login => LoginPage()
+  /// ]
+  ///
+  /// loc: /family/f1
+  /// pairs: [
+  ///   / => FamiliesPage()
+  ///   /family/f1 => FamilyPage(f1)
+  /// ]
+  Map<String, Page<dynamic>> _getLocPages(
+    BuildContext context,
+    String location,
+    Iterable<GoRoute> routes,
+  ) {
+    final uri = Uri.parse(location);
+    final matchStack = getLocRouteMatchStack(uri.path, routes);
+    assert(matchStack.isNotEmpty);
+
+    final locPages = <String, Page<dynamic>>{};
+    for (final match in matchStack) {
+      // get a page from the builder and associate it with a sub-location
+      locPages[match.loc] = match.route.builder(
+        context,
+        GoRouterState(
+          router: this,
+          location: location,
+          pattern: match.route.pattern,
+          // add any query parameters but don't override existing positional params
+          params: {...uri.queryParameters, ...match.params},
+        ),
+      );
+    }
+
+    assert(locPages.isNotEmpty);
+    return locPages;
+  }
+
+  /// Call _getLocRouteMatchStacks and check for errors
+  @visibleForTesting
   static List<GoRouteMatch> getLocRouteMatchStack(
     String loc,
     Iterable<GoRoute> routes,
   ) {
-    final locRouteMatchStacks = _getLocRouteMatchStacks(loc, routes);
-    if (locRouteMatchStacks.isEmpty)
-      throw Exception('no routes for location: $loc');
+    // assume somebody else has removed the query params
+    assert(Uri.parse(loc).path == loc);
 
-    if (locRouteMatchStacks.length > 1) {
+    final matchStacks = _getLocRouteMatchStacks(loc, routes);
+    if (matchStacks.isEmpty) {
+      throw Exception('no routes for location: $loc');
+    }
+
+    if (matchStacks.length > 1) {
       final sb = StringBuffer();
       sb.writeln('too many routes for location: $loc');
 
-      for (final stack in locRouteMatchStacks) {
+      for (final stack in matchStacks) {
         sb.writeln('\t${stack.map((m) => m.route.pattern).join(' => ')}');
       }
 
       throw Exception(sb.toString());
     }
 
-    return locRouteMatchStacks.first;
+    assert(matchStacks.length == 1);
+    return matchStacks.first;
   }
 
+  /// turns a list of routes into a list of routes match stacks for the location
+  /// e.g. routes: [
+  ///   /
+  ///     family/:fid
+  ///   /login
+  /// ]
+  ///
+  /// loc: /
+  /// stacks: [
+  ///   matches: [
+  ///     match(route.pattern=/, loc=/)
+  ///   ]
+  /// ]
+  ///
+  /// loc: /login
+  /// stacks: [
+  ///   matches: [
+  ///     match(route.pattern=/login, loc=/login)
+  ///   ]
+  /// ]
+  ///
+  /// loc: /family/f1
+  /// stacks: [
+  ///   matches: [
+  ///     match(route.pattern=/, loc=/),
+  ///     match(route.pattern=family/:fid, loc=/family/f1, params=[fid=f1])
+  ///   ]
+  /// ]
+  ///
+  /// A stack count of 0 means there's no match.
+  /// A stack count of >1 means there's a malformed set of routes.
+  ///
+  /// NOTE: Uses recursion, which is why _getLocRouteMatchStacks calls this
+  /// function and does the actual error checking, using the returned stacks to
+  /// provide better errors
   static Iterable<List<GoRouteMatch>> _getLocRouteMatchStacks(
     String loc,
     Iterable<GoRoute> routes,
@@ -299,68 +397,6 @@ class GoRouter {
     }
   }
 
-  Map<String, Page<dynamic>> _getLocPages(
-    BuildContext context,
-    String location,
-    Iterable<GoRoute> routes,
-    GoRouteRedirectBuilder redirect,
-  ) {
-    final locPages = <String, Page<dynamic>>{};
-    for (final route in routes) {
-      // pull the parameters out of the path of the location (w/o any query
-      // parameters)
-      final params = <String>[];
-      final re = p2re.pathToRegExp(
-        route.pattern,
-        prefix: true,
-        caseSensitive: false,
-        parameters: params,
-      );
-      final uri = Uri.parse(location);
-      final match = re.matchAsPrefix(uri.path);
-      if (match == null) continue;
-      final args = p2re.extract(params, match);
-
-      // add any query parameters but don't override existing positional params
-      for (final param in uri.queryParameters.entries)
-        if (!args.containsKey(param.key)) args[param.key] = param.value;
-
-      // expand the route pattern with the current set of args to get location
-      // for a future pop. get a redirect or page from the builder.
-      final pageLoc = GoRouter.locationFor(route.pattern, args);
-      final state = GoRouterState(
-        router: this,
-        location: location,
-        pattern: route.pattern,
-        args: args,
-      );
-      final redirectLoc = redirect(context, state);
-      final page = redirectLoc == null || redirectLoc.isEmpty
-          ? route.builder(context, state)
-          : GoRedirect(redirectLoc);
-
-      if (locPages.containsKey(pageLoc))
-        throw Exception('duplicate location $pageLoc');
-      locPages[pageLoc] = page;
-    }
-
-    // if the top location doesn't match the target location exactly, then we
-    // haven't got a valid stack of pages; this allows '/' to match as part of a
-    // stack of pages but to fail on '/nonsense'
-    final topMatches =
-        locPages.isNotEmpty && _locationsMatch(locPages.keys.last, location);
-    if (!topMatches) throw Exception('page not found');
-
-    // if the top page on the stack is a redirect, just return it
-    if (locPages.entries.last.value is GoRedirect)
-      return Map.fromEntries([locPages.entries.last]);
-
-    // otherwise, ignore intermediate redirects and use this stack
-    locPages.removeWhere((key, value) => value is GoRedirect);
-    if (locPages.isEmpty) throw Exception('page not found');
-    return locPages;
-  }
-
   static bool _locationsMatch(String loc1, String loc2) {
     // check just the path w/o the queryParameters
     final uri1 = Uri.tryParse(loc1);
@@ -372,21 +408,6 @@ class GoRouter {
 
   static String locationFor(String pattern, Map<String, String> args) =>
       p2re.pathToFunction(pattern)(args);
-}
-
-class GoRouteMatch {
-  final GoRoute route;
-  final String loc;
-  final Map<String, String> params;
-  GoRouteMatch(this.route, this.loc, this.params);
-
-  static GoRouteMatch? match(GoRoute route, String location) {
-    final match = route.matchPatternAsPrefix(location);
-    if (match == null) return null;
-    final params = route.extractPatternParams(match);
-    final subloc = GoRouter.locationFor(route.pattern, params);
-    return GoRouteMatch(route, subloc, params);
-  }
 }
 
 /// Dart extension to add the go() function to a BuildContext object, e.g.
