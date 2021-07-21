@@ -124,15 +124,12 @@ class GoRouter {
     _init(
       initialLocation: initialLocation,
       urlPathStrategy: urlPathStrategy,
-      builder: (context, location) => InheritedGoRouter(
-        goRouter: this,
-        child: _builder(
-          context: context,
-          routes: routes(context, location),
-          error: error,
-          redirect: redirect,
-          location: location,
-        ),
+      builder: (context, location) => _builder(
+        context: context,
+        routes: routes(context, location),
+        error: error,
+        redirect: redirect,
+        location: location,
       ),
     );
   }

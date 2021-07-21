@@ -25,7 +25,7 @@ void main() {
       GoRouter.getLocRouteMatchStack(loc, routes);
       expect(false, true);
     } on Exception catch (ex) {
-      print(ex);
+      dump(ex);
       expect(true, true);
     }
   });
@@ -44,7 +44,7 @@ void main() {
       ];
       expect(false, true);
     } on Exception catch (ex) {
-      print(ex);
+      dump(ex);
       expect(true, true);
     }
   });
@@ -63,7 +63,7 @@ void main() {
       ];
       expect(false, true);
     } on Exception catch (ex) {
-      print(ex);
+      dump(ex);
       expect(true, true);
     }
   });
@@ -78,7 +78,7 @@ void main() {
       GoRouter.getLocRouteMatchStack(loc, routes);
       expect(false, true);
     } on Exception catch (ex) {
-      print(ex);
+      dump(ex);
       expect(true, true);
     }
   });
@@ -150,8 +150,10 @@ void main() {
     expect(locRoutes3[0].route.pattern, '/');
     expect(locRoutes3[1].route.pattern, 'family/:fid');
 
-    final locRoutes4 =
-        GoRouter.getLocRouteMatchStack('/family/f2/person/p1', routes);
+    final locRoutes4 = GoRouter.getLocRouteMatchStack(
+      '/family/f2/person/p1',
+      routes,
+    );
     expect(locRoutes4.length, 3);
     expect(locRoutes4[0].route.pattern, '/');
     expect(locRoutes4[1].route.pattern, 'family/:fid');
@@ -187,7 +189,7 @@ void main() {
       GoRouter.getLocRouteMatchStack(loc, routes);
       expect(false, true);
     } on Exception catch (ex) {
-      print(ex);
+      dump(ex);
       expect(true, true);
     }
   });
@@ -204,3 +206,6 @@ class DummyPage extends Page<dynamic> {
 }
 
 Page<dynamic> _dummy(BuildContext context, GoRouterState state) => DummyPage();
+
+// ignore: avoid_print
+void dump(Object o) => print(o);
