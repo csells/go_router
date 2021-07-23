@@ -85,18 +85,17 @@ class Bookstore extends StatelessWidget {
         ),
       );
 
-  String? _redirect(BuildContext context, GoRouterState state) {
+  String? _redirect(BuildContext context, String location) {
     final auth = context.watch<BookstoreAuth>();
     final signedIn = auth.signedIn;
     const homeLoc = '/';
     const signInLoc = '/signin';
-    final loc = state.location;
 
     // Go to /signin if the user is not signed in
-    if (!signedIn && loc != signInLoc) return signInLoc;
+    if (!signedIn && location != signInLoc) return signInLoc;
 
     // Go to / if the user is signed in and tries to go to /signin
-    if (signedIn && loc == signInLoc) return homeLoc;
+    if (signedIn && location == signInLoc) return homeLoc;
 
     // otherwise, just go where they're going
     return null;

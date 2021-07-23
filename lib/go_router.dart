@@ -86,7 +86,7 @@ class GoRoute {
       if (route.pattern != '/' &&
           (route.pattern.startsWith('/') || route.pattern.endsWith('/'))) {
         throw Exception(
-            'sub-route pattern may not start or end with "/": $pattern');
+            'sub-route pattern may not start or end with /: ${route.pattern}');
       }
     }
   }
@@ -218,7 +218,7 @@ class GoRouter {
         );
       } else {
         // no redirect, build the stack of pages
-        final locPages = _getLocPages(context, location, routes);
+        final locPages = getLocPages(context, location, routes);
         assert(locPages.isNotEmpty);
         _locPages.clear();
         _locPages.addAll(locPages);
@@ -271,13 +271,14 @@ class GoRouter {
   ///   / => FamiliesPage()
   ///   /family/f1 => FamilyPage(f1)
   /// ]
-  Map<String, Page<dynamic>> _getLocPages(
+  @visibleForTesting
+  Map<String, Page<dynamic>> getLocPages(
     BuildContext context,
     String location,
     Iterable<GoRoute> routes,
   ) {
     final uri = Uri.parse(location);
-    final matchStack = getLocRouteMatchStack(uri.path, routes);
+    final matchStack = _getLocRouteMatchStack(uri.path, routes);
     assert(matchStack.isNotEmpty);
 
     final locPages = <String, Page<dynamic>>{};
@@ -289,7 +290,8 @@ class GoRouter {
           router: this,
           location: location,
           pattern: match.route.pattern,
-          // add any query parameters but don't override existing positional params
+          // add any query parameters but don't override existing positional
+          // params
           params: {...uri.queryParameters, ...match.params},
         ),
       );
@@ -301,7 +303,7 @@ class GoRouter {
 
   /// Call _getLocRouteMatchStacks and check for errors
   @visibleForTesting
-  static List<GoRouteMatch> getLocRouteMatchStack(
+  static List<GoRouteMatch> _getLocRouteMatchStack(
     String loc,
     Iterable<GoRoute> routes,
   ) {
