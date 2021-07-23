@@ -14,9 +14,10 @@ void main() {
 
     final router = _router(routes);
     final locPages = router.getLocPages(context, loc, routes);
-    expect(locPages.length, 1);
-    expect(locPages.entries.toList()[0].key, '/');
-    expect(locPages.entries.toList()[0].value.runtimeType, HomePage);
+    final entries = locPages.entries.toList();
+    expect(entries.length, 1);
+    expect(entries[0].key, '/');
+    expect(entries[0].value.runtimeType, HomePage);
   });
 
   test('match too many routes', () {
@@ -80,6 +81,21 @@ void main() {
     }
   });
 
+  test('lack of leading / on top level route', () {
+    try {
+      // ignore: unused_local_variable
+      final routes = [
+        GoRoute(pattern: 'foo', builder: _dummy),
+      ];
+      final router = _router(routes);
+      router.getLocPages(context, '/', routes);
+      expect(false, true);
+    } on Exception catch (ex) {
+      dump(ex);
+      expect(true, true);
+    }
+  });
+
   test('match no routes', () {
     const loc = '/foo';
     final routes = [
@@ -105,9 +121,10 @@ void main() {
 
     final router = _router(routes);
     final locPages = router.getLocPages(context, loc, routes);
-    expect(locPages.length, 1);
-    expect(locPages.entries.toList()[0].key, '/login');
-    expect(locPages.entries.toList()[0].value.runtimeType, LoginPage);
+    final entries = locPages.entries.toList();
+    expect(entries.length, 1);
+    expect(entries[0].key, '/login');
+    expect(entries[0].value.runtimeType, LoginPage);
   });
 
   test('match sub-route', () {
@@ -124,94 +141,121 @@ void main() {
 
     final router = _router(routes);
     final locPages = router.getLocPages(context, loc, routes);
-    expect(locPages.length, 2);
-    expect(locPages.entries.toList()[0].key, '/');
-    expect(locPages.entries.toList()[0].value.runtimeType, HomePage);
-    expect(locPages.entries.toList()[1].key, '/login');
-    expect(locPages.entries.toList()[1].value.runtimeType, LoginPage);
+    final entries = locPages.entries.toList();
+    expect(entries.length, 2);
+    expect(entries[0].key, '/');
+    expect(entries[0].value.runtimeType, HomePage);
+    expect(entries[1].key, '/login');
+    expect(entries[1].value.runtimeType, LoginPage);
   });
 
-  // test('match sub-routes', () {
-  //   final routes = [
-  //     GoRoute(
-  //       pattern: '/',
-  //       builder: (context, state) => DummyPage(),
-  //       routes: [
-  //         GoRoute(
-  //           pattern: 'family/:fid',
-  //           builder: _dummy,
-  //           routes: [
-  //             GoRoute(
-  //               pattern: 'person/:pid',
-  //               builder: _dummy,
-  //             ),
-  //           ],
-  //         ),
-  //         GoRoute(
-  //           pattern: 'login',
-  //           builder: _dummy,
-  //         ),
-  //       ],
-  //     ),
-  //   ];
+  test('match sub-routes', () {
+    final routes = [
+      GoRoute(
+        pattern: '/',
+        builder: (context, state) => HomePage(),
+        routes: [
+          GoRoute(
+            pattern: 'family/:fid',
+            builder: (context, state) => FamilyPage(
+              state.params['fid']!,
+            ),
+            routes: [
+              GoRoute(
+                pattern: 'person/:pid',
+                builder: (context, state) => PersonPage(
+                  state.params['fid']!,
+                  state.params['pid']!,
+                ),
+              ),
+            ],
+          ),
+          GoRoute(
+            pattern: 'login',
+            builder: (context, state) => LoginPage(),
+          ),
+        ],
+      ),
+    ];
 
-  //   final locRoutes1 = GoRouter._getLocRouteMatchStack('/', routes);
-  //   expect(locRoutes1.length, 1);
-  //   expect(locRoutes1[0].route.pattern, '/');
+    final router = _router(routes);
+    {
+      final locPages = router.getLocPages(context, '/', routes);
+      final entries = locPages.entries.toList();
+      expect(entries.length, 1);
+      expect(entries[0].key, '/');
+      expect(entries[0].value.runtimeType, HomePage);
+    }
+    {
+      final locPages = router.getLocPages(context, '/login', routes);
+      final entries = locPages.entries.toList();
+      expect(entries.length, 2);
+      expect(entries[0].key, '/');
+      expect(entries[0].value.runtimeType, HomePage);
+      expect(entries[1].key, '/login');
+      expect(entries[1].value.runtimeType, LoginPage);
+    }
+    {
+      final locPages = router.getLocPages(context, '/family/f2', routes);
+      final entries = locPages.entries.toList();
+      expect(entries.length, 2);
+      expect(entries[0].key, '/');
+      expect(entries[0].value.runtimeType, HomePage);
+      expect(entries[1].key, '/family/f2');
+      expect(entries[1].value.runtimeType, FamilyPage);
+      expect((entries[1].value as FamilyPage).fid, 'f2');
+    }
+    {
+      final locPages =
+          router.getLocPages(context, '/family/f2/person/p1', routes);
+      final entries = locPages.entries.toList();
+      expect(entries.length, 3);
+      expect(entries[0].key, '/');
+      expect(entries[0].value.runtimeType, HomePage);
+      expect(entries[1].key, '/family/f2');
+      expect(entries[1].value.runtimeType, FamilyPage);
+      expect((entries[1].value as FamilyPage).fid, 'f2');
+      expect(entries[2].key, '/family/f2/person/p1');
+      expect(entries[2].value.runtimeType, PersonPage);
+      expect((entries[2].value as PersonPage).fid, 'f2');
+      expect((entries[2].value as PersonPage).pid, 'p1');
+    }
+  });
 
-  //   final locRoutes2 = GoRouter._getLocRouteMatchStack('/login', routes);
-  //   expect(locRoutes2.length, 2);
-  //   expect(locRoutes2[0].route.pattern, '/');
-  //   expect(locRoutes2[1].route.pattern, 'login');
+  test('match too many sub-routes', () {
+    const loc = '/foo/bar';
+    final routes = [
+      GoRoute(
+        pattern: '/',
+        builder: _dummy,
+        routes: [
+          GoRoute(
+            pattern: 'foo/bar',
+            builder: _dummy,
+          ),
+          GoRoute(
+            pattern: 'foo',
+            builder: _dummy,
+            routes: [
+              GoRoute(
+                pattern: 'bar',
+                builder: _dummy,
+              ),
+            ],
+          ),
+        ],
+      ),
+    ];
 
-  //   final locRoutes3 = GoRouter._getLocRouteMatchStack('/family/f2', routes);
-  //   expect(locRoutes3.length, 2);
-  //   expect(locRoutes3[0].route.pattern, '/');
-  //   expect(locRoutes3[1].route.pattern, 'family/:fid');
-
-  //   final locRoutes4 = GoRouter._getLocRouteMatchStack(
-  //     '/family/f2/person/p1',
-  //     routes,
-  //   );
-  //   expect(locRoutes4.length, 3);
-  //   expect(locRoutes4[0].route.pattern, '/');
-  //   expect(locRoutes4[1].route.pattern, 'family/:fid');
-  //   expect(locRoutes4[2].route.pattern, 'person/:pid');
-  // });
-
-  // test('match too many sub-routes', () {
-  //   const loc = '/foo/bar';
-  //   final routes = [
-  //     GoRoute(
-  //       pattern: '/',
-  //       builder: _dummy,
-  //       routes: [
-  //         GoRoute(
-  //           pattern: 'foo/bar',
-  //           builder: _dummy,
-  //         ),
-  //         GoRoute(
-  //           pattern: 'foo',
-  //           builder: _dummy,
-  //           routes: [
-  //             GoRoute(
-  //               pattern: 'bar',
-  //               builder: _dummy,
-  //             ),
-  //           ],
-  //         ),
-  //       ],
-  //     ),
-  //   ];
-
-  //   try {
-  //     GoRouter._getLocRouteMatchStack(loc, routes);
-  //     expect(false, true);
-  //   } on Exception catch (ex) {
-  //     dump(ex);
-  //     expect(true, true);
-  //   }
-  // });
+    try {
+      final router = _router(routes);
+      router.getLocPages(context, loc, routes);
+      expect(false, true);
+    } on Exception catch (ex) {
+      dump(ex);
+      expect(true, true);
+    }
+  });
 }
 
 GoRouter _router(List<GoRoute> routes) => GoRouter(
@@ -314,7 +358,11 @@ class FamilyPage extends DummyPage {
   FamilyPage(this.fid);
 }
 
-class PersonPage extends DummyPage {}
+class PersonPage extends DummyPage {
+  final String fid;
+  final String pid;
+  PersonPage(this.fid, this.pid);
+}
 
 class DummyPage extends Page<dynamic> {
   @override

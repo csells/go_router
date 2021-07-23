@@ -167,11 +167,11 @@ class GoRouter {
   }
 
   /// the RouteInformationParser associated with this GoRouter
-  RouteInformationParser<Object> get routeInformationParser =>
+  GoRouteInformationParser get routeInformationParser =>
       _routeInformationParser;
 
   /// the RouterDelegate associated with this GoRouter
-  RouterDelegate<Object> get routerDelegate => _routerDelegate;
+  GoRouterDelegate get routerDelegate => _routerDelegate;
 
   /// get the current location
   String get location => _locPages.isEmpty ? '' : _locPages.keys.last;
@@ -195,7 +195,17 @@ class GoRouter {
     required GoRouterPageBuilder error,
     required String location,
   }) {
+    // check all of the top level routes
+    for (final route in routes) {
+      if (!route.pattern.startsWith('/')) {
+        throw Exception(
+            'top level route patterns must start with /: ${route.pattern}');
+      }
+    }
+
     try {
+      // TODO: move this to the delegate; redirection is too late at this point
+
       // check for redirect before building the stack of pages
       final redirectLoc = redirect(context, location);
       if (redirectLoc != null) {
@@ -217,6 +227,9 @@ class GoRouter {
           (_) => _routerDelegate.go(redirectLoc),
         );
       } else {
+        // TODO: no need to build a stack of pages for the same location, so add
+        // a shortcut here to avoid that
+
         // no redirect, build the stack of pages
         final locPages = getLocPages(context, location, routes);
         assert(locPages.isNotEmpty);
@@ -258,7 +271,7 @@ class GoRouter {
   ///
   /// loc: /
   /// pairs: [
-  ///   / => FamiliesPage()
+  ///   / => HomePage()
   /// ]
   ///
   /// loc: /login
@@ -266,10 +279,17 @@ class GoRouter {
   ///   /login => LoginPage()
   /// ]
   ///
-  /// loc: /family/f1
+  /// loc: /family/f2
   /// pairs: [
-  ///   / => FamiliesPage()
-  ///   /family/f1 => FamilyPage(f1)
+  ///   / => HomePage()
+  ///   /family/f2 => FamilyPage(f2)
+  /// ]
+  ///
+  /// loc: /family/f2/person/p1
+  /// pairs: [
+  ///   / => HomePage()
+  ///   /family/f2 => FamilyPage(f2)
+  ///   /family/f2/person/p1 => PersonPage(f2, p1)
   /// ]
   @visibleForTesting
   Map<String, Page<dynamic>> getLocPages(
@@ -282,17 +302,29 @@ class GoRouter {
     assert(matchStack.isNotEmpty);
 
     final locPages = <String, Page<dynamic>>{};
+    var subloc = ''; // start w/ an empty sub-location
+    var params = uri.queryParameters; // start w/ the query parameters
     for (final match in matchStack) {
+      // append each sub-location, e.g. / + family/:fid + person/:pid
+      // ignore: use_string_buffers
+      subloc = subloc +
+          (subloc.endsWith('/') || match.loc.startsWith('/') ? '' : '/') +
+          match.loc;
+
+      // merge new params, overriding old ones, i.e. pattern params override
+      // query parameters, sub-location params override top level params, etc.
+      // this also keeps params from previously matched patterns, e.g.
+      // /family/:fid/person/:pid provides fid and pid to person/:pid
+      params = {...params, ...match.params};
+
       // get a page from the builder and associate it with a sub-location
-      locPages[match.loc] = match.route.builder(
+      locPages[subloc.toString()] = match.route.builder(
         context,
         GoRouterState(
           router: this,
           location: location,
           pattern: match.route.pattern,
-          // add any query parameters but don't override existing positional
-          // params
-          params: {...uri.queryParameters, ...match.params},
+          params: params,
         ),
       );
     }
@@ -302,7 +334,6 @@ class GoRouter {
   }
 
   /// Call _getLocRouteMatchStacks and check for errors
-  @visibleForTesting
   static List<GoRouteMatch> _getLocRouteMatchStack(
     String loc,
     Iterable<GoRoute> routes,
@@ -347,15 +378,24 @@ class GoRouter {
   /// loc: /login
   /// stacks: [
   ///   matches: [
-  ///     match(route.pattern=/login, loc=/login)
+  ///     match(route.pattern=/login, loc=login)
   ///   ]
   /// ]
   ///
-  /// loc: /family/f1
+  /// loc: /family/f2
   /// stacks: [
   ///   matches: [
   ///     match(route.pattern=/, loc=/),
-  ///     match(route.pattern=family/:fid, loc=/family/f1, params=[fid=f1])
+  ///     match(route.pattern=family/:fid, loc=family/f2, params=[fid=f2])
+  ///   ]
+  /// ]
+  ///
+  /// loc: /family/f2/person/p1
+  /// stacks: [
+  ///   matches: [
+  ///     match(route.pattern=/, loc=/),
+  ///     match(route.pattern=family/:fid, loc=family/f2, params=[fid=f2])
+  ///     match(route.pattern=person/:pid, loc=person/p1, params=[fid=f2, pid=p1])
   ///   ]
   /// ]
   ///
