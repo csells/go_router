@@ -88,7 +88,7 @@ void main() {
         GoRoute(pattern: 'foo', builder: _dummy),
       ];
       final router = _router(routes);
-      router.getLocPages(context, '/', routes);
+      router.getLocPages(context, 'foo', routes);
       expect(false, true);
     } on Exception catch (ex) {
       dump(ex);

@@ -1,6 +1,7 @@
 ### 0.6.0
 - refactor to support sub-routes to build a stack of pages instead of matching
   multiple routes
+- added unit tests for building the stack of pages
 - some renaming of the types, e.g. Four04Page and FamiliesPage to ErrorPage and
   HomePage respectively
 - fix a redirection error shown in the debug output

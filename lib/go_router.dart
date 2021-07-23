@@ -195,17 +195,7 @@ class GoRouter {
     required GoRouterPageBuilder error,
     required String location,
   }) {
-    // check all of the top level routes
-    for (final route in routes) {
-      if (!route.pattern.startsWith('/')) {
-        throw Exception(
-            'top level route patterns must start with /: ${route.pattern}');
-      }
-    }
-
     try {
-      // TODO: move this to the delegate; redirection is too late at this point
-
       // check for redirect before building the stack of pages
       final redirectLoc = redirect(context, location);
       if (redirectLoc != null) {
@@ -230,7 +220,7 @@ class GoRouter {
         // TODO: no need to build a stack of pages for the same location, so add
         // a shortcut here to avoid that
 
-        // no redirect, build the stack of pages
+        // build the stack of pages
         final locPages = getLocPages(context, location, routes);
         assert(locPages.isNotEmpty);
         _locPages.clear();
@@ -297,6 +287,14 @@ class GoRouter {
     String location,
     Iterable<GoRoute> routes,
   ) {
+    // check all of the top level routes
+    for (final route in routes) {
+      if (!route.pattern.startsWith('/')) {
+        throw Exception(
+            'top level route patterns must start with /: ${route.pattern}');
+      }
+    }
+
     final uri = Uri.parse(location);
     final matchStack = _getLocRouteMatchStack(uri.path, routes);
     assert(matchStack.isNotEmpty);
