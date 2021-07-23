@@ -20,9 +20,9 @@ class App extends StatelessWidget {
   List<GoRoute> _routesBuilder(BuildContext context, String location) => [
         GoRoute(
           pattern: '/',
-          builder: (context, state) => const MaterialPage<HomePage>(
-            key: ValueKey('HomePage'),
-            child: HomePage(),
+          builder: (context, state) => const MaterialPage<Page1Page>(
+            key: ValueKey('Page1Page'),
+            child: Page1Page(),
           ),
         ),
         GoRoute(
@@ -35,8 +35,8 @@ class App extends StatelessWidget {
       ];
 
   Page<dynamic> _errorBuilder(BuildContext context, GoRouterState state) =>
-      MaterialPage<Four04Page>(
-        key: const ValueKey('Four04Page'),
-        child: Four04Page(message: state.error.toString()),
+      MaterialPage<ErrorPage>(
+        key: const ValueKey('ErrorPage'),
+        child: ErrorPage(message: state.error.toString()),
       );
 }

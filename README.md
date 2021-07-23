@@ -21,7 +21,7 @@ The go_router makes three simplifying assumptions to reduce complexity:
 1. all routing in the app will happen via schemeless absolute
    [URI](https://en.wikipedia.org/wiki/Uniform_Resource_Identifier)-compliant
    names
-1. an entire stack of pages can be constructed from the route name alone
+1. an entire stack of pages can be constructed from the location alone
 1. the concept of "back" in your app is "up" the stack of pages
 
 These assumptions allow go_router to provide a simpler implementation of your
@@ -45,16 +45,16 @@ class App extends StatelessWidget {
   List<GoRoute> _routesBuilder(BuildContext context, String location) => [
     GoRoute(
       pattern: '/',
-      builder: (context, state) => MaterialPage<FamiliesPage>(
-        key: const ValueKey('FamiliesPage'),
-        child: FamiliesPage(families: Families.data),
+      builder: (context, state) => const MaterialPage<HomePage>(
+        key: ValueKey('Page1Page'),
+        child: Page1Page(),
       ),
     ),
     GoRoute(
-      pattern: '/login',
-      builder: (context, state) => MaterialPage<LoginPage>(
-        key: const ValueKey('LoginPage'),
-        child: LoginPage(),
+      pattern: '/page2',
+      builder: (context, state) => const MaterialPage<Page2Page>(
+        key: ValueKey('Page2Page'),
+        child: Page2Page(),
       ),
     ),
   ];
@@ -62,13 +62,12 @@ class App extends StatelessWidget {
 }
 ```
 
-In this case, we've defined two routes. The route name patterns are defined and
+In this case, we've defined two routes. The route patterns are defined and
 implemented in the [`path_to_regexp`](https://pub.dev/packages/path_to_regexp)
 package, which gives you the ability to include regular expressions, e.g.
-`/family/:fid(f\d+)`. These route name patterns will be matched in order and
-only a single pattern will be matched, specifically the one that matches the
-entire route name (and so it doesn't matter in which order you list your
-routes).
+`/family/:fid(f\d+)`. These route patterns will be matched against the location.
+Only a single pattern will be matched, specifically the one that matches the
+entire location (and so it doesn't matter in which order you list your routes).
 
 In addition to the pattern, a `GoRoute` contains a page builder function which
 is called to create the page when a pattern is matched. That function can use
@@ -84,9 +83,9 @@ class App extends StatelessWidget {
   late final _router = GoRouter(routes: _routesBuilder, error: _errorBuilder);
   ...
   Page<dynamic> _errorBuilder(BuildContext context, GoRouterState state) =>
-      MaterialPage<Four04Page>(
-        key: const ValueKey('Four04Page'),
-        child: Four04Page(message: state.error.toString()),
+      MaterialPage<ErrorPage>(
+        key: const ValueKey('ErrorPage'),
+        child: ErrorPage(message: state.error.toString()),
       );
 }
 ```
@@ -133,55 +132,6 @@ onTap: () => context.go('/family/f1/person/p2')
 The simplified version maps directly to the more fully-specified version, so you
 can use either. If you're curious, the ability to just call `context.go(...)`
 and have the right thing happen is where the name of the go_router came from.
-
-# Sub-pages: building a navigation stack
-A route name, e.g. `/family/f1/person/p2`, can match be made to match multiple
-pages to create a navigation stack, e.g.
-
-```
-/         => FamiliesPage()
-family/f1 => FamilyPage('f1')
-person/p2 => PersonPage('p2') ← showing this page, Back pops the stack ↑
-```
-To specify a set of pages like this, you can use sub-page routing via the
-`routes` parameter to the `GoRoute` constructor:
-
-```dart
-List<GoRoute> _routesBuilder(BuildContext context, String location) => [
-  GoRoute(
-    pattern: '/',
-    builder: (context, state) => MaterialPage<FamiliesPage>(
-      key: const ValueKey('FamiliesPage'),
-      child: FamiliesPage(families: Families.data),
-    ),
-    routes: (context, location) => [
-      GoRoute(
-        pattern: 'family/:fid',
-        builder: (context, state) {
-          final family = Families.family(state.args['fid']!);
-
-          return MaterialPage<FamilyPage>(
-            key: ValueKey(family),
-            child: FamilyPage(family: family),
-          );
-        },
-      ),
-    ],
-  ),
-  GoRoute(
-    pattern: '/login',
-    builder: (context, state) => MaterialPage<LoginPage>(
-      key: const ValueKey('LoginPage'),
-      child: LoginPage(),
-    ),
-  ),
-];
-```
-
-The go_router will match the routes all the way down the tree of sub-routes to
-build up a stack of pages. If the entire route name doesn't match, then the
-go_router will keep looking until it matches the whole route name. If it doesn't
-find a match of the entire route name, then the error handler will be called.
 
 # URL Path Strategy
 By default, Flutter adds a hash (#) into the URL for web apps:
@@ -260,6 +210,71 @@ across Android, iOS and the web. Support works out of the box for the web, of
 course, via the address bar, but requires additional configuration for Android
 and iOS as described in the [Flutter
 docs](https://flutter.dev/docs/development/ui/navigation/deep-linking).
+
+# Sub-pages: building a navigation stack
+Every top-level route will create a navigation stack of one page. To produce an
+entire stack of pages, you can use sub-routes. In the case that a top-level
+route only matches part of the location, the rest of the location can be matched
+against sub-routes. The rules are still the same, i.e. that only a single
+top-level route will be matched and the entire location much be matched, but
+sub-routes allows you the match to produce a stack of more than a single page.
+
+For example, the location `/family/f1/person/p2`, can match be made to match multiple pages to create a stack of pages:
+
+```
+/         => HomePage()
+family/f1 => FamilyPage('f1')
+person/p2 => PersonPage('p2') ← showing this page, Back pops the stack ↑
+```
+To specify a set of pages like this, you can use sub-page routing via the
+`routes` parameter to the `GoRoute` constructor:
+
+```dart
+List<GoRoute> _routesBuilder(BuildContext context, String location) => [
+  GoRoute(
+    pattern: '/',
+    builder: (context, state) => MaterialPage<HomePage>(
+      key: const ValueKey('HomePage'),
+      child: HomePage(families: Families.data),
+    ),
+    routes: [
+      GoRoute(
+        pattern: 'family/:fid',
+        builder: (context, state) {
+          final family = Families.family(state.params['fid']!);
+
+          return MaterialPage<FamilyPage>(
+            key: ValueKey(family),
+            child: FamilyPage(family: family),
+          );
+        },
+        routes: [
+          GoRoute(
+            pattern: 'person/:pid',
+            builder: (context, state) {
+              final family = Families.family(state.params['fid']!);
+              final person = family.person(state.params['pid']!);
+
+              return MaterialPage<PersonPage>(
+                key: ValueKey(person),
+                child: PersonPage(family: family, person: person),
+              );
+            },
+          ),
+        ],
+      ),
+    ],
+  ),
+];
+```
+
+The go_router will match the routes all the way down the tree of sub-routes to
+build up a stack of pages. If go_router doesn't find a match, then the error handler will be called.
+
+Also, the go_router will pass parameters from higher level sub-routes so that
+they can be used in lower level sub-routes, e.g. `fid` is matched as part of the
+`family/:fid` route, but it's passed along to the `person/:pid` route because
+it's a child of the `family/:fid` route.
 
 # Conditional Routes
 The routes builder is called each time that the location changes, which allows
@@ -341,15 +356,37 @@ class App extends StatelessWidget {
   final _loggedInRoutes = [
     GoRoute(
       pattern: '/',
-      builder: (context, state) => MaterialPage<FamiliesPage>(...),
-    ),
-    GoRoute(
-      pattern: '/family/:fid',
-      builder: (context, state) => MaterialPage<FamilyPage>(...),
-    ),
-    GoRoute(
-      pattern: '/family/:fid/person/:pid',
-      builder: (context, state) => MaterialPage<PersonPage>(...),
+      builder: (context, state) => MaterialPage<HomePage>(
+        key: const ValueKey('HomePage'),
+        child: HomePage(families: Families.data),
+      ),
+      routes: [
+        GoRoute(
+          pattern: 'family/:fid',
+          builder: (context, state) {
+            final family = Families.family(state.params['fid']!);
+
+            return MaterialPage<FamilyPage>(
+              key: ValueKey(family),
+              child: FamilyPage(family: family),
+            );
+          },
+          routes: [
+            GoRoute(
+              pattern: 'person/:pid',
+              builder: (context, state) {
+                final family = Families.family(state.params['fid']!);
+                final person = family.person(state.params['pid']!);
+
+                return MaterialPage<PersonPage>(
+                  key: ValueKey(person),
+                  child: PersonPage(family: family, person: person),
+                );
+              },
+            ),
+          ],
+        ),
+      ],
     ),
   ];
 
@@ -357,7 +394,10 @@ class App extends StatelessWidget {
   final _loggedOutRoutes = [
     GoRoute(
       pattern: '/',
-      builder: (context, state) => MaterialPage<LoginPage>(...),
+      builder: (context, state) => const MaterialPage<LoginPage>(
+        key: ValueKey('LoginPage'),
+        child: LoginPage(),
+      ),
     ),
   ];
 
@@ -491,8 +531,8 @@ class LoginPage extends StatelessWidget {
 }
 ```
 
-A query parameter will not override a positional parameter or another query
-parameter set earlier in the location string.
+A query parameter will not override a positional parameter with the same name or
+another query parameter set earlier in the location string.
 
 # Custom Builder
 As described, the go_router uses the list of `GoRoute` objects to implement it's
@@ -516,9 +556,9 @@ class App extends StatelessWidget {
       // home page, i.e. '/'
       {
         const loc = '/';
-        final page = MaterialPage<FamiliesPage>(
-          key: const ValueKey('FamiliesPage'),
-          child: FamiliesPage(families: Families.data),
+        final page = MaterialPage<HomePage>(
+          key: const ValueKey('HomePage'),
+          child: HomePage(families: Families.data),
         );
         locPages[loc] = page;
       }
@@ -568,9 +608,9 @@ class App extends StatelessWidget {
       locPages.clear();
 
       final loc = location;
-      final page = MaterialPage<Four04Page>(
+      final page = MaterialPage<ErrorPage>(
         key: const ValueKey('ErrorPage'),
-        child: Four04Page(message: ex.toString()),
+        child: ErrorPage(message: ex.toString()),
       );
 
       locPages[loc] = page;
@@ -603,7 +643,7 @@ There's a lot going on here, but it fundamentally boils down to 3 things:
 1. Show an error page if any of that fails.
 
 This is the basic policy that the `GoRouter` itself implements, although in a
-simplified form w/o features like route name patterns, redirection or query
+simplified form w/o features like route patterns, redirection or query
 parameters.
 
 # Examples
@@ -612,6 +652,8 @@ You can see the go_router in action via the following examples:
   set of declarative `GoRoute` objects
 - [`url_strategy.dart`](example/lib/url_strategy.dart): turn off the # in the
   Flutter web URL
+- [`sub_routes.dart`](example/lib/sub_routes.dart): provide a stack of pages
+  based on a set of nested routes
 - [`conditional.dart`](example/lib/conditional.dart): provide different routes
   based on changing app state
 - [`redirection.dart`](example/lib/redirection.dart): redirect one route to
@@ -621,10 +663,11 @@ You can see the go_router in action via the following examples:
 - [`builder.dart`](example/lib/builder.dart): define routing policy by providing
   a custom builder
 
-You can run these examples from the command line like so:
+You can run these examples from the command line like so (from the `example`
+folder):
 
 ```sh
-$ flutter run example/lib/routes.dart
+$ flutter run lib/main.dart
 ```
 
 Or, if you're using Visual Studio Code, a [`launch.json`](.vscode/launch.json)

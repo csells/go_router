@@ -1,3 +1,11 @@
+### 0.6.0
+- refactor to support sub-routes to build a stack of pages instead of matching
+  multiple routes
+- some renaming of the types, e.g. Four04Page and FamiliesPage to ErrorPage and
+  HomePage respectively
+- fix a redirection error shown in the debug output
+
+
 ### 0.5.2
 - add urlPathStrategy argument to GoRouter ctor
 

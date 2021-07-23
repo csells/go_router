@@ -78,9 +78,9 @@ class Bookstore extends StatelessWidget {
       ];
 
   Page<dynamic> _error(BuildContext context, GoRouterState state) =>
-      MaterialPage<Four04Page>(
-        child: Four04Page(
-          key: const ValueKey('Four04Page'),
+      MaterialPage<ErrorPage>(
+        child: ErrorPage(
+          key: const ValueKey('ErrorPage'),
           message: state.error.toString(),
         ),
       );

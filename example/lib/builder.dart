@@ -27,9 +27,9 @@ class App extends StatelessWidget {
       // home page, i.e. '/'
       {
         const loc = '/';
-        final page = MaterialPage<FamiliesPage>(
-          key: const ValueKey('FamiliesPage'),
-          child: FamiliesPage(families: Families.data),
+        final page = MaterialPage<HomePage>(
+          key: const ValueKey('HomePage'),
+          child: HomePage(families: Families.data),
         );
         locPages[loc] = page;
       }
@@ -79,9 +79,9 @@ class App extends StatelessWidget {
       locPages.clear();
 
       final loc = location;
-      final page = MaterialPage<Four04Page>(
+      final page = MaterialPage<ErrorPage>(
         key: const ValueKey('ErrorPage'),
-        child: Four04Page(message: ex.toString()),
+        child: ErrorPage(message: ex.toString()),
       );
 
       locPages[loc] = page;

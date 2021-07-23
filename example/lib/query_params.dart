@@ -32,31 +32,35 @@ class App extends StatelessWidget {
   List<GoRoute> _routeBuilder(BuildContext context, String location) => [
         GoRoute(
           pattern: '/',
-          builder: (context, state) => MaterialPage<FamiliesPage>(
-            key: const ValueKey('FamiliesPage'),
-            child: FamiliesPage(families: Families.data),
+          builder: (context, state) => MaterialPage<HomePage>(
+            key: const ValueKey('HomePage'),
+            child: HomePage(families: Families.data),
           ),
-        ),
-        GoRoute(
-          pattern: '/family/:fid',
-          builder: (context, state) {
-            final family = Families.family(state.params['fid']!);
-            return MaterialPage<FamilyPage>(
-              key: ValueKey(family),
-              child: FamilyPage(family: family),
-            );
-          },
-        ),
-        GoRoute(
-          pattern: '/family/:fid/person/:pid',
-          builder: (context, state) {
-            final family = Families.family(state.params['fid']!);
-            final person = family.person(state.params['pid']!);
-            return MaterialPage<PersonPage>(
-              key: ValueKey(person),
-              child: PersonPage(family: family, person: person),
-            );
-          },
+          routes: [
+            GoRoute(
+              pattern: 'family/:fid',
+              builder: (context, state) {
+                final family = Families.family(state.params['fid']!);
+                return MaterialPage<FamilyPage>(
+                  key: ValueKey(family),
+                  child: FamilyPage(family: family),
+                );
+              },
+              routes: [
+                GoRoute(
+                  pattern: 'person/:pid',
+                  builder: (context, state) {
+                    final family = Families.family(state.params['fid']!);
+                    final person = family.person(state.params['pid']!);
+                    return MaterialPage<PersonPage>(
+                      key: ValueKey(person),
+                      child: PersonPage(family: family, person: person),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ],
         ),
         GoRoute(
           pattern: '/login',
@@ -85,8 +89,8 @@ class App extends StatelessWidget {
   }
 
   Page<dynamic> _errorBuilder(BuildContext context, GoRouterState state) =>
-      MaterialPage<Four04Page>(
-        key: const ValueKey('Four04Page'),
-        child: Four04Page(message: state.error.toString()),
+      MaterialPage<ErrorPage>(
+        key: const ValueKey('ErrorPage'),
+        child: ErrorPage(message: state.error.toString()),
       );
 }
