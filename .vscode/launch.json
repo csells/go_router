@@ -5,43 +5,57 @@
       "name": "Declarative Routes",
       "request": "launch",
       "type": "dart",
-      "program": "example/lib/main.dart"
+      "cwd": "example",
+      "program": "lib/main.dart"
     },
     {
-      "name": "URL Strategy",
-      "request": "launch",
+      "name": "Initial Location",
       "type": "dart",
-      "program": "example/lib/url_strategy.dart"
+      "request": "launch",
+      "cwd": "example",
+      "program": "lib/init_loc.dart"
     },
     {
       "name": "Sub-routes",
       "request": "launch",
       "type": "dart",
-      "program": "example/lib/sub_routes.dart"
+      "cwd": "example",
+      "program": "lib/sub_routes.dart"
     },
     {
       "name": "Conditional Routes",
       "request": "launch",
       "type": "dart",
-      "program": "example/lib/conditional.dart"
+      "cwd": "example",
+      "program": "lib/conditional.dart"
     },
     {
       "name": "Route Redirection",
       "request": "launch",
       "type": "dart",
-      "program": "example/lib/redirection.dart"
+      "cwd": "example",
+      "program": "lib/redirection.dart"
     },
     {
       "name": "Query Parameters",
       "request": "launch",
       "type": "dart",
-      "program": "example/lib/query_params.dart"
+      "cwd": "example",
+      "program": "lib/query_params.dart"
+    },
+    {
+      "name": "URL Strategy",
+      "request": "launch",
+      "type": "dart",
+      "cwd": "example",
+      "program": "lib/url_strategy.dart"
     },
     {
       "name": "Custom Builder",
       "request": "launch",
       "type": "dart",
-      "program": "example/lib/builder.dart"
+      "cwd": "example",
+      "program": "lib/builder.dart"
     },
   ]
 }

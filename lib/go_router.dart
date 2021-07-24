@@ -1,6 +1,5 @@
 library go_router;
 
-import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:path_to_regexp/path_to_regexp.dart' as p2re;
 
@@ -30,10 +29,21 @@ typedef GoRouterPageBuilder = Page<dynamic> Function(
 );
 
 /// the signature of the redirect builder callback for guarded routes
-typedef GoRouteRedirectBuilder = String? Function(
-  BuildContext context,
-  String location,
-);
+abstract class GoRouterGuard extends ChangeNotifier {
+  final Listenable? listenable;
+  GoRouterGuard([this.listenable]) {
+    listenable?.addListener(notifyListeners);
+  }
+
+  @override
+  void dispose() {
+    listenable?.removeListener(notifyListeners);
+    super.dispose();
+  }
+
+  /// called to see if a location should be redirected
+  String? redirect(String location);
+}
 
 /// for route state during routing
 class GoRouterState {
@@ -112,8 +122,8 @@ class GoRouter {
     /// a function to create the error page for a given location
     required GoRouterPageBuilder error,
 
-    /// a function to create the redirect for a given location
-    GoRouteRedirectBuilder redirect = _noop,
+    /// an object to create the redirect for a given location
+    GoRouterGuard? guard,
 
     /// the initial location to use for routing
     String initialLocation = '/',
@@ -122,19 +132,17 @@ class GoRouter {
     UrlPathStrategy? urlPathStrategy = UrlPathStrategy.hash,
   }) {
     _init(
-      initialLocation: initialLocation,
-      urlPathStrategy: urlPathStrategy,
       builder: (context, location) => _builder(
         context: context,
         routes: routes(context, location),
         error: error,
-        redirect: redirect,
         location: location,
       ),
+      initialLocation: initialLocation,
+      urlPathStrategy: urlPathStrategy,
+      guard: guard,
     );
   }
-
-  static String? _noop(BuildContext context, String location) => null;
 
   /// configure a GoRouter with a widget builder
   GoRouter.builder({
@@ -143,9 +151,9 @@ class GoRouter {
     UrlPathStrategy? urlPathStrategy,
   }) {
     _init(
+      builder: builder,
       initialLocation: initialLocation,
       urlPathStrategy: urlPathStrategy,
-      builder: builder,
     );
   }
 
@@ -153,6 +161,7 @@ class GoRouter {
     required GoRouterWidgetBuilder builder,
     required String initialLocation,
     required UrlPathStrategy? urlPathStrategy,
+    GoRouterGuard? guard,
   }) {
     if (urlPathStrategy != null) setUrlPathStrategy(urlPathStrategy);
 
@@ -162,6 +171,7 @@ class GoRouter {
         goRouter: this,
         child: builder(context, location),
       ),
+      guard: guard,
       initialLocation: Uri.parse(initialLocation),
     );
   }
@@ -191,41 +201,15 @@ class GoRouter {
   Widget _builder({
     required BuildContext context,
     required Iterable<GoRoute> routes,
-    required GoRouteRedirectBuilder redirect,
     required GoRouterPageBuilder error,
     required String location,
   }) {
     try {
-      // check for redirect before building the stack of pages
-      final redirectLoc = redirect(context, location);
-      if (redirectLoc != null) {
-        // check for redirecting to same location
-        if (_locationsMatch(redirectLoc, location)) {
-          throw Exception('redirecting to same location: $location');
-        }
-
-        // check for redirect redirecting
-        final redirectLoc2 = redirect(context, redirectLoc);
-        if (redirectLoc2 != null) {
-          throw Exception(
-            'redirect redirecting: $location => $redirectLoc => $redirectLoc2',
-          );
-        }
-
-        // schedule a new routing event
-        SchedulerBinding.instance?.addPostFrameCallback(
-          (_) => _routerDelegate.go(redirectLoc),
-        );
-      } else {
-        // TODO: no need to build a stack of pages for the same location, so add
-        // a shortcut here to avoid that
-
-        // build the stack of pages
-        final locPages = getLocPages(context, location, routes);
-        assert(locPages.isNotEmpty);
-        _locPages.clear();
-        _locPages.addAll(locPages);
-      }
+      // build the stack of pages
+      final locPages = getLocPages(context, location, routes);
+      assert(locPages.isNotEmpty);
+      _locPages.clear();
+      _locPages.addAll(locPages);
     } on Exception catch (ex) {
       // if there's an error, show an error page
       _locPages.clear();
@@ -435,15 +419,6 @@ class GoRouter {
       // add the match to each of the sub-route match stacks and return them
       for (final stack in subRouteMatchStacks) yield [match, ...stack];
     }
-  }
-
-  static bool _locationsMatch(String loc1, String loc2) {
-    // check just the path w/o the queryParameters
-    final uri1 = Uri.tryParse(loc1);
-    final uri2 = Uri.tryParse(loc2);
-    return uri1 != null &&
-        uri2 != null &&
-        uri1.path.toLowerCase().trim() == uri2.path.toLowerCase().trim();
   }
 
   static String locationFor(String pattern, Map<String, String> args) =>

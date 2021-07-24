@@ -256,12 +256,84 @@ void main() {
       expect(true, true);
     }
   });
+
+  test('redirect', () {
+    final routes = [
+      GoRoute(
+        pattern: '/',
+        builder: (builder, state) => HomePage(),
+        routes: [
+          GoRoute(pattern: 'dummy', builder: (builder, state) => DummyPage()),
+          GoRoute(pattern: 'login', builder: (builder, state) => LoginPage()),
+        ],
+      ),
+    ];
+
+    final router = GoRouter(
+      routes: (context, location) => routes,
+      error: _dummy,
+      guard: LoginGuard(),
+    );
+    expect(router.routerDelegate.currentConfiguration.toString(), '/');
+
+    router.go('/dummy');
+    expect(router.routerDelegate.currentConfiguration.toString(), '/login');
+  });
+
+  test('initial location', () {
+    final routes = [
+      GoRoute(
+        pattern: '/',
+        builder: (builder, state) => HomePage(),
+        routes: [
+          GoRoute(pattern: 'dummy', builder: (builder, state) => DummyPage()),
+        ],
+      ),
+    ];
+
+    final router = GoRouter(
+      routes: (context, location) => routes,
+      error: _dummy,
+      initialLocation: '/dummy',
+    );
+    expect(router.routerDelegate.currentConfiguration.toString(), '/dummy');
+  });
 }
 
 GoRouter _router(List<GoRoute> routes) => GoRouter(
       routes: (context, location) => routes,
-      error: (context, state) => DummyPage(),
+      error: _dummy,
     );
+
+class HomePage extends DummyPage {}
+
+class LoginPage extends DummyPage {}
+
+class FamilyPage extends DummyPage {
+  final String fid;
+  FamilyPage(this.fid);
+}
+
+class PersonPage extends DummyPage {
+  final String fid;
+  final String pid;
+  PersonPage(this.fid, this.pid);
+}
+
+class DummyPage extends Page<dynamic> {
+  @override
+  Route createRoute(BuildContext context) => throw UnimplementedError();
+}
+
+Page<dynamic> _dummy(BuildContext context, GoRouterState state) => DummyPage();
+
+// ignore: avoid_print
+void dump(Object o) => print(o);
+
+class LoginGuard extends GoRouterGuard {
+  @override
+  String? redirect(String location) => location == '/login' ? null : '/login';
+}
 
 class DummyBuildContext implements BuildContext {
   @override
@@ -348,28 +420,3 @@ class DummyBuildContext implements BuildContext {
   @override
   Widget get widget => throw UnimplementedError();
 }
-
-class HomePage extends DummyPage {}
-
-class LoginPage extends DummyPage {}
-
-class FamilyPage extends DummyPage {
-  final String fid;
-  FamilyPage(this.fid);
-}
-
-class PersonPage extends DummyPage {
-  final String fid;
-  final String pid;
-  PersonPage(this.fid, this.pid);
-}
-
-class DummyPage extends Page<dynamic> {
-  @override
-  Route createRoute(BuildContext context) => throw UnimplementedError();
-}
-
-Page<dynamic> _dummy(BuildContext context, GoRouterState state) => DummyPage();
-
-// ignore: avoid_print
-void dump(Object o) => print(o);

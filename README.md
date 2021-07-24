@@ -62,20 +62,14 @@ class App extends StatelessWidget {
 }
 ```
 
-In this case, we've defined two routes. The route patterns are defined and
-implemented in the [`path_to_regexp`](https://pub.dev/packages/path_to_regexp)
-package, which gives you the ability to include regular expressions, e.g.
-`/family/:fid(f\d+)`. These route patterns will be matched against the location.
-Only a single pattern will be matched, specifically the one that matches the
-entire location (and so it doesn't matter in which order you list your routes).
+In this case, we've defined two routes. These route `pattern` will be matched
+against the location. Only a single pattern will be matched, specifically the
+one that matches the entire location (and so it doesn't matter in which order
+you list your routes). A `GoRoute` also contains a page `builder` function which
+is called to create the page when a pattern is matched. 
 
-In addition to the pattern, a `GoRoute` contains a page builder function which
-is called to create the page when a pattern is matched. That function can use
-the arguments parsed from the pattern to do things like look up data to use to
-initialize each page.
-
-In addition, the go_router needs an error handler in case no page is found or if
-any of the page builder functions throws an exception, e.g.
+In addition, the go_router needs an `error` handler in case no page is found or
+if any of the page builder functions throws an exception, e.g.
 
 ```dart
 class App extends StatelessWidget {
@@ -119,99 +113,62 @@ To navigate between pages, use the `GoRouter.go` method:
 
 ```dart
 // navigate using the GoRouter
-onTap: () => GoRouter.of(context).go('/family/f1/person/p2')
+onTap: () => GoRouter.of(context).go('/page2')
 ```
 
 The go_router also provides a simplified version using Dart extension methods:
 
 ```dart
 // more easily navigate using the GoRouter
-onTap: () => context.go('/family/f1/person/p2')
+onTap: () => context.go('/page2')
 ```
 
 The simplified version maps directly to the more fully-specified version, so you
 can use either. If you're curious, the ability to just call `context.go(...)`
 and have the right thing happen is where the name of the go_router came from.
 
-# URL Path Strategy
-By default, Flutter adds a hash (#) into the URL for web apps:
-
-![URL Strategy w/ Hash](readme/url-strat-hash.png)
-
-The process for turning off the hash is
-[documented](https://flutter.dev/docs/development/ui/navigation/url-strategies)
-but fiddly. The go_router has built-in support for setting the URL path
-strategy, however, so you can simply call `GoRouter.setUrlPathStrategy` before
-calling `runApp` and make your choice:
+# Initial Location
+If you'd like to set an initial location for routing, you can:
 
 ```dart
-void main() {
-  // turn on the # in the URLs on the web (default)
-  // GoRouter.setUrlPathStrategy(UrlPathStrategy.hash);
-
-  // turn off the # in the URLs on the web
-  GoRouter.setUrlPathStrategy(UrlPathStrategy.path);
-
-  runApp(App());
-}
+late final _router = GoRouter(
+  routes: _routesBuilder,
+  error: _errorBuilder,
+  initialLocation: '/page2',
+);
 ```
 
-Setting the path instead of the hash strategy turns off the # in the URLs:
+This location will only be used if the initial location would otherwise be `/`.
+If your app is started using [deep linking](#deep-linking), the initial location
+will be ignored.
 
-![URL Strategy w/o Hash](readme/url-strat-no-hash.png)
-
-While the docs imply -- and the code itself states -- that you need to set the
-URL path strategy option before calling `runApp`, the current implementation
-seems to support setting this option afterwards, which means that if you're
-creating your `GoRouter` as part of your top widget's initialization, you should
-be safe to use the `urlPathStrategy` parameter instead of calling anything
-before `runApp`:
+# Parameters
+The route patterns are defined and
+implemented in the [`path_to_regexp`](https://pub.dev/packages/path_to_regexp)
+package, which gives you the ability to include parameters in your route: 
 
 ```dart
-void main() => runApp(App());
+List<GoRoute> _routesBuilder(BuildContext context, String location) => [
+  GoRoute(
+    pattern: '/family/:fid',
+    builder: (context, state) {
+      final family = Families.family(state.params['fid']!);
 
-/// sample app using the path URL strategy, i.e. no # in the URL path
-class App extends StatelessWidget {
-  late final _router = GoRouter(
-    routes: _routesBuilder,
-    error: _errorBuilder,
-    // turn off the # in the URLs on the web
-    urlPathStrategy: UrlPathStrategy.path,
-  );
-  ...
-}
+      return MaterialPage<FamilyPage>(
+        key: ValueKey(family),
+        child: FamilyPage(family: family),
+      );
+    },
+  ),
+];
 ```
 
-Finally, when you deploy your Flutter web app to a web server, it needs to be
-configured such that every URL ends up at your Flutter web app's `index.html`,
-otherwise Flutter won't be able to route to your pages. If you're using Firebase
-hosting, you can [configure
-rewrites](https://firebase.google.com/docs/hosting/full-config#rewrites) to
-cause all URLs to be rewritten to `index.html`.
+The page builder function can use the parameters parsed from the pattern to do
+things like look up data to use to initialize each page. If you'd like to be
+more restrictive about the parameters, you can use regular expressions, e.g.
+`/family/:fid(f\d+)`.
 
-If you'd like to test your release build locally before publishing, and get that
-cool redirect to `index.html` feature, you can use `flutter run` itself:
-
-```sh
-$ flutter run -d chrome --release lib/url_strategy.dart
-```
-
-Note that you have to run this command from a place where `flutter run` can find
-the `web/index.html` file.
-
-Of course, any local web server that can be configured to redirect all traffic
-to `index.html` will do, e.g.
-[live-server](https://www.npmjs.com/package/live-server).
-
-# Deep Linking
-Flutter defines "deep linking" as "opening a URL displays that screen in your
-app." Anything that's listed as a `GoRoute` can be accessed via deep linking
-across Android, iOS and the web. Support works out of the box for the web, of
-course, via the address bar, but requires additional configuration for Android
-and iOS as described in the [Flutter
-docs](https://flutter.dev/docs/development/ui/navigation/deep-linking).
-
-# Sub-pages: building a navigation stack
+# Sub-routes to build a navigation stack
 Every top-level route will create a navigation stack of one page. To produce an
 entire stack of pages, you can use sub-routes. In the case that a top-level
 route only matches part of the location, the rest of the location can be matched
@@ -219,7 +176,8 @@ against sub-routes. The rules are still the same, i.e. that only a single
 top-level route will be matched and the entire location much be matched, but
 sub-routes allows you the match to produce a stack of more than a single page.
 
-For example, the location `/family/f1/person/p2`, can match be made to match multiple pages to create a stack of pages:
+For example, the location `/family/f1/person/p2`, can be made to match multiple
+sub-routes to create a stack of pages:
 
 ```
 /         => HomePage()
@@ -269,12 +227,13 @@ List<GoRoute> _routesBuilder(BuildContext context, String location) => [
 ```
 
 The go_router will match the routes all the way down the tree of sub-routes to
-build up a stack of pages. If go_router doesn't find a match, then the error handler will be called.
+build up a stack of pages. If go_router doesn't find a match, then the error
+handler will be called.
 
 Also, the go_router will pass parameters from higher level sub-routes so that
-they can be used in lower level sub-routes, e.g. `fid` is matched as part of the
+they can be used in lower level routes, e.g. `fid` is matched as part of the
 `family/:fid` route, but it's passed along to the `person/:pid` route because
-it's a child of the `family/:fid` route.
+it's a sub-route of the `family/:fid` route.
 
 # Conditional Routes
 The routes builder is called each time that the location changes, which allows
@@ -416,93 +375,134 @@ instead of `context.read`, whenever the login info object changes, the routes
 builder is automatically called for the correct list of routes based on the
 current app state.
 
-# Redirection
-Sometimes you want to redirect one route to another one, e.g. if the user is not
-logged in. You can do that by passing a redirect function to the `GoRouter`
-object, e.g.
+# Guards for redirection
+Sometimes you want to guard pages from being accessed when they shouldn't be,
+e.g. when the user is not yet logged in. To do this, initialize the `GoRouter`
+with a guard object using the `guard` parameter of the ctor:
 
 ```dart
-late final _router = GoRouter(
-  routes: _routesBuilder,
-  error: _errorBuilder,
-  redirect: _redirect,
-);
+class App extends StatelessWidget {
+  final loginInfo = LoginInfo();
+  App({Key? key}) : super(key: key);
 
-...
+  // add the login info into the tree as app state that can change over time
+  @override
+  Widget build(BuildContext context) => ChangeNotifierProvider<LoginInfo>.value(
+        value: loginInfo,
+        child: MaterialApp.router(
+          routeInformationParser: _router.routeInformationParser,
+          routerDelegate: _router.routerDelegate,
+          title: 'Redirection GoRouter Example',
+          debugShowCheckedModeBanner: false,
+        ),
+      );
 
-// redirect based on app and routing state
-String? _redirect(BuildContext context, GoRouterState state) {
-  // watching LoginInfo will cause a change in LoginInfo to trigger routing
-  final loggedIn = context.watch<LoginInfo>().loggedIn;
-  final goingToLogin = state.pattern == '/login';
+  late final _router = GoRouter(
+    routes: _routesBuilder,
+    error: _errorBuilder,
+    guard: Guard(loginInfo), // the guard checks if the user is logged in
+  );
 
-  // the user is not logged in and not headed to /login, they need to login
-  if (!loggedIn && !goingToLogin) return '/login';
+  List<GoRoute> _routesBuilder(BuildContext context, String location) => ...
+  Page<dynamic> _errorBuilder(BuildContext context, GoRouterState state) => ...
+}
 
-  // the user is logged in and headed to /login, no need to login again
-  if (loggedIn && goingToLogin) return '/';
+class Guard extends GoRouterGuard {...}
+```
 
-  // no need to redirect at all
-  return null;
+Your guard class must extend the `GoRouterGuard` class and override the
+`redirect` method:
+
+```dart
+class Guard extends GoRouterGuard {
+  // passing loginInfo to the base class will cause a change to trigger routing
+  Guard(LoginInfo loginInfo) : super(loginInfo);
+
+  LoginInfo get loginInfo => super.listenable! as LoginInfo;
+
+  // redirect based on app and routing state
+  @override
+  String? redirect(String location) {
+    final loggedIn = loginInfo.loggedIn;
+    final goingToLogin = location == '/login';
+
+    // the user is not logged in and not headed to /login, they need to login
+    if (!loggedIn && !goingToLogin) return '/login';
+
+    // the user is logged in and headed to /login, no need to login again
+    if (loggedIn && goingToLogin) return '/';
+
+    // no need to redirect at all
+    return null;
+  }
 }
 ```
 
 In this code, if the user is not logged in and not going to the `/login`
 pattern, we redirect to `/login`. Likewise, if the user *is* logged in but going
-`/login`, we redirect to `/`. And because we're using `context.watch`, when the
-login state changes, the routes builder will be called again to generate and
-match the routes.
+`/login`, we redirect to `/`.
+
+Notice that the login info is passed to the `super` constructor of the base
+guard class. This is so that when the login info changes, i.e. the user logs in,
+the route will be refreshed.
+
+In this example, the workflow works like this:
+
+1. the user navigates to `/` but is not logged in, so is redirected to `/login`
+1. the user logs in, which changes the login info, which causes go_router to
+   refresh the route
+1. the router calls the guard's `redirect` method with the location where the
+   app is currently navigated to: `/login`
+1. the user is now logged in, so the guard redirects the user to `/`
 
 # Query Parameters
-If you'd like to use query parameters for navigation, you can; they will be
-considered as optional for the purpose of matching a route but passed along as
-arguments to the page builders. For example, if you'd like to redirect to
-`/login` with the original location so that after a successful login, the user
-can be routed back to the original location, you can do that using query
-paramaters:
+On the other hand, sometimes you're doing [deep linking](#deep-linking) and
+you'd like a user to first login before going to the location that represents
+the deep link. In that case, you can use query parameters in the guard:
 
 ```dart
-late final _router = GoRouter(
-  routes: _routesBuilder,
-  error: _errorBuilder,
-  redirect: _redirect,
-);
-
-...
-
-List<GoRoute> _routeBuilder(BuildContext context, String location) => [
+class Guard extends GoRouterGuard {
   ...
-  GoRoute(
-    pattern: '/login',
-    builder: (context, state) => MaterialPage<LoginPage>(
-      key: const ValueKey('LoginPage'),
-      child: LoginPage(from: state.args['from']),
-    ),
-  ),
-];
 
-// redirect based on app and routing state
-String? _redirect(BuildContext context, GoRouterState state) {
-  // watching LoginInfo will cause a change in LoginInfo to trigger routing
-  final loggedIn = context.watch<LoginInfo>().loggedIn;
-  final goingToLogin = state.pattern == '/login';
+  // redirect based on app and routing state
+  @override
+  String? redirect(String location) {
+    // watching LoginInfo will cause a change in LoginInfo to trigger routing
+    final loggedIn = loginInfo.loggedIn;
+    final loc = Uri.parse(location).path;
+    final goingToLogin = loc == '/login';
 
-  // the user is not logged in and not headed to /login, they need to login
-  if (!loggedIn && !goingToLogin) return '/login?from=${state.location}';
+    // the user is not logged in and not headed to /login, they need to login
+    // also, keep track of the deep link that was used to get here
+    if (!loggedIn && !goingToLogin) return '/login?from=$loc';
 
-  // the user is logged in and headed to /login, no need to login again
-  if (loggedIn && goingToLogin) return '/';
+    // the user is logged in and headed to /login, no need to login again
+    if (loggedIn && goingToLogin) return '/';
 
-  // no need to redirect at all
-  return null;
+    // no need to redirect at all
+    return null;
+  }
 }
 ```
 
 In this example, if the user isn't logged in, they're redirected to `/login`
-with a `from` query parameter set to the original location. When the `/login`
-route is matched, the optional `from` parameter is passed to the `LoginPage`. In
-the `LoginPage` if the `from` parameter was passed, we use it to go to the
-original location after a successful login:
+with a `from` query parameter set to the deep link. Now, when the
+`/login` route is matched, we want to pull the `from` parameter out of the
+`state` object to pass along to the `LoginPage`:
+
+```dart
+GoRoute(
+  pattern: '/login',
+  builder: (context, state) => MaterialPage<LoginPage>(
+    key: const ValueKey('LoginPage'),
+    // pass the deep link to the LoginPage (if there is one)
+    child: LoginPage(from: state.args['from']),
+  ),
+),
+```
+
+In the `LoginPage`, if the `from` parameter was passed, we use it to go to the
+deep link location after a successful login:
 
 ```dart
 class LoginPage extends StatelessWidget {
@@ -517,9 +517,10 @@ class LoginPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton(
-                // log a user in, letting all the listeners know
-                onPressed: () {
+                  // log a user in, letting all the listeners know
                   context.read<LoginInfo>().login('user1');
+
+                  // if there's a deep link, go there
                   if (from != null) context.go(from!);
                 },
                 child: const Text('Login'),
@@ -531,8 +532,89 @@ class LoginPage extends StatelessWidget {
 }
 ```
 
-A query parameter will not override a positional parameter with the same name or
-another query parameter set earlier in the location string.
+A query parameter will not override a positional parameter with the same name.
+Likewise, it will not affect the pattern matching of the route. Query parameters
+are simple a way to pass along optional information that your app may find
+useful.
+
+# Deep Linking
+Flutter defines "deep linking" as "opening a URL displays that screen in your
+app." Anything that's listed as a `GoRoute` can be accessed via deep linking
+across Android, iOS and the web. Support works out of the box for the web, of
+course, via the address bar, but requires additional configuration for Android
+and iOS as described in the [Flutter
+docs](https://flutter.dev/docs/development/ui/navigation/deep-linking).
+
+To make deep links more svelte for your users, you may decide to change
+Flutter's default [URL path strategy](#url-path-strategy).
+
+# URL Path Strategy
+By default, Flutter adds a hash (#) into the URL for web apps:
+
+![URL Strategy w/ Hash](readme/url-strat-hash.png)
+
+The process for turning off the hash is
+[documented](https://flutter.dev/docs/development/ui/navigation/url-strategies)
+but fiddly. The go_router has built-in support for setting the URL path
+strategy, however, so you can simply call `GoRouter.setUrlPathStrategy` before
+calling `runApp` and make your choice:
+
+```dart
+void main() {
+  // turn on the # in the URLs on the web (default)
+  // GoRouter.setUrlPathStrategy(UrlPathStrategy.hash);
+
+  // turn off the # in the URLs on the web
+  GoRouter.setUrlPathStrategy(UrlPathStrategy.path);
+
+  runApp(App());
+}
+```
+
+Setting the path instead of the hash strategy turns off the # in the URLs:
+
+![URL Strategy w/o Hash](readme/url-strat-no-hash.png)
+
+If your router is created as part of the construction of the widget passed to
+the `runApp` method, you can use a shortcut to set the URL path strategy by
+using the `urlPathStrategy` parameter of the `GoRouter` ctor:
+
+```dart
+ // no need to call GoRouter.setUrlPathStrategy() here
+ void main() => runApp(App());
+
+/// sample app using the path URL strategy, i.e. no # in the URL path
+class App extends StatelessWidget {
+  late final _router = GoRouter(
+    routes: _routesBuilder,
+    error: _errorBuilder,
+    // turn off the # in the URLs on the web
+    urlPathStrategy: UrlPathStrategy.path,
+  );
+  ...
+}
+```
+
+Finally, when you deploy your Flutter web app to a web server, it needs to be
+configured such that every URL ends up at your Flutter web app's `index.html`,
+otherwise Flutter won't be able to route to your pages. If you're using Firebase
+hosting, you can [configure
+rewrites](https://firebase.google.com/docs/hosting/full-config#rewrites) to
+cause all URLs to be rewritten to `index.html`.
+
+If you'd like to test your release build locally before publishing, and get that
+cool redirect to `index.html` feature, you can use `flutter run` itself:
+
+```sh
+$ flutter run -d chrome --release lib/url_strategy.dart
+```
+
+Note that you have to run this command from a place where `flutter run` can find
+the `web/index.html` file.
+
+Of course, any local web server that can be configured to redirect all traffic
+to `index.html` will do, e.g.
+[live-server](https://www.npmjs.com/package/live-server).
 
 # Custom Builder
 As described, the go_router uses the list of `GoRoute` objects to implement it's
@@ -650,8 +732,8 @@ parameters.
 You can see the go_router in action via the following examples:
 - [`main.dart`](example/lib/main.dart): define a basic routing policy using a
   set of declarative `GoRoute` objects
-- [`url_strategy.dart`](example/lib/url_strategy.dart): turn off the # in the
-  Flutter web URL
+- [`init_loc.dart`](example/lib/init_loc.dart): start at a specific location
+  instead of home (`/`), which is the default
 - [`sub_routes.dart`](example/lib/sub_routes.dart): provide a stack of pages
   based on a set of nested routes
 - [`conditional.dart`](example/lib/conditional.dart): provide different routes
@@ -660,6 +742,8 @@ You can see the go_router in action via the following examples:
   another based on changing app state
 - [`query_params.dart`](example/lib/query_params.dart): optional query
   parameters will be passed to all page builders
+- [`url_strategy.dart`](example/lib/url_strategy.dart): turn off the # in the
+  Flutter web URL
 - [`builder.dart`](example/lib/builder.dart): define routing policy by providing
   a custom builder
 

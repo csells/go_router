@@ -3,15 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import 'shared/pages.dart';
 
-void main() {
-  // turn on the # in the URLs on the web (default)
-  // GoRouter.setUrlPathStrategy(UrlPathStrategy.hash);
-
-  // turn off the # in the URLs on the web
-  // GoRouter.setUrlPathStrategy(UrlPathStrategy.path);
-
-  runApp(App());
-}
+void main() => runApp(App());
 
 /// sample class using simple declarative routes
 class App extends StatelessWidget {
@@ -21,21 +13,19 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp.router(
         routeInformationParser: _router.routeInformationParser,
         routerDelegate: _router.routerDelegate,
-        title: 'URL Path Strategy GoRouter Example',
+        title: 'Initial Location GoRouter Example',
       );
 
   late final _router = GoRouter(
     routes: _routesBuilder,
     error: _errorBuilder,
-    // turn off the # in the URLs on the web
-    urlPathStrategy: UrlPathStrategy.path,
+    initialLocation: '/page2',
   );
-
   List<GoRoute> _routesBuilder(BuildContext context, String location) => [
         GoRoute(
           pattern: '/',
           builder: (context, state) => const MaterialPage<Page1Page>(
-            key: ValueKey('HomePage'),
+            key: ValueKey('Page1Page'),
             child: Page1Page(),
           ),
         ),
@@ -44,6 +34,13 @@ class App extends StatelessWidget {
           builder: (context, state) => const MaterialPage<Page2Page>(
             key: ValueKey('Page2Page'),
             child: Page2Page(),
+          ),
+        ),
+        GoRoute(
+          pattern: '/page3',
+          builder: (context, state) => const MaterialPage<Page3Page>(
+            key: ValueKey('Page3Page'),
+            child: Page3Page(),
           ),
         ),
       ];

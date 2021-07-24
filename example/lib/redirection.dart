@@ -9,12 +9,13 @@ void main() => runApp(App());
 
 /// sample app using redirection to another location
 class App extends StatelessWidget {
+  final loginInfo = LoginInfo();
   App({Key? key}) : super(key: key);
 
   // add the login info into the tree as app state that can change over time
   @override
-  Widget build(BuildContext context) => ChangeNotifierProvider<LoginInfo>(
-        create: (context) => LoginInfo(),
+  Widget build(BuildContext context) => ChangeNotifierProvider<LoginInfo>.value(
+        value: loginInfo,
         child: MaterialApp.router(
           routeInformationParser: _router.routeInformationParser,
           routerDelegate: _router.routerDelegate,
@@ -26,7 +27,7 @@ class App extends StatelessWidget {
   late final _router = GoRouter(
     routes: _routesBuilder,
     error: _errorBuilder,
-    redirect: _redirect,
+    guard: Guard(loginInfo), // the guard checks if the user is logged in
   );
 
   List<GoRoute> _routesBuilder(BuildContext context, String location) => [
@@ -71,10 +72,23 @@ class App extends StatelessWidget {
         ),
       ];
 
+  Page<dynamic> _errorBuilder(BuildContext context, GoRouterState state) =>
+      MaterialPage<ErrorPage>(
+        key: const ValueKey('ErrorPage'),
+        child: ErrorPage(message: state.error.toString()),
+      );
+}
+
+class Guard extends GoRouterGuard {
+  // passing loginInfo to the base class will cause a change to trigger routing
+  Guard(LoginInfo loginInfo) : super(loginInfo);
+
+  LoginInfo get loginInfo => super.listenable! as LoginInfo;
+
   // redirect based on app and routing state
-  String? _redirect(BuildContext context, String location) {
-    // watching LoginInfo will cause a change in LoginInfo to trigger routing
-    final loggedIn = context.watch<LoginInfo>().loggedIn;
+  @override
+  String? redirect(String location) {
+    final loggedIn = loginInfo.loggedIn;
     final goingToLogin = location == '/login';
 
     // the user is not logged in and not headed to /login, they need to login
@@ -86,10 +100,4 @@ class App extends StatelessWidget {
     // no need to redirect at all
     return null;
   }
-
-  Page<dynamic> _errorBuilder(BuildContext context, GoRouterState state) =>
-      MaterialPage<ErrorPage>(
-        key: const ValueKey('ErrorPage'),
-        child: ErrorPage(message: state.error.toString()),
-      );
 }

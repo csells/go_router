@@ -15,12 +15,13 @@ import 'screens/scaffold.dart';
 import 'screens/sign_in.dart';
 
 class Bookstore extends StatelessWidget {
+  final auth = BookstoreAuth();
   Bookstore({Key? key}) : super(key: key);
 
   late final _router = GoRouter(
     routes: _routes,
     error: _error,
-    redirect: _redirect,
+    guard: Guard(auth),
     initialLocation: '/signin',
   );
 
@@ -85,8 +86,28 @@ class Bookstore extends StatelessWidget {
         ),
       );
 
-  String? _redirect(BuildContext context, String location) {
-    final auth = context.watch<BookstoreAuth>();
+  @override
+  Widget build(BuildContext context) => ChangeNotifierProvider.value(
+        value: auth,
+        child: Provider<Library>.value(
+          value: Library.sample,
+          child: MaterialApp.router(
+            routerDelegate: _router.routerDelegate,
+            routeInformationParser: _router.routeInformationParser,
+          ),
+        ),
+      );
+}
+
+class Guard extends GoRouterGuard {
+  final BookstoreAuth auth;
+
+  // passing auth to the base class will cause a change to trigger routing
+  Guard(this.auth) : super(auth);
+
+  // redirect based on app and routing state
+  @override
+  String? redirect(String location) {
     final signedIn = auth.signedIn;
     const homeLoc = '/';
     const signInLoc = '/signin';
@@ -100,16 +121,4 @@ class Bookstore extends StatelessWidget {
     // otherwise, just go where they're going
     return null;
   }
-
-  @override
-  Widget build(BuildContext context) => ChangeNotifierProvider(
-        create: (context) => BookstoreAuth(),
-        child: Provider<Library>.value(
-          value: Library.sample,
-          child: MaterialApp.router(
-            routerDelegate: _router.routerDelegate,
-            routeInformationParser: _router.routeInformationParser,
-          ),
-        ),
-      );
 }

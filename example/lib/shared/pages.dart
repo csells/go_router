@@ -28,7 +28,7 @@ class Page1Page extends StatelessWidget {
       );
 }
 
-/// sample page to show home
+/// sample page
 class Page2Page extends StatelessWidget {
   const Page2Page({Key? key}) : super(key: key);
 
@@ -42,6 +42,27 @@ class Page2Page extends StatelessWidget {
               ElevatedButton(
                 onPressed: () => context.go('/'),
                 child: const Text('Go to home page'),
+              ),
+            ],
+          ),
+        ),
+      );
+}
+
+/// sample page
+class Page3Page extends StatelessWidget {
+  const Page3Page({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: Text(_title(context))),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: () => context.go('/page2'),
+                child: const Text('Go to page 2'),
               ),
             ],
           ),
@@ -161,9 +182,11 @@ class LoginPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton(
-                // log a user in, letting all the listeners know
                 onPressed: () {
+                  // log a user in, letting all the listeners know
                   context.read<LoginInfo>().login('user1');
+
+                  // if there's a deep link, go there
                   if (from != null) context.go(from!);
                 },
                 child: const Text('Login'),
