@@ -7,7 +7,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         PopNavigatorRouterDelegateMixin<Uri>,
         // ignore: prefer_mixin
         ChangeNotifier {
-  Uri _loc;
+  var _loc = Uri();
   final _key = GlobalKey<NavigatorState>();
   final GoRouterWidgetBuilder builder;
   final GoRouterGuard? guard;
@@ -16,7 +16,10 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     required this.builder,
     this.guard,
     Uri? initialLocation,
-  }) : _loc = initialLocation ?? Uri() {
+  }) {
+    // may need to redirect the initial location
+    setNewRoutePath(initialLocation ?? _loc);
+
     // when the guard's contained listener changes, refresh the route
     guard?.addListener(_refreshRoute);
   }

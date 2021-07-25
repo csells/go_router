@@ -1,3 +1,7 @@
+### 0.6.2
+- fixed issue showing home page for a second before redirecting (if needed)
+
+
 ### 0.6.1
 - added GoRouterState.pageKey
 - removed cupertino_icons from main pubspec.yaml
