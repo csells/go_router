@@ -1,3 +1,8 @@
+### 0.6.1
+- added GoRouterState.pageKey
+- removed cupertino_icons from main pubspec.yaml
+
+
 ### 0.6.0
 - refactor to support sub-routes to build a stack of pages instead of matching
   multiple routes

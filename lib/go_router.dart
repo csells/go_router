@@ -49,6 +49,7 @@ abstract class GoRouterGuard extends ChangeNotifier {
 class GoRouterState {
   final GoRouter router;
   final String location;
+  final String subloc;
   final String pattern;
   final Map<String, String> params;
   final Exception? error;
@@ -56,10 +57,13 @@ class GoRouterState {
   GoRouterState({
     required this.router,
     required this.location,
+    required this.subloc,
     this.pattern = '',
     this.params = const <String, String>{},
     this.error,
   });
+
+  ValueKey get pageKey => ValueKey<String>(subloc);
 }
 
 /// a declarative mapping between a route name pattern and a route page builder
@@ -74,7 +78,7 @@ class GoRoute {
   /// a function to create the list of page route builders for a given location
   final List<GoRoute>? routes;
 
-  final _patterParams = <String>[];
+  final _patternParams = <String>[];
   late final RegExp _patternRE;
 
   /// ctor
@@ -88,7 +92,7 @@ class GoRoute {
       pattern,
       prefix: true,
       caseSensitive: false,
-      parameters: _patterParams,
+      parameters: _patternParams,
     );
 
     // check sub-route patterns
@@ -103,7 +107,7 @@ class GoRoute {
 
   Match? matchPatternAsPrefix(String loc) => _patternRE.matchAsPrefix(loc);
   Map<String, String> extractPatternParams(Match match) =>
-      p2re.extract(_patterParams, match);
+      p2re.extract(_patternParams, match);
 }
 
 /// top-level go_router class; create one of these to initialize your app's
@@ -215,7 +219,12 @@ class GoRouter {
       _locPages.clear();
       _locPages[location] = error(
         context,
-        GoRouterState(router: this, location: location, error: ex),
+        GoRouterState(
+          router: this,
+          location: location,
+          subloc: location,
+          error: ex,
+        ),
       );
     }
 
@@ -305,6 +314,7 @@ class GoRouter {
         GoRouterState(
           router: this,
           location: location,
+          subloc: subloc,
           pattern: match.route.pattern,
           params: params,
         ),
@@ -421,8 +431,8 @@ class GoRouter {
     }
   }
 
-  static String locationFor(String pattern, Map<String, String> args) =>
-      p2re.pathToFunction(pattern)(args);
+  static String locationFor(String pattern, Map<String, String> params) =>
+      p2re.pathToFunction(pattern)(params);
 }
 
 /// Dart extension to add the go() function to a BuildContext object, e.g.

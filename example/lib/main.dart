@@ -20,23 +20,23 @@ class App extends StatelessWidget {
   List<GoRoute> _routesBuilder(BuildContext context, String location) => [
         GoRoute(
           pattern: '/',
-          builder: (context, state) => const MaterialPage<Page1Page>(
-            key: ValueKey('Page1Page'),
-            child: Page1Page(),
+          builder: (context, state) => MaterialPage<Page1Page>(
+            key: state.pageKey,
+            child: const Page1Page(),
           ),
         ),
         GoRoute(
           pattern: '/page2',
-          builder: (context, state) => const MaterialPage<Page2Page>(
-            key: ValueKey('Page2Page'),
-            child: Page2Page(),
+          builder: (context, state) => MaterialPage<Page2Page>(
+            key: state.pageKey,
+            child: const Page2Page(),
           ),
         ),
       ];
 
   Page<dynamic> _errorBuilder(BuildContext context, GoRouterState state) =>
       MaterialPage<ErrorPage>(
-        key: const ValueKey('ErrorPage'),
+        key: state.pageKey,
         child: ErrorPage(message: state.error.toString()),
       );
 }

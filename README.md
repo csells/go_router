@@ -46,14 +46,14 @@ class App extends StatelessWidget {
     GoRoute(
       pattern: '/',
       builder: (context, state) => const MaterialPage<HomePage>(
-        key: ValueKey('Page1Page'),
+        key: state.pageKey,
         child: Page1Page(),
       ),
     ),
     GoRoute(
       pattern: '/page2',
       builder: (context, state) => const MaterialPage<Page2Page>(
-        key: ValueKey('Page2Page'),
+        key: state.pageKey,
         child: Page2Page(),
       ),
     ),
@@ -66,7 +66,15 @@ In this case, we've defined two routes. These route `pattern` will be matched
 against the location. Only a single pattern will be matched, specifically the
 one that matches the entire location (and so it doesn't matter in which order
 you list your routes). A `GoRoute` also contains a page `builder` function which
-is called to create the page when a pattern is matched. 
+is called to create the page when a pattern is matched.
+
+The builder function is passed a `state` object which contains some useful
+information like the current location that's being matched, parameter values for
+[parametized routes](#parameters) and the one used in this example code is the
+`pageKey` property of the state object. The `pageKey` is used to create a unique
+key for the `MaterialPage` or `CupertinoPage` based on the current location for
+that page in the [stack of pages](#sub-routes), so it will uniquely identify the
+page w/o having to hardcode a key or come up with one yourself.
 
 In addition, the go_router needs an `error` handler in case no page is found or
 if any of the page builder functions throws an exception, e.g.
@@ -78,7 +86,7 @@ class App extends StatelessWidget {
   ...
   Page<dynamic> _errorBuilder(BuildContext context, GoRouterState state) =>
       MaterialPage<ErrorPage>(
-        key: const ValueKey('ErrorPage'),
+        key: state.pageKey,
         child: ErrorPage(message: state.error.toString()),
       );
 }
@@ -155,7 +163,7 @@ List<GoRoute> _routesBuilder(BuildContext context, String location) => [
       final family = Families.family(state.params['fid']!);
 
       return MaterialPage<FamilyPage>(
-        key: ValueKey(family),
+        key: state.pageKey,
         child: FamilyPage(family: family),
       );
     },
@@ -168,7 +176,7 @@ things like look up data to use to initialize each page. If you'd like to be
 more restrictive about the parameters, you can use regular expressions, e.g.
 `/family/:fid(f\d+)`.
 
-# Sub-routes to build a navigation stack
+# Sub-routes
 Every top-level route will create a navigation stack of one page. To produce an
 entire stack of pages, you can use sub-routes. In the case that a top-level
 route only matches part of the location, the rest of the location can be matched
@@ -192,7 +200,7 @@ List<GoRoute> _routesBuilder(BuildContext context, String location) => [
   GoRoute(
     pattern: '/',
     builder: (context, state) => MaterialPage<HomePage>(
-      key: const ValueKey('HomePage'),
+      key: state.pageKey,
       child: HomePage(families: Families.data),
     ),
     routes: [
@@ -202,7 +210,7 @@ List<GoRoute> _routesBuilder(BuildContext context, String location) => [
           final family = Families.family(state.params['fid']!);
 
           return MaterialPage<FamilyPage>(
-            key: ValueKey(family),
+            key: state.pageKey,
             child: FamilyPage(family: family),
           );
         },
@@ -214,7 +222,7 @@ List<GoRoute> _routesBuilder(BuildContext context, String location) => [
               final person = family.person(state.params['pid']!);
 
               return MaterialPage<PersonPage>(
-                key: ValueKey(person),
+                key: state.pageKey,
                 child: PersonPage(family: family, person: person),
               );
             },
@@ -316,7 +324,7 @@ class App extends StatelessWidget {
     GoRoute(
       pattern: '/',
       builder: (context, state) => MaterialPage<HomePage>(
-        key: const ValueKey('HomePage'),
+        key: state.pageKey,
         child: HomePage(families: Families.data),
       ),
       routes: [
@@ -326,7 +334,7 @@ class App extends StatelessWidget {
             final family = Families.family(state.params['fid']!);
 
             return MaterialPage<FamilyPage>(
-              key: ValueKey(family),
+              key: state.pageKey,
               child: FamilyPage(family: family),
             );
           },
@@ -338,7 +346,7 @@ class App extends StatelessWidget {
                 final person = family.person(state.params['pid']!);
 
                 return MaterialPage<PersonPage>(
-                  key: ValueKey(person),
+                  key: state.pageKey,
                   child: PersonPage(family: family, person: person),
                 );
               },
@@ -353,8 +361,8 @@ class App extends StatelessWidget {
   final _loggedOutRoutes = [
     GoRoute(
       pattern: '/',
-      builder: (context, state) => const MaterialPage<LoginPage>(
-        key: ValueKey('LoginPage'),
+      builder: (context, state) => MaterialPage<LoginPage>(
+        key: state.pageKey,
         child: LoginPage(),
       ),
     ),
@@ -494,7 +502,7 @@ with a `from` query parameter set to the deep link. Now, when the
 GoRoute(
   pattern: '/login',
   builder: (context, state) => MaterialPage<LoginPage>(
-    key: const ValueKey('LoginPage'),
+    key: state.pageKey,
     // pass the deep link to the LoginPage (if there is one)
     child: LoginPage(from: state.args['from']),
   ),

@@ -35,9 +35,9 @@ class Bookstore extends StatelessWidget {
         // /books/all
         GoRoute(
           pattern: '/',
-          builder: (context, state) => const MaterialPage<BookstoreScaffold>(
-            key: ValueKey('App scaffold'),
-            child: BookstoreScaffold(),
+          builder: (context, state) => MaterialPage<BookstoreScaffold>(
+            key: state.pageKey,
+            child: const BookstoreScaffold(),
           ),
         ),
 
@@ -49,7 +49,7 @@ class Bookstore extends StatelessWidget {
             final book = library.findBook(bookId);
 
             return MaterialPage<BookDetailsScreen>(
-              key: const ValueKey<String>('Book details screen'),
+              key: state.pageKey,
               child: BookDetailsScreen(book: book),
             );
           },
@@ -63,7 +63,7 @@ class Bookstore extends StatelessWidget {
             final author = library.findAuthor(authorId);
 
             return MaterialPage<void>(
-              key: const ValueKey<String>('Author details screen'),
+              key: state.pageKey,
               child: AuthorDetailsScreen(author: author),
             );
           },
@@ -71,9 +71,9 @@ class Bookstore extends StatelessWidget {
 
         GoRoute(
           pattern: '/signin',
-          builder: (context, state) => const MaterialPage<SignInScreen>(
-            key: ValueKey('SignInScreen'),
-            child: SignInScreen(),
+          builder: (context, state) => MaterialPage<SignInScreen>(
+            key: state.pageKey,
+            child: const SignInScreen(),
           ),
         ),
       ];
@@ -81,7 +81,7 @@ class Bookstore extends StatelessWidget {
   Page<dynamic> _error(BuildContext context, GoRouterState state) =>
       MaterialPage<ErrorPage>(
         child: ErrorPage(
-          key: const ValueKey('ErrorPage'),
+          key: state.pageKey,
           message: state.error.toString(),
         ),
       );

@@ -23,7 +23,7 @@ class App extends StatelessWidget {
         GoRoute(
           pattern: '/',
           builder: (context, state) => MaterialPage<HomePage>(
-            key: const ValueKey('HomePage'),
+            key: state.pageKey,
             child: HomePage(families: Families.data),
           ),
           routes: [
@@ -33,7 +33,7 @@ class App extends StatelessWidget {
                 final family = Families.family(state.params['fid']!);
 
                 return MaterialPage<FamilyPage>(
-                  key: ValueKey(family),
+                  key: state.pageKey,
                   child: FamilyPage(family: family),
                 );
               },
@@ -45,7 +45,7 @@ class App extends StatelessWidget {
                     final person = family.person(state.params['pid']!);
 
                     return MaterialPage<PersonPage>(
-                      key: ValueKey(person),
+                      key: state.pageKey,
                       child: PersonPage(family: family, person: person),
                     );
                   },
@@ -58,7 +58,7 @@ class App extends StatelessWidget {
 
   Page<dynamic> _errorBuilder(BuildContext context, GoRouterState state) =>
       MaterialPage<ErrorPage>(
-        key: const ValueKey('ErrorPage'),
+        key: state.pageKey,
         child: ErrorPage(message: state.error.toString()),
       );
 }
