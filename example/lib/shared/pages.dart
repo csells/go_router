@@ -148,8 +148,8 @@ class PersonPage extends StatelessWidget {
 
 /// sample error page
 class ErrorPage extends StatelessWidget {
-  final String message;
-  const ErrorPage({required this.message, Key? key}) : super(key: key);
+  final Exception? error;
+  const ErrorPage(this.error, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -158,7 +158,7 @@ class ErrorPage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(message),
+              Text(error?.toString() ?? 'page not found'),
               TextButton(
                 onPressed: () => context.go('/'),
                 child: const Text('Home'),

@@ -80,10 +80,8 @@ class Bookstore extends StatelessWidget {
 
   Page<dynamic> _error(BuildContext context, GoRouterState state) =>
       MaterialPage<ErrorPage>(
-        child: ErrorPage(
-          key: state.pageKey,
-          message: state.error.toString(),
-        ),
+        key: state.pageKey,
+        child: ErrorPage(state.error),
       );
 
   @override

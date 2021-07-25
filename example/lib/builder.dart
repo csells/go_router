@@ -75,13 +75,13 @@ class App extends StatelessWidget {
               location.toLowerCase()) {
         throw Exception('page not found: $location');
       }
-    } on Exception catch (ex) {
+    } on Exception catch (error) {
       locPages.clear();
 
       final loc = location;
       final page = MaterialPage<ErrorPage>(
         key: const ValueKey('ErrorPage'),
-        child: ErrorPage(message: ex.toString()),
+        child: ErrorPage(error),
       );
 
       locPages[loc] = page;

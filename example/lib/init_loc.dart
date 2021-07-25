@@ -48,6 +48,6 @@ class App extends StatelessWidget {
   Page<dynamic> _errorBuilder(BuildContext context, GoRouterState state) =>
       MaterialPage<ErrorPage>(
         key: state.pageKey,
-        child: ErrorPage(message: state.error.toString()),
+        child: ErrorPage(state.error),
       );
 }
