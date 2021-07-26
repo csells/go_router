@@ -2,16 +2,22 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:collection/collection.dart';
+class Book {
+  final String title;
+  final String authorName;
+  final bool isPopular;
+  final bool isNew;
 
-import 'author.dart';
-import 'book.dart';
+  Book({
+    required this.title,
+    required this.authorName,
+    required this.isPopular,
+    required this.isNew,
+  });
+}
 
 class Library {
-  final List<Book> allBooks = [];
-  final List<Author> allAuthors = [];
-
-  static final sample = Library()
+  static Library sample = Library()
     ..addBook(
         title: 'Left Hand of Darkness',
         authorName: 'Ursula K. Le Guin',
@@ -32,28 +38,20 @@ class Library {
         authorName: 'Ursula K. Le Guin',
         isPopular: false,
         isNew: false);
+  final List<Book> allBooks = [];
 
   void addBook({
     required String title,
     required String authorName,
     required bool isPopular,
     required bool isNew,
-  }) {
-    var author =
-        allAuthors.firstWhereOrNull((author) => author.name == authorName);
-    final book = Book(
-        id: allBooks.length, title: title, isPopular: isPopular, isNew: isNew);
-
-    if (author == null) {
-      author = Author(id: allAuthors.length, name: authorName, books: [book]);
-      allAuthors.add(author);
-    } else {
-      author.books.add(book);
-    }
-
-    book.author = author;
-    allBooks.add(book);
-  }
+  }) =>
+      allBooks.add(Book(
+        title: title,
+        authorName: authorName,
+        isPopular: isPopular,
+        isNew: isNew,
+      ));
 
   List<Book> get popularBooks => [
         ...allBooks.where((book) => book.isPopular),
@@ -62,8 +60,4 @@ class Library {
   List<Book> get newBooks => [
         ...allBooks.where((book) => book.isNew),
       ];
-
-  Book? findBook(int id) => allBooks.firstWhereOrNull((b) => b.id == id);
-
-  Author? findAuthor(int id) => allAuthors.firstWhereOrNull((a) => a.id == id);
 }

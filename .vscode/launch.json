@@ -51,6 +51,13 @@
       "program": "lib/url_strategy.dart"
     },
     {
+      "name": "Books",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "example",
+      "program": "lib/books/main.dart"
+    },
+    {
       "name": "Custom Builder",
       "request": "launch",
       "type": "dart",
