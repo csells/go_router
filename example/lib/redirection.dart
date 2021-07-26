@@ -25,16 +25,10 @@ class App extends StatelessWidget {
       );
 
   late final _router = GoRouter(
-    // routes: _routesBuilder, TODO: restore
-    routes: _rb, // TODO: remove this
+    routes: _routesBuilder,
     error: _errorBuilder,
     guard: Guard(loginInfo), // the guard checks if the user is logged in
   );
-
-  List<GoRoute> _rb(BuildContext context, String location) {
-    print('rb: $location');
-    return _routesBuilder(context, location);
-  }
 
   List<GoRoute> _routesBuilder(BuildContext context, String location) => [
         GoRoute(
