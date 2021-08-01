@@ -28,14 +28,14 @@ class App extends StatelessWidget {
   // the routes when the user is logged in
   final _loggedInRoutes = [
     GoRoute(
-      pattern: '/',
+      path: '/',
       builder: (context, state) => MaterialPage<HomePage>(
         key: state.pageKey,
         child: HomePage(families: Families.data),
       ),
       routes: [
         GoRoute(
-          pattern: 'family/:fid',
+          path: 'family/:fid',
           builder: (context, state) {
             final family = Families.family(state.params['fid']!);
 
@@ -46,7 +46,7 @@ class App extends StatelessWidget {
           },
           routes: [
             GoRoute(
-              pattern: 'person/:pid',
+              path: 'person/:pid',
               builder: (context, state) {
                 final family = Families.family(state.params['fid']!);
                 final person = family.person(state.params['pid']!);
@@ -66,7 +66,7 @@ class App extends StatelessWidget {
   // the routes when the user is not logged in
   final _loggedOutRoutes = [
     GoRoute(
-      pattern: '/',
+      path: '/',
       builder: (context, state) => MaterialPage<LoginPage>(
         key: state.pageKey,
         child: const LoginPage(),

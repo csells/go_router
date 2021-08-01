@@ -9,7 +9,7 @@ void main() {
   test('match home route', () {
     const loc = '/';
     final routes = [
-      GoRoute(pattern: '/', builder: (builder, state) => HomePage()),
+      GoRoute(path: '/', builder: (builder, state) => HomePage()),
     ];
 
     final router = _router(routes);
@@ -23,8 +23,8 @@ void main() {
   test('match too many routes', () {
     const loc = '/';
     final routes = [
-      GoRoute(pattern: '/', builder: _dummy),
-      GoRoute(pattern: '/', builder: _dummy),
+      GoRoute(path: '/', builder: _dummy),
+      GoRoute(path: '/', builder: _dummy),
     ];
 
     try {
@@ -42,11 +42,11 @@ void main() {
       // ignore: unused_local_variable
       final routes = [
         GoRoute(
-          pattern: '/',
+          path: '/',
           builder: _dummy,
           routes: [
             GoRoute(
-              pattern: '/foo',
+              path: '/foo',
               builder: _dummy,
             ),
           ],
@@ -64,11 +64,11 @@ void main() {
       // ignore: unused_local_variable
       final routes = [
         GoRoute(
-          pattern: '/',
+          path: '/',
           builder: _dummy,
           routes: [
             GoRoute(
-              pattern: 'foo/',
+              path: 'foo/',
               builder: _dummy,
             ),
           ],
@@ -85,7 +85,7 @@ void main() {
     try {
       // ignore: unused_local_variable
       final routes = [
-        GoRoute(pattern: 'foo', builder: _dummy),
+        GoRoute(path: 'foo', builder: _dummy),
       ];
       final router = _router(routes);
       router.getLocPages(context, 'foo', routes);
@@ -99,7 +99,7 @@ void main() {
   test('match no routes', () {
     const loc = '/foo';
     final routes = [
-      GoRoute(pattern: '/', builder: _dummy),
+      GoRoute(path: '/', builder: _dummy),
     ];
 
     try {
@@ -115,8 +115,8 @@ void main() {
   test('match 2nd top level route', () {
     const loc = '/login';
     final routes = [
-      GoRoute(pattern: '/', builder: (builder, state) => HomePage()),
-      GoRoute(pattern: '/login', builder: (builder, state) => LoginPage()),
+      GoRoute(path: '/', builder: (builder, state) => HomePage()),
+      GoRoute(path: '/login', builder: (builder, state) => LoginPage()),
     ];
 
     final router = _router(routes);
@@ -131,10 +131,10 @@ void main() {
     const loc = '/login';
     final routes = [
       GoRoute(
-        pattern: '/',
+        path: '/',
         builder: (builder, state) => HomePage(),
         routes: [
-          GoRoute(pattern: 'login', builder: (builder, state) => LoginPage()),
+          GoRoute(path: 'login', builder: (builder, state) => LoginPage()),
         ],
       ),
     ];
@@ -152,17 +152,17 @@ void main() {
   test('match sub-routes', () {
     final routes = [
       GoRoute(
-        pattern: '/',
+        path: '/',
         builder: (context, state) => HomePage(),
         routes: [
           GoRoute(
-            pattern: 'family/:fid',
+            path: 'family/:fid',
             builder: (context, state) => FamilyPage(
               state.params['fid']!,
             ),
             routes: [
               GoRoute(
-                pattern: 'person/:pid',
+                path: 'person/:pid',
                 builder: (context, state) => PersonPage(
                   state.params['fid']!,
                   state.params['pid']!,
@@ -171,7 +171,7 @@ void main() {
             ],
           ),
           GoRoute(
-            pattern: 'login',
+            path: 'login',
             builder: (context, state) => LoginPage(),
           ),
         ],
@@ -226,19 +226,19 @@ void main() {
     const loc = '/foo/bar';
     final routes = [
       GoRoute(
-        pattern: '/',
+        path: '/',
         builder: _dummy,
         routes: [
           GoRoute(
-            pattern: 'foo/bar',
+            path: 'foo/bar',
             builder: _dummy,
           ),
           GoRoute(
-            pattern: 'foo',
+            path: 'foo',
             builder: _dummy,
             routes: [
               GoRoute(
-                pattern: 'bar',
+                path: 'bar',
                 builder: _dummy,
               ),
             ],
@@ -260,11 +260,11 @@ void main() {
   test('redirect', () {
     final routes = [
       GoRoute(
-        pattern: '/',
+        path: '/',
         builder: (builder, state) => HomePage(),
         routes: [
-          GoRoute(pattern: 'dummy', builder: (builder, state) => DummyPage()),
-          GoRoute(pattern: 'login', builder: (builder, state) => LoginPage()),
+          GoRoute(path: 'dummy', builder: (builder, state) => DummyPage()),
+          GoRoute(path: 'login', builder: (builder, state) => LoginPage()),
         ],
       ),
     ];
@@ -283,10 +283,10 @@ void main() {
   test('initial location', () {
     final routes = [
       GoRoute(
-        pattern: '/',
+        path: '/',
         builder: (builder, state) => HomePage(),
         routes: [
-          GoRoute(pattern: 'dummy', builder: (builder, state) => DummyPage()),
+          GoRoute(path: 'dummy', builder: (builder, state) => DummyPage()),
         ],
       ),
     ];

@@ -45,12 +45,62 @@ abstract class GoRouterGuard extends ChangeNotifier {
   String? redirect(String location);
 }
 
+mixin GoRouterLoggedIn {
+  bool get loggedIn;
+}
+
+class GoRouterLoginGuard extends GoRouterGuard {
+  final String loginPath;
+  final String homePath;
+  final String fromParam;
+
+  GoRouterLoginGuard(
+    Listenable loginInfo, {
+    required this.loginPath,
+    this.homePath = '/',
+    this.fromParam = '',
+  })  : assert(loginPath.isNotEmpty),
+        assert(loginPath.startsWith('/')),
+        assert(homePath.isNotEmpty),
+        assert(homePath.startsWith('/')),
+        super(loginInfo);
+
+  @override
+  String? redirect(String location) {
+    if (super.listenable is! GoRouterLoggedIn) {
+      throw Exception('loginInfo must use the GoRouterLoggedIn mixin');
+    }
+
+    final loginInfo = super.listenable! as GoRouterLoggedIn;
+    final loggedIn = loginInfo.loggedIn;
+    final loc = Uri.parse(location).path;
+    final goingToLogin = loc == loginPath;
+
+    // assume the user does not need to be redirected
+    String? redirect;
+
+    // the user is not logged in and not headed to login path but should be
+    if (!loggedIn && !goingToLogin) {
+      // redirect to login path, optionally including the original location
+      redirect = fromParam.isEmpty ? loginPath : '$loginPath?$fromParam=$loc';
+    }
+
+    // the user is logged in and headed to login path but shouldn't be
+    if (loggedIn && goingToLogin) {
+      // redirect to home
+      redirect = homePath;
+    }
+
+    return redirect;
+  }
+}
+
 /// for route state during routing
 class GoRouterState {
   final GoRouter router;
   final String location;
   final String subloc;
-  final String pattern;
+  final String path;
   final Map<String, String> params;
   final Exception? error;
 
@@ -58,7 +108,7 @@ class GoRouterState {
     required this.router,
     required this.location,
     required this.subloc,
-    this.pattern = '',
+    this.path = '',
     this.params = const <String, String>{},
     this.error,
   });
@@ -66,48 +116,48 @@ class GoRouterState {
   ValueKey get pageKey => ValueKey<String>(subloc);
 }
 
-/// a declarative mapping between a route name pattern and a route page builder
+/// a declarative mapping between a route name path and a route page builder
 class GoRoute {
-  /// the pattern in the form `/path/with/:var` interpretted using
+  /// the path in the form `/path/with/:var` interpretted using
   /// path_to_regexp package
-  final String pattern;
+  final String path;
 
-  /// a function to create a page when the route pattern is matched
+  /// a function to create a page when the route path is matched
   final GoRouterPageBuilder builder;
 
   /// a function to create the list of page route builders for a given location
   final List<GoRoute>? routes;
 
-  final _patternParams = <String>[];
-  late final RegExp _patternRE;
+  final _pathParams = <String>[];
+  late final RegExp _pathRE;
 
   /// ctor
   GoRoute({
-    required this.pattern,
+    required this.path,
     required this.builder,
     this.routes,
   }) {
-    // cache the pattern regexp and parameters
-    _patternRE = p2re.pathToRegExp(
-      pattern,
+    // cache the path regexp and parameters
+    _pathRE = p2re.pathToRegExp(
+      path,
       prefix: true,
       caseSensitive: false,
-      parameters: _patternParams,
+      parameters: _pathParams,
     );
 
-    // check sub-route patterns
+    // check sub-route paths
     for (final route in routes ?? <GoRoute>[]) {
-      if (route.pattern != '/' &&
-          (route.pattern.startsWith('/') || route.pattern.endsWith('/'))) {
+      if (route.path != '/' &&
+          (route.path.startsWith('/') || route.path.endsWith('/'))) {
         throw Exception(
-            'sub-route pattern may not start or end with /: ${route.pattern}');
+            'sub-route path may not start or end with /: ${route.path}');
       }
     }
   }
 
-  Match? matchPatternAsPrefix(String loc) => _patternRE.matchAsPrefix(loc);
+  Match? matchPatternAsPrefix(String loc) => _pathRE.matchAsPrefix(loc);
   Map<String, String> extractPatternParams(Match match) =>
-      p2re.extract(_patternParams, match);
+      p2re.extract(_pathParams, match);
 }
 
 /// top-level go_router class; create one of these to initialize your app's
@@ -282,9 +332,9 @@ class GoRouter {
   ) {
     // check all of the top level routes
     for (final route in routes) {
-      if (!route.pattern.startsWith('/')) {
+      if (!route.path.startsWith('/')) {
         throw Exception(
-            'top level route patterns must start with /: ${route.pattern}');
+            'top level route paths must start with /: ${route.path}');
       }
     }
 
@@ -302,9 +352,9 @@ class GoRouter {
           (subloc.endsWith('/') || match.loc.startsWith('/') ? '' : '/') +
           match.loc;
 
-      // merge new params, overriding old ones, i.e. pattern params override
+      // merge new params, overriding old ones, i.e. path params override
       // query parameters, sub-location params override top level params, etc.
-      // this also keeps params from previously matched patterns, e.g.
+      // this also keeps params from previously matched paths, e.g.
       // /family/:fid/person/:pid provides fid and pid to person/:pid
       params = {...params, ...match.params};
 
@@ -315,7 +365,7 @@ class GoRouter {
           router: this,
           location: location,
           subloc: subloc,
-          pattern: match.route.pattern,
+          path: match.route.path,
           params: params,
         ),
       );
@@ -343,7 +393,7 @@ class GoRouter {
       sb.writeln('too many routes for location: $loc');
 
       for (final stack in matchStacks) {
-        sb.writeln('\t${stack.map((m) => m.route.pattern).join(' => ')}');
+        sb.writeln('\t${stack.map((m) => m.route.path).join(' => ')}');
       }
 
       throw Exception(sb.toString());
@@ -363,31 +413,31 @@ class GoRouter {
   /// loc: /
   /// stacks: [
   ///   matches: [
-  ///     match(route.pattern=/, loc=/)
+  ///     match(route.path=/, loc=/)
   ///   ]
   /// ]
   ///
   /// loc: /login
   /// stacks: [
   ///   matches: [
-  ///     match(route.pattern=/login, loc=login)
+  ///     match(route.path=/login, loc=login)
   ///   ]
   /// ]
   ///
   /// loc: /family/f2
   /// stacks: [
   ///   matches: [
-  ///     match(route.pattern=/, loc=/),
-  ///     match(route.pattern=family/:fid, loc=family/f2, params=[fid=f2])
+  ///     match(route.path=/, loc=/),
+  ///     match(route.path=family/:fid, loc=family/f2, params=[fid=f2])
   ///   ]
   /// ]
   ///
   /// loc: /family/f2/person/p1
   /// stacks: [
   ///   matches: [
-  ///     match(route.pattern=/, loc=/),
-  ///     match(route.pattern=family/:fid, loc=family/f2, params=[fid=f2])
-  ///     match(route.pattern=person/:pid, loc=person/p1, params=[fid=f2, pid=p1])
+  ///     match(route.path=/, loc=/),
+  ///     match(route.path=family/:fid, loc=family/f2, params=[fid=f2])
+  ///     match(route.path=person/:pid, loc=person/p1, params=[fid=f2, pid=p1])
   ///   ]
   /// ]
   ///
@@ -431,8 +481,8 @@ class GoRouter {
     }
   }
 
-  static String locationFor(String pattern, Map<String, String> params) =>
-      p2re.pathToFunction(pattern)(params);
+  static String locationFor(String path, Map<String, String> params) =>
+      p2re.pathToFunction(path)(params);
 }
 
 /// Dart extension to add the go() function to a BuildContext object, e.g.

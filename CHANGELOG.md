@@ -1,3 +1,9 @@
+### 0.7.0
+- BREAK: rename `pattern` to `path` for consistency w/ other routers in the
+  world
+- added the `GoRouterLoginGuard` for the common redirect-to-login-page pattern
+
+
 ### 0.6.2
 - fixed issue showing home page for a second before redirecting (if needed)
 

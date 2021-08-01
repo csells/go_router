@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:go_router/go_router.dart';
 
 /// sample Person class
 class Person {
@@ -52,10 +53,8 @@ class Families {
 }
 
 /// info about the current login state that notifies listens upon change
-class LoginInfo extends ChangeNotifier {
+class LoginInfo extends ChangeNotifier with GoRouterLoggedIn {
   var _userName = '';
-
-  bool get loggedIn => _userName.isNotEmpty;
   String get userName => _userName;
 
   void login(String userName) {
@@ -63,5 +62,12 @@ class LoginInfo extends ChangeNotifier {
     notifyListeners();
   }
 
-  void logout() => login('');
+  void logout() {
+    _userName = '';
+    notifyListeners();
+  }
+
+  // override the GoRouterLoggedIn.loggedIn property
+  @override
+  bool get loggedIn => _userName.isNotEmpty;
 }

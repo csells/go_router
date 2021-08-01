@@ -123,7 +123,7 @@ class GoRouteMatch {
     final match = route.matchPatternAsPrefix(location);
     if (match == null) return null;
     final params = route.extractPatternParams(match);
-    final subloc = GoRouter.locationFor(route.pattern, params);
+    final subloc = GoRouter.locationFor(route.path, params);
     return GoRouteMatch(route, subloc, params);
   }
 }

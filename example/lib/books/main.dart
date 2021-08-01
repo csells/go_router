@@ -25,21 +25,21 @@ class Bookstore extends StatelessWidget {
 
   static Iterable<GoRoute> _routes(BuildContext context, String location) => [
         GoRoute(
-          pattern: '/books/popular',
+          path: '/books/popular',
           builder: (context, state) => MaterialPage<void>(
             key: state.pageKey,
             child: const BooksScreen('popular'),
           ),
         ),
         GoRoute(
-          pattern: '/books/new',
+          path: '/books/new',
           builder: (context, state) => MaterialPage<void>(
             key: state.pageKey,
             child: const BooksScreen('new'),
           ),
         ),
         GoRoute(
-          pattern: '/books/all',
+          path: '/books/all',
           builder: (context, state) => MaterialPage<void>(
             key: state.pageKey,
             child: const BooksScreen('all'),

@@ -44,14 +44,14 @@ class App extends StatelessWidget {
   late final _router = GoRouter(routes: _routesBuilder, error: _errorBuilder);
   List<GoRoute> _routesBuilder(BuildContext context, String location) => [
     GoRoute(
-      pattern: '/',
+      path: '/',
       builder: (context, state) => const MaterialPage<HomePage>(
         key: state.pageKey,
         child: Page1Page(),
       ),
     ),
     GoRoute(
-      pattern: '/page2',
+      path: '/page2',
       builder: (context, state) => const MaterialPage<Page2Page>(
         key: state.pageKey,
         child: Page2Page(),
@@ -62,11 +62,11 @@ class App extends StatelessWidget {
 }
 ```
 
-In this case, we've defined two routes. These route `pattern` will be matched
-against the location. Only a single pattern will be matched, specifically the
+In this case, we've defined two routes. These route `path` will be matched
+against the location. Only a single path will be matched, specifically the
 one that matches the entire location (and so it doesn't matter in which order
 you list your routes). A `GoRoute` also contains a page `builder` function which
-is called to create the page when a pattern is matched.
+is called to create the page when a path is matched.
 
 The builder function is passed a `state` object which contains some useful
 information like the current location that's being matched, parameter values for
@@ -151,14 +151,14 @@ If your app is started using [deep linking](#deep-linking), the initial location
 will be ignored.
 
 # Parameters
-The route patterns are defined and
+The route paths are defined and
 implemented in the [`path_to_regexp`](https://pub.dev/packages/path_to_regexp)
 package, which gives you the ability to include parameters in your route: 
 
 ```dart
 List<GoRoute> _routesBuilder(BuildContext context, String location) => [
   GoRoute(
-    pattern: '/family/:fid',
+    path: '/family/:fid',
     builder: (context, state) {
       final family = Families.family(state.params['fid']!);
 
@@ -171,7 +171,7 @@ List<GoRoute> _routesBuilder(BuildContext context, String location) => [
 ];
 ```
 
-The page builder function can use the parameters parsed from the pattern to do
+The page builder function can use the parameters parsed from the path to do
 things like look up data to use to initialize each page. If you'd like to be
 more restrictive about the parameters, you can use regular expressions, e.g.
 `/family/:fid(f\d+)`.
@@ -181,8 +181,7 @@ Every top-level route will create a navigation stack of one page. To produce an
 entire stack of pages, you can use sub-routes. In the case that a top-level
 route only matches part of the location, the rest of the location can be matched
 against sub-routes. The rules are still the same, i.e. that only a single
-top-level route will be matched and the entire location much be matched, but
-sub-routes allows you the match to produce a stack of more than a single page.
+route at any level will be matched and the entire location much be matched.
 
 For example, the location `/family/f1/person/p2`, can be made to match multiple
 sub-routes to create a stack of pages:
@@ -198,14 +197,14 @@ To specify a set of pages like this, you can use sub-page routing via the
 ```dart
 List<GoRoute> _routesBuilder(BuildContext context, String location) => [
   GoRoute(
-    pattern: '/',
+    path: '/',
     builder: (context, state) => MaterialPage<HomePage>(
       key: state.pageKey,
       child: HomePage(families: Families.data),
     ),
     routes: [
       GoRoute(
-        pattern: 'family/:fid',
+        path: 'family/:fid',
         builder: (context, state) {
           final family = Families.family(state.params['fid']!);
 
@@ -216,7 +215,7 @@ List<GoRoute> _routesBuilder(BuildContext context, String location) => [
         },
         routes: [
           GoRoute(
-            pattern: 'person/:pid',
+            path: 'person/:pid',
             builder: (context, state) {
               final family = Families.family(state.params['fid']!);
               final person = family.person(state.params['pid']!);
@@ -253,10 +252,16 @@ to track the app's current logged in state:
 ```dart
 class LoginInfo extends ChangeNotifier {
   var _userName = '';
+  String get userName => _userName;
   bool get loggedIn => _userName.isNotEmpty;
 
   void login(String userName) {
     _userName = userName;
+    notifyListeners();
+  }
+
+  void logout(String userName) {
+    _userName = '';
     notifyListeners();
   }
 }
@@ -322,14 +327,14 @@ class App extends StatelessWidget {
   // the routes when the user is logged in
   final _loggedInRoutes = [
     GoRoute(
-      pattern: '/',
+      path: '/',
       builder: (context, state) => MaterialPage<HomePage>(
         key: state.pageKey,
         child: HomePage(families: Families.data),
       ),
       routes: [
         GoRoute(
-          pattern: 'family/:fid',
+          path: 'family/:fid',
           builder: (context, state) {
             final family = Families.family(state.params['fid']!);
 
@@ -340,7 +345,7 @@ class App extends StatelessWidget {
           },
           routes: [
             GoRoute(
-              pattern: 'person/:pid',
+              path: 'person/:pid',
               builder: (context, state) {
                 final family = Families.family(state.params['fid']!);
                 final person = family.person(state.params['pid']!);
@@ -360,7 +365,7 @@ class App extends StatelessWidget {
   // the routes when the user is not logged in
   final _loggedOutRoutes = [
     GoRoute(
-      pattern: '/',
+      path: '/',
       builder: (context, state) => MaterialPage<LoginPage>(
         key: state.pageKey,
         child: LoginPage(),
@@ -382,6 +387,10 @@ determine which list of routes to return. And because we used `context.watch`
 instead of `context.read`, whenever the login info object changes, the routes
 builder is automatically called for the correct list of routes based on the
 current app state.
+
+Conditional routes are useful for when your app's routes change based on app
+state changes. However, for the right way to guard against a user accessing
+pages for which they don't have access, you should use [guards](#guards-for-redirection) instead.
 
 # Guards for redirection
 Sometimes you want to guard pages from being accessed when they shouldn't be,
@@ -408,7 +417,9 @@ class App extends StatelessWidget {
   late final _router = GoRouter(
     routes: _routesBuilder,
     error: _errorBuilder,
-    guard: Guard(loginInfo), // the guard checks if the user is logged in
+
+    // the guard checks if the user is logged in
+    guard: Guard(loginInfo),
   );
 
   List<GoRoute> _routesBuilder(BuildContext context, String location) => ...
@@ -447,12 +458,14 @@ class Guard extends GoRouterGuard {
 ```
 
 In this code, if the user is not logged in and not going to the `/login`
-pattern, we redirect to `/login`. Likewise, if the user *is* logged in but going
+path, we redirect to `/login`. Likewise, if the user *is* logged in but going
 `/login`, we redirect to `/`.
 
-Notice that the login info is passed to the `super` constructor of the base
-guard class. This is so that when the login info changes, i.e. the user logs in,
-the route will be refreshed.
+Notice that the login info is passed to the
+`super` constructor of the base guard class. This is so that when the login info
+changes, i.e. the user logs in, the route will be refreshed. Notice also that
+the the custom guard class uses the base class's `listenable` property to get to
+the login info, avoiding the need to cache the same data twice.
 
 In this example, the workflow works like this:
 
@@ -463,8 +476,54 @@ In this example, the workflow works like this:
    app is currently navigated to: `/login`
 1. the user is now logged in, so the guard redirects the user to `/`
 
+This login path is common enough that go_router has built in support for it
+via the `GoRouterLoginGuard` class. Start by creating your login info class with
+the `GoRouterLoggedIn` mixin:
+
+```dart
+class LoginInfo extends ChangeNotifier with GoRouterLoggedIn {
+  var _userName = '';
+  String get userName => _userName;
+
+  void login(String userName) {
+    _userName = userName;
+    notifyListeners();
+  }
+
+  void logout(String userName) {
+    _userName = '';
+    notifyListeners();
+  }
+
+  // override the GoRouterLoggedIn.loggedIn property
+  @override
+  bool get loggedIn => _userName.isNotEmpty;
+}
+```
+
+The `loggedIn` property is used by the `GoRouterLoginGuard` class  to determine
+the user's logged in state. With this in hand, you can simply use the
+`GoLoginGuard` class instead of implementing your own custom guard:
+
+```dart
+// implements GoRouterLoggedIn
+final loginInfo = LoginInfo();
+
+late final _router = GoRouter(
+  routes: _routesBuilder,
+  error: _errorBuilder,
+
+  // the guard checks if the user is logged in via the GoRouterLoggedIn mixin
+  guard: GoRouterLoginGuard(loginInfo, loginPath: '/login'),
+);
+```
+
+By default, if the user is logged in and headed to the login path, they will be
+redirected to `/`. If you'd like to override this behavior, you can pass the
+`homePath` parameter to the `GoRouterLoginGuard` ctor.
+
 # Query Parameters
-On the other hand, sometimes you're doing [deep linking](#deep-linking) and
+Sometimes you're doing [deep linking](#deep-linking) and
 you'd like a user to first login before going to the location that represents
 the deep link. In that case, you can use query parameters in the guard:
 
@@ -500,9 +559,10 @@ with a `from` query parameter set to the deep link. Now, when the
 
 ```dart
 GoRoute(
-  pattern: '/login',
+  path: '/login',
   builder: (context, state) => MaterialPage<LoginPage>(
     key: state.pageKey,
+
     // pass the deep link to the LoginPage (if there is one)
     child: LoginPage(from: state.args['from']),
   ),
@@ -540,10 +600,30 @@ class LoginPage extends StatelessWidget {
 }
 ```
 
-A query parameter will not override a positional parameter with the same name.
-Likewise, it will not affect the pattern matching of the route. Query parameters
-are simple a way to pass along optional information that your app may find
-useful.
+The `GoRouterLoginGuard` class also has a `fromParam` property that you can use
+to simplify your routing in this case, too:
+
+```dart
+// implements GoRouterLoggedIn
+final loginInfo = LoginInfo();
+
+late final _router = GoRouter(
+  routes: _routesBuilder,
+  error: _errorBuilder,
+
+  // the guard checks if the user is logged in via the GoRouterLoggedIn mixin,
+  // passing in the original location as a query parameter
+  guard: GoRouterLoginGuard(
+    loginInfo,
+    loginPath: '/login',
+    fromParam: 'from',
+  ),
+);
+```
+
+The `GoRouterLoginGuard` doesn't assume you want to pass along the original
+location so that it doesn't step on a query parameter with a default name you
+don't set and are therefore not aware of.
 
 # Deep Linking
 Flutter defines "deep linking" as "opening a URL displays that screen in your
@@ -626,7 +706,7 @@ to `index.html` will do, e.g.
 
 # Custom Builder
 As described, the go_router uses the list of `GoRoute` objects to implement it's
-routing policy using patterns to match and using the order of matches to create
+routing policy using paths to match and using the order of matches to create
 the `Navigator.pop()` implementation, etc. If you'd like to implement the
 routing policy yourself, you can implement a widget builder that is given a
 location and is responsible for producing a `Navigator`. For example, this
@@ -733,7 +813,7 @@ There's a lot going on here, but it fundamentally boils down to 3 things:
 1. Show an error page if any of that fails.
 
 This is the basic policy that the `GoRouter` itself implements, although in a
-simplified form w/o features like route patterns, redirection or query
+simplified form w/o features like route paths, redirection or query
 parameters.
 
 # Examples

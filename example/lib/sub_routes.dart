@@ -21,14 +21,14 @@ class App extends StatelessWidget {
 
   List<GoRoute> _routesBuilder(BuildContext context, String location) => [
         GoRoute(
-          pattern: '/',
+          path: '/',
           builder: (context, state) => MaterialPage<HomePage>(
             key: state.pageKey,
             child: HomePage(families: Families.data),
           ),
           routes: [
             GoRoute(
-              pattern: 'family/:fid',
+              path: 'family/:fid',
               builder: (context, state) {
                 final family = Families.family(state.params['fid']!);
 
@@ -39,7 +39,7 @@ class App extends StatelessWidget {
               },
               routes: [
                 GoRoute(
-                  pattern: 'person/:pid',
+                  path: 'person/:pid',
                   builder: (context, state) {
                     final family = Families.family(state.params['fid']!);
                     final person = family.person(state.params['pid']!);
