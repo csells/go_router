@@ -298,6 +298,18 @@ void main() {
     );
     expect(router.routerDelegate.currentConfiguration.toString(), '/dummy');
   });
+
+  test('duplicate path param', () {
+    // TODO
+  });
+
+  test('duplicate query param', () {
+    // TODO
+  });
+
+  test('duplicate path + query param', () {
+    // TODO
+  });
 }
 
 GoRouter _router(List<GoRoute> routes) => GoRouter(

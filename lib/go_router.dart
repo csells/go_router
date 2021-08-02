@@ -28,6 +28,11 @@ typedef GoRouterPageBuilder = Page<dynamic> Function(
   GoRouterState state,
 );
 
+typedef GoRouterNestedBuilder = Widget Function(
+  BuildContext context,
+  GoRouterState state,
+);
+
 /// the signature of the redirect builder callback for guarded routes
 abstract class GoRouterGuard extends ChangeNotifier {
   final Listenable? listenable;
@@ -102,6 +107,7 @@ class GoRouterState {
   final String subloc;
   final String path;
   final Map<String, String> params;
+  final Widget? child;
   final Exception? error;
 
   GoRouterState({
@@ -110,10 +116,19 @@ class GoRouterState {
     required this.subloc,
     this.path = '',
     this.params = const <String, String>{},
+    this.child,
     this.error,
   });
 
   ValueKey get pageKey => ValueKey<String>(subloc);
+}
+
+class GoNestedRoute {
+  final String path;
+  final GoRouterNestedBuilder builder;
+  final List<GoRoute>? nested;
+
+  GoNestedRoute({required this.path, required this.builder, this.nested});
 }
 
 /// a declarative mapping between a route name path and a route page builder
@@ -125,8 +140,11 @@ class GoRoute {
   /// a function to create a page when the route path is matched
   final GoRouterPageBuilder builder;
 
-  /// a function to create the list of page route builders for a given location
+  /// the list of sub-route builders for a given location
   final List<GoRoute>? routes;
+
+  /// the list of nested route builders for a given location
+  final List<GoNestedRoute>? nested;
 
   final _pathParams = <String>[];
   late final RegExp _pathRE;
@@ -136,6 +154,7 @@ class GoRoute {
     required this.path,
     required this.builder,
     this.routes,
+    this.nested,
   }) {
     // cache the path regexp and parameters
     _pathRE = p2re.pathToRegExp(

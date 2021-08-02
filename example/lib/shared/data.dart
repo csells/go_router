@@ -29,9 +29,9 @@ class Families {
       id: 'f1',
       name: 'Sells',
       people: [
-        Person(id: 'p1', name: 'Chris', age: 50),
-        Person(id: 'p2', name: 'John', age: 25),
-        Person(id: 'p3', name: 'Tom', age: 24),
+        Person(id: 'p1', name: 'Chris', age: 52),
+        Person(id: 'p2', name: 'John', age: 27),
+        Person(id: 'p3', name: 'Tom', age: 26),
       ],
     ),
     Family(
@@ -42,6 +42,17 @@ class Families {
         Person(id: 'p2', name: 'Morticia', age: 50),
         Person(id: 'p3', name: 'Pugsley', age: 10),
         Person(id: 'p4', name: 'Wednesday', age: 17),
+      ],
+    ),
+    Family(
+      id: 'f3',
+      name: 'Jackson',
+      people: [
+        Person(id: 'p1', name: 'Tito', age: 68),
+        Person(id: 'p2', name: 'Jermaine', age: 67),
+        Person(id: 'p3', name: 'Jackie', age: 70),
+        Person(id: 'p4', name: 'Marlon', age: 64),
+        Person(id: 'p5', name: 'Michael', age: 63),
       ],
     ),
   ];
