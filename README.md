@@ -72,7 +72,7 @@ The builder function is passed a `state` object which contains some useful
 information like the current location that's being matched, parameter values for
 [parametized routes](#parameters) and the one used in this example code is the
 `pageKey` property of the state object. The `pageKey` is used to create a unique
-key for the `MaterialPage` or `CupertinoPage` based on the current location for
+key for the `MaterialPage` or `CupertinoPage` based on the current path for
 that page in the [stack of pages](#sub-routes), so it will uniquely identify the
 page w/o having to hardcode a key or come up with one yourself.
 

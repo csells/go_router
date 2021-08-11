@@ -1,3 +1,7 @@
+### 0.7.1
+- update to pageKey to take sub-routes into account
+
+
 ### 0.7.0
 - BREAK: rename `pattern` to `path` for consistency w/ other routers in the
   world
