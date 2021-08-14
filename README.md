@@ -72,7 +72,7 @@ The builder function is passed a `state` object which contains some useful
 information like the current location that's being matched, parameter values for
 [parametized routes](#parameters) and the one used in this example code is the
 `pageKey` property of the state object. The `pageKey` is used to create a unique
-key for the `MaterialPage` or `CupertinoPage` based on the current location for
+key for the `MaterialPage` or `CupertinoPage` based on the current path for
 that page in the [stack of pages](#sub-routes), so it will uniquely identify the
 page w/o having to hardcode a key or come up with one yourself.
 
@@ -823,7 +823,7 @@ You can see the go_router in action via the following examples:
 - [`init_loc.dart`](example/lib/init_loc.dart): start at a specific location
   instead of home (`/`), which is the default
 - [`sub_routes.dart`](example/lib/sub_routes.dart): provide a stack of pages
-  based on a set of nested routes
+  based on a set of sub routes
 - [`conditional.dart`](example/lib/conditional.dart): provide different routes
   based on changing app state
 - [`redirection.dart`](example/lib/redirection.dart): redirect one route to

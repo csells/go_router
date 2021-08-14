@@ -14,7 +14,7 @@ class Bookstore extends StatelessWidget {
   final router = GoRouter(
     routes: _routes,
     error: _error,
-    initialLocation: '/books/popular',
+    guard: BookGuard(),
   );
 
   @override
@@ -25,24 +25,10 @@ class Bookstore extends StatelessWidget {
 
   static Iterable<GoRoute> _routes(BuildContext context, String location) => [
         GoRoute(
-          path: '/books/popular',
+          path: '/books/:kind(popular|new|all)',
           builder: (context, state) => MaterialPage<void>(
             key: state.pageKey,
-            child: const BooksScreen('popular'),
-          ),
-        ),
-        GoRoute(
-          path: '/books/new',
-          builder: (context, state) => MaterialPage<void>(
-            key: state.pageKey,
-            child: const BooksScreen('new'),
-          ),
-        ),
-        GoRoute(
-          path: '/books/all',
-          builder: (context, state) => MaterialPage<void>(
-            key: state.pageKey,
-            child: const BooksScreen('all'),
+            child: BooksScreen(state.params['kind']!),
           ),
         ),
       ];
@@ -52,4 +38,10 @@ class Bookstore extends StatelessWidget {
         key: state.pageKey,
         child: ErrorScreen(state.error),
       );
+}
+
+class BookGuard extends GoRouterGuard {
+  @override
+  String? redirect(String location) =>
+      location == '/' ? '/books/popular' : null;
 }

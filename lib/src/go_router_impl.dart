@@ -116,14 +116,32 @@ class InheritedGoRouter extends InheritedWidget {
 class GoRouteMatch {
   final GoRoute route;
   final String loc;
+  final String fullpath;
   final Map<String, String> params;
-  GoRouteMatch(this.route, this.loc, this.params);
+  GoRouteMatch({
+    required this.route,
+    required this.loc,
+    required this.fullpath,
+    required this.params,
+  });
 
-  static GoRouteMatch? match(GoRoute route, String location) {
+  static GoRouteMatch? match({
+    required GoRoute route,
+    required String location,
+    required String fullpath,
+  }) {
+    assert(!fullpath.contains('//'));
+
     final match = route.matchPatternAsPrefix(location);
     if (match == null) return null;
+    
     final params = route.extractPatternParams(match);
     final subloc = GoRouter.locationFor(route.path, params);
-    return GoRouteMatch(route, subloc, params);
+    return GoRouteMatch(
+      route: route,
+      loc: subloc,
+      fullpath: fullpath,
+      params: params,
+    );
   }
 }

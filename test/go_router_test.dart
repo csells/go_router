@@ -132,9 +132,27 @@ void main() {
     final routes = [
       GoRoute(
         path: '/',
-        builder: (builder, state) => HomePage(),
+        builder: (builder, state) {
+          expect(state.pageKey.value, '/');
+          expect(state.location, loc);
+          expect(state.error, null);
+          expect(state.path, '/');
+          expect(state.subloc, '/');
+          expect(state.params, <String, String>{});
+          return HomePage();
+        },
         routes: [
-          GoRoute(path: 'login', builder: (builder, state) => LoginPage()),
+          GoRoute(
+              path: 'login',
+              builder: (builder, state) {
+                expect(state.pageKey.value, '/login');
+                expect(state.location, loc);
+                expect(state.error, null);
+                expect(state.path, 'login');
+                expect(state.subloc, '/login');
+                expect(state.params, <String, String>{});
+                return LoginPage();
+              }),
         ],
       ),
     ];
@@ -157,16 +175,26 @@ void main() {
         routes: [
           GoRoute(
             path: 'family/:fid',
-            builder: (context, state) => FamilyPage(
-              state.params['fid']!,
-            ),
+            builder: (context, state) {
+              expect(state.pageKey.value, '/family/:fid');
+              expect(state.error, null);
+              expect(state.path, 'family/:fid');
+              expect(state.subloc, '/family/f2');
+              expect(state.params, {'fid': 'f2'});
+              return FamilyPage(state.params['fid']!);
+            },
             routes: [
               GoRoute(
                 path: 'person/:pid',
-                builder: (context, state) => PersonPage(
-                  state.params['fid']!,
-                  state.params['pid']!,
-                ),
+                builder: (context, state) {
+                  expect(state.location, '/family/f2/person/p1');
+                  expect(state.pageKey.value, '/family/:fid/person/:pid');
+                  expect(state.error, null);
+                  expect(state.path, 'person/:pid');
+                  expect(state.subloc, '/family/f2/person/p1');
+                  expect(state.params, {'fid': 'f2', 'pid': 'p1'});
+                  return PersonPage(state.params['fid']!, state.params['pid']!);
+                },
               ),
             ],
           ),
@@ -274,9 +302,6 @@ void main() {
       error: _dummy,
       guard: LoginGuard(),
     );
-    expect(router.routerDelegate.currentConfiguration.toString(), '/');
-
-    router.go('/dummy');
     expect(router.routerDelegate.currentConfiguration.toString(), '/login');
   });
 

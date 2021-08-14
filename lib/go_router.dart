@@ -102,12 +102,25 @@ class GoRouterLoginGuard extends GoRouterGuard {
 
 /// for route state during routing
 class GoRouterState {
+  // the router associated with this state
   final GoRouter router;
+
+  // the full location of the route, e.g. /family/f1/person/p2
   final String location;
+
+  // the location to this sub-route, e.g. /family/f1
   final String subloc;
+
+  // the path to this sub-route, e.g. family/:fid
   final String path;
+
+  // the parameters for this sub-route, e.g. {'fid': 'f1'}
   final Map<String, String> params;
-  final Widget? child;
+
+  // the unique key for this sub-route, e.g. ValueKey('/family/:fid')
+  final ValueKey<String> pageKey;
+
+  // the error associated with this sub-route
   final Exception? error;
 
   GoRouterState({
@@ -116,11 +129,10 @@ class GoRouterState {
     required this.subloc,
     this.path = '',
     this.params = const <String, String>{},
-    this.child,
     this.error,
-  });
-
-  ValueKey get pageKey => ValueKey<String>(subloc);
+    String fullpath = '',
+  })  : assert(path.isEmpty == fullpath.isEmpty),
+        pageKey = ValueKey(fullpath);
 }
 
 class GoNestedRoute {
@@ -385,6 +397,7 @@ class GoRouter {
           location: location,
           subloc: subloc,
           path: match.route.path,
+          fullpath: match.fullpath,
           params: params,
         ),
       );
@@ -402,7 +415,12 @@ class GoRouter {
     // assume somebody else has removed the query params
     assert(Uri.parse(loc).path == loc);
 
-    final matchStacks = _getLocRouteMatchStacks(loc, routes);
+    final matchStacks = _getLocRouteMatchStacks(
+      loc: loc,
+      routes: routes,
+      parentFullpath: '',
+    );
+
     if (matchStacks.isEmpty) {
       throw Exception('no routes for location: $loc');
     }
@@ -466,13 +484,19 @@ class GoRouter {
   /// NOTE: Uses recursion, which is why _getLocRouteMatchStacks calls this
   /// function and does the actual error checking, using the returned stacks to
   /// provide better errors
-  static Iterable<List<GoRouteMatch>> _getLocRouteMatchStacks(
-    String loc,
-    Iterable<GoRoute> routes,
-  ) sync* {
+  static Iterable<List<GoRouteMatch>> _getLocRouteMatchStacks({
+    required String loc,
+    required Iterable<GoRoute> routes,
+    required String parentFullpath,
+  }) sync* {
     // find the set of matches at this level of the tree
     for (final route in routes) {
-      final match = GoRouteMatch.match(route, loc);
+      final fullpath = _fullpathFor(parentFullpath, route.path);
+      final match = GoRouteMatch.match(
+        route: route,
+        location: loc,
+        fullpath: fullpath,
+      );
       if (match == null) continue;
 
       // if we have a complete match, then return the matched route
@@ -491,13 +515,31 @@ class GoRouter {
 
       // if there's no sub-route matches, then we don't have a match for this
       // location
-      final subRouteMatchStacks =
-          _getLocRouteMatchStacks(rest, route.routes!).toList();
+      final subRouteMatchStacks = _getLocRouteMatchStacks(
+        loc: rest,
+        routes: route.routes!,
+        parentFullpath: fullpath,
+      ).toList();
       if (subRouteMatchStacks.isEmpty) continue;
 
       // add the match to each of the sub-route match stacks and return them
       for (final stack in subRouteMatchStacks) yield [match, ...stack];
     }
+  }
+
+  static String _fullpathFor(String parentFullpath, String path) {
+    // at the root, just return the path
+    if (parentFullpath.isEmpty) {
+      assert(path.startsWith('/'));
+      assert(path == '/' || !path.endsWith('/'));
+      return path;
+    }
+
+    // not at the root, so append the parent path
+    assert(path.isNotEmpty);
+    assert(!path.startsWith('/'));
+    assert(!path.endsWith('/'));
+    return '${parentFullpath == '/' ? '' : parentFullpath}/$path';
   }
 
   static String locationFor(String path, Map<String, String> params) =>
