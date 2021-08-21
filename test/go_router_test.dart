@@ -44,7 +44,7 @@ void main() {
         GoRoute(
           path: '/',
           builder: _dummy,
-          routes: [
+          stacked: [
             GoRoute(
               path: '/foo',
               builder: _dummy,
@@ -66,7 +66,7 @@ void main() {
         GoRoute(
           path: '/',
           builder: _dummy,
-          routes: [
+          stacked: [
             GoRoute(
               path: 'foo/',
               builder: _dummy,
@@ -141,7 +141,7 @@ void main() {
           expect(state.params, <String, String>{});
           return HomePage();
         },
-        routes: [
+        stacked: [
           GoRoute(
               path: 'login',
               builder: (builder, state) {
@@ -172,7 +172,7 @@ void main() {
       GoRoute(
         path: '/',
         builder: (context, state) => HomePage(),
-        routes: [
+        stacked: [
           GoRoute(
             path: 'family/:fid',
             builder: (context, state) {
@@ -183,7 +183,7 @@ void main() {
               expect(state.params, {'fid': 'f2'});
               return FamilyPage(state.params['fid']!);
             },
-            routes: [
+            stacked: [
               GoRoute(
                 path: 'person/:pid',
                 builder: (context, state) {
@@ -256,7 +256,7 @@ void main() {
       GoRoute(
         path: '/',
         builder: _dummy,
-        routes: [
+        stacked: [
           GoRoute(
             path: 'foo/bar',
             builder: _dummy,
@@ -264,7 +264,7 @@ void main() {
           GoRoute(
             path: 'foo',
             builder: _dummy,
-            routes: [
+            stacked: [
               GoRoute(
                 path: 'bar',
                 builder: _dummy,
@@ -290,7 +290,7 @@ void main() {
       GoRoute(
         path: '/',
         builder: (builder, state) => HomePage(),
-        routes: [
+        stacked: [
           GoRoute(path: 'dummy', builder: (builder, state) => DummyPage()),
           GoRoute(path: 'login', builder: (builder, state) => LoginPage()),
         ],
@@ -310,7 +310,7 @@ void main() {
       GoRoute(
         path: '/',
         builder: (builder, state) => HomePage(),
-        routes: [
+        stacked: [
           GoRoute(path: 'dummy', builder: (builder, state) => DummyPage()),
         ],
       ),
@@ -335,6 +335,34 @@ void main() {
   test('duplicate path + query param', () {
     // TODO
   });
+
+  test('nested route', () {
+    final routes = [
+      GoRoute(
+        path: '/',
+        builder: (builder, state) => FamiliesPage(state.child!),
+        nested: [
+          GoNestedRoute(
+            path: 'family/:fid',
+            builder: (builder, state) => FamilyView(state.params['fid']!),
+          ),
+        ],
+      ),
+    ];
+
+    final router = _router(routes);
+    final locPages = router.getLocPages(context, '/family/f2', routes);
+    final entries = locPages.entries.toList();
+    expect(entries.length, 1);
+    expect(entries[0].key, '/');
+    expect(entries[0].value.runtimeType, FamiliesPage);
+    expect((entries[0].value as FamiliesPage).child.runtimeType, FamilyView);
+    expect(((entries[0].value as FamiliesPage).child as FamilyView).fid, 'f2');
+  });
+
+  test('double nested route', () {
+    // TODO
+  });
 }
 
 GoRouter _router(List<GoRoute> routes) => GoRouter(
@@ -346,9 +374,22 @@ class HomePage extends DummyPage {}
 
 class LoginPage extends DummyPage {}
 
+class FamiliesPage extends DummyPage {
+  final Widget child;
+  FamiliesPage(this.child);
+}
+
 class FamilyPage extends DummyPage {
   final String fid;
   FamilyPage(this.fid);
+}
+
+class FamilyView extends StatelessWidget {
+  final String fid;
+  const FamilyView(this.fid, {Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) => Text(fid);
 }
 
 class PersonPage extends DummyPage {

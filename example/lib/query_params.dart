@@ -44,7 +44,7 @@ class App extends StatelessWidget {
             key: state.pageKey,
             child: HomePage(families: Families.data),
           ),
-          routes: [
+          stacked: [
             GoRoute(
               path: 'family/:fid',
               builder: (context, state) {
@@ -54,7 +54,7 @@ class App extends StatelessWidget {
                   child: FamilyPage(family: family),
                 );
               },
-              routes: [
+              stacked: [
                 GoRoute(
                   path: 'person/:pid',
                   builder: (context, state) {

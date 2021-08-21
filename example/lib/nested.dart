@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:go_router/go_router.dart';
-import 'package:go_router_examples/shared/data.dart';
+import 'shared/data.dart';
 
 import 'shared/pages.dart';
 
@@ -34,10 +34,13 @@ class App extends StatelessWidget {
           nested: [
             GoNestedRoute(
               path: 'family/:fid',
-              builder: (context, state) => FamiliesView(
-                key: state.pageKey,
-                selectedFid: state.params['fid']!,
-              ),
+              builder: (context, state) {
+                final fid = state.params['fid']!;
+                return FamiliesView(
+                  key: state.pageKey,
+                  family: Families.data.singleWhere((f) => f.id == fid),
+                );
+              },
             ),
           ],
         ),
@@ -65,10 +68,11 @@ class ScaffoldPage extends StatelessWidget {
 }
 
 class FamiliesView extends StatefulWidget {
-  late final int index;
-  FamiliesView({required String selectedFid, Key? key}) : super(key: key) {
-    index = Families.data.indexWhere((f) => f.id == selectedFid);
-    if (index == -1) throw Exception('unknown fid: $selectedFid');
+  final int index;
+  FamiliesView({required Family family, Key? key})
+      : index = Families.data.indexWhere((f) => f.id == family.id),
+        super(key: key) {
+    assert(index != -1);
   }
 
   @override

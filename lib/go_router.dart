@@ -120,6 +120,9 @@ class GoRouterState {
   // the unique key for this sub-route, e.g. ValueKey('/family/:fid')
   final ValueKey<String> pageKey;
 
+  // child from nest route
+  final Widget? child;
+
   // the error associated with this sub-route
   final Exception? error;
 
@@ -129,6 +132,7 @@ class GoRouterState {
     required this.subloc,
     this.path = '',
     this.params = const <String, String>{},
+    this.child,
     this.error,
     String fullpath = '',
   })  : assert(path.isEmpty == fullpath.isEmpty),
@@ -153,7 +157,7 @@ class GoRoute {
   final GoRouterPageBuilder builder;
 
   /// the list of sub-route builders for a given location
-  final List<GoRoute>? routes;
+  final List<GoRoute>? stacked;
 
   /// the list of nested route builders for a given location
   final List<GoNestedRoute>? nested;
@@ -165,9 +169,13 @@ class GoRoute {
   GoRoute({
     required this.path,
     required this.builder,
-    this.routes,
+    this.stacked,
     this.nested,
   }) {
+    if ((stacked ?? []).isNotEmpty && (nested ?? []).isNotEmpty) {
+      throw Exception("can't set both stacked and nested parameters");
+    }
+
     // cache the path regexp and parameters
     _pathRE = p2re.pathToRegExp(
       path,
@@ -176,8 +184,17 @@ class GoRoute {
       parameters: _pathParams,
     );
 
-    // check sub-route paths
-    for (final route in routes ?? <GoRoute>[]) {
+    // check stacked sub-route paths
+    for (final route in stacked ?? <GoRoute>[]) {
+      if (route.path != '/' &&
+          (route.path.startsWith('/') || route.path.endsWith('/'))) {
+        throw Exception(
+            'sub-route path may not start or end with /: ${route.path}');
+      }
+    }
+
+    // check nested sub-route paths
+    for (final route in nested ?? <GoNestedRoute>[]) {
       if (route.path != '/' &&
           (route.path.startsWith('/') || route.path.endsWith('/'))) {
         throw Exception(
@@ -506,7 +523,7 @@ class GoRouter {
       }
 
       // if we have a partial match but no sub-routes, bail
-      if (route.routes == null) continue;
+      if (route.stacked == null) continue;
 
       // otherwise recurse
       final rest = loc.substring(match.loc.length + (match.loc == '/' ? 0 : 1));
@@ -517,7 +534,7 @@ class GoRouter {
       // location
       final subRouteMatchStacks = _getLocRouteMatchStacks(
         loc: rest,
-        routes: route.routes!,
+        routes: route.stacked!,
         parentFullpath: fullpath,
       ).toList();
       if (subRouteMatchStacks.isEmpty) continue;
