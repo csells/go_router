@@ -300,7 +300,7 @@ void main() {
     final router = GoRouter(
       routes: (context, location) => routes,
       error: _dummy,
-      guard: LoginGuard(),
+      refreshListenable: LoginGuard(),
     );
     expect(router.routerDelegate.currentConfiguration.toString(), '/login');
   });

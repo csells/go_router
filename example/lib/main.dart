@@ -16,27 +16,26 @@ class App extends StatelessWidget {
         title: 'Declarative Routes GoRouter Example',
       );
 
-  late final _router = GoRouter(routes: _routesBuilder, error: _errorBuilder);
-  List<GoRoute> _routesBuilder(BuildContext context, String location) => [
-        GoRoute(
-          path: '/',
-          builder: (context, state) => MaterialPage<Page1Page>(
-            key: state.pageKey,
-            child: const Page1Page(),
-          ),
+  final _router = GoRouter(
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) => MaterialPage<Page1Page>(
+          key: state.pageKey,
+          child: const Page1Page(),
         ),
-        GoRoute(
-          path: '/page2',
-          builder: (context, state) => MaterialPage<Page2Page>(
-            key: state.pageKey,
-            child: const Page2Page(),
-          ),
+      ),
+      GoRoute(
+        path: '/page2',
+        builder: (context, state) => MaterialPage<Page2Page>(
+          key: state.pageKey,
+          child: const Page2Page(),
         ),
-      ];
-
-  Page<dynamic> _errorBuilder(BuildContext context, GoRouterState state) =>
-      MaterialPage<ErrorPage>(
-        key: state.pageKey,
-        child: ErrorPage(state.error),
-      );
+      ),
+    ],
+    error: (context, state) => MaterialPage<ErrorPage>(
+      key: state.pageKey,
+      child: ErrorPage(state.error),
+    ),
+  );
 }

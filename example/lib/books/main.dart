@@ -14,7 +14,7 @@ class Bookstore extends StatelessWidget {
   final router = GoRouter(
     routes: _routes,
     error: _error,
-    guard: BookGuard(),
+    refreshListenable: BookGuard(),
   );
 
   @override

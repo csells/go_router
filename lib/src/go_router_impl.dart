@@ -9,19 +9,19 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         ChangeNotifier {
   var _loc = Uri();
   final _key = GlobalKey<NavigatorState>();
-  final GoRouterWidgetBuilder builder;
-  final GoRouterGuard? guard;
+  final GoRouterBuilder builder;
+  final GoRouterGuard? refreshListenable;
 
   GoRouterDelegate({
     required this.builder,
-    this.guard,
+    this.refreshListenable,
     Uri? initialLocation,
   }) {
     // may need to redirect the initial location
     setNewRoutePath(initialLocation ?? _loc);
 
     // when the guard's contained listener changes, refresh the route
-    guard?.addListener(_refreshRoute);
+    refreshListenable?.addListener(_refreshRoute);
   }
 
   void _refreshRoute() {
@@ -36,7 +36,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
   @override
   void dispose() {
-    guard?.removeListener(_refreshRoute);
+    refreshListenable?.removeListener(_refreshRoute);
     super.dispose();
   }
 
@@ -60,7 +60,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   Future<void> setNewRoutePath(Uri configuration) async {
     // check for redirect
     final loc = configuration.toString();
-    final redirectLoc = guard?.redirect(loc);
+    final redirectLoc = refreshListenable?.redirect(loc);
     if (redirectLoc == null) {
       _loc = configuration;
       return;
@@ -75,7 +75,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     if (loop) throw Exception('redirecting to same location: $loc');
 
     // check for redirect redirecting
-    final redirectLoc2 = guard!.redirect(redirectLoc);
+    final redirectLoc2 = refreshListenable!.redirect(redirectLoc);
     if (redirectLoc2 != null) {
       throw Exception(
         'redirect redirecting: $loc => $redirectLoc => $redirectLoc2',

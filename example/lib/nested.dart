@@ -19,19 +19,14 @@ class App extends StatelessWidget {
       );
 
   late final _router = GoRouter(
-    routes: _routesBuilder,
-    error: _errorBuilder,
-    initialLocation: '/family/${Families.data[0].id}',
-  );
-
-  List<GoRoute> _routesBuilder(BuildContext context, String location) => [
+    routes: [
         GoRoute(
           path: '/',
           builder: (context, state) => MaterialPage<void>(
             key: state.pageKey,
             child: ScaffoldPage(child: state.child!),
           ),
-          nested: [
+          routes: [
             GoNestedRoute(
               path: 'family/:fid',
               builder: (context, state) {
@@ -44,7 +39,12 @@ class App extends StatelessWidget {
             ),
           ],
         ),
-      ];
+      ],
+    error: _errorBuilder,
+    initialLocation: '/family/${Families.data[0].id}',
+  );
+
+  List<GoRoute> _routesBuilder(BuildContext context, String location) => ;
 
   Page<dynamic> _errorBuilder(BuildContext context, GoRouterState state) =>
       MaterialPage<ErrorPage>(

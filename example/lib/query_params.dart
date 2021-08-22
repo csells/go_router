@@ -30,7 +30,7 @@ class App extends StatelessWidget {
 
     // the guard checks if the user is logged in via the GoRouterLoggedIn mixin,
     // passing in the original location as a query parameter
-    guard: GoRouterLoginGuard(
+    refreshListenable: GoRouterLoginGuard(
       loginInfo,
       loginPath: '/login',
       fromParam: 'from',

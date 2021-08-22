@@ -11,13 +11,7 @@ import 'src/path_strategy_nonweb.dart'
 enum UrlPathStrategy { hash, path }
 
 /// the signature of the function to pass to the GoRouter.builder ctor
-typedef GoRouterWidgetBuilder = Widget Function(
-  BuildContext context,
-  String location,
-);
-
-/// the signature of the routes builder function to pass to the GoRouter ctor
-typedef GoRouterRoutesBuilder = Iterable<GoRoute> Function(
+typedef GoRouterBuilder = Widget Function(
   BuildContext context,
   String location,
 );
@@ -28,77 +22,8 @@ typedef GoRouterPageBuilder = Page<dynamic> Function(
   GoRouterState state,
 );
 
-typedef GoRouterNestedBuilder = Widget Function(
-  BuildContext context,
-  GoRouterState state,
-);
-
-/// the signature of the redirect builder callback for guarded routes
-abstract class GoRouterGuard extends ChangeNotifier {
-  final Listenable? listenable;
-  GoRouterGuard([this.listenable]) {
-    listenable?.addListener(notifyListeners);
-  }
-
-  @override
-  void dispose() {
-    listenable?.removeListener(notifyListeners);
-    super.dispose();
-  }
-
-  /// called to see if a location should be redirected
-  String? redirect(String location);
-}
-
-mixin GoRouterLoggedIn {
-  bool get loggedIn;
-}
-
-class GoRouterLoginGuard extends GoRouterGuard {
-  final String loginPath;
-  final String homePath;
-  final String fromParam;
-
-  GoRouterLoginGuard(
-    Listenable loginInfo, {
-    required this.loginPath,
-    this.homePath = '/',
-    this.fromParam = '',
-  })  : assert(loginPath.isNotEmpty),
-        assert(loginPath.startsWith('/')),
-        assert(homePath.isNotEmpty),
-        assert(homePath.startsWith('/')),
-        super(loginInfo);
-
-  @override
-  String? redirect(String location) {
-    if (super.listenable is! GoRouterLoggedIn) {
-      throw Exception('loginInfo must use the GoRouterLoggedIn mixin');
-    }
-
-    final loginInfo = super.listenable! as GoRouterLoggedIn;
-    final loggedIn = loginInfo.loggedIn;
-    final loc = Uri.parse(location).path;
-    final goingToLogin = loc == loginPath;
-
-    // assume the user does not need to be redirected
-    String? redirect;
-
-    // the user is not logged in and not headed to login path but should be
-    if (!loggedIn && !goingToLogin) {
-      // redirect to login path, optionally including the original location
-      redirect = fromParam.isEmpty ? loginPath : '$loginPath?$fromParam=$loc';
-    }
-
-    // the user is logged in and headed to login path but shouldn't be
-    if (loggedIn && goingToLogin) {
-      // redirect to home
-      redirect = homePath;
-    }
-
-    return redirect;
-  }
-}
+/// the signation of the redirect callback
+typedef GoRouterRedirect = String? Function(String location);
 
 /// for route state during routing
 class GoRouterState {
@@ -120,9 +45,6 @@ class GoRouterState {
   // the unique key for this sub-route, e.g. ValueKey('/family/:fid')
   final ValueKey<String> pageKey;
 
-  // child from nest route
-  final Widget? child;
-
   // the error associated with this sub-route
   final Exception? error;
 
@@ -132,50 +54,29 @@ class GoRouterState {
     required this.subloc,
     this.path = '',
     this.params = const <String, String>{},
-    this.child,
     this.error,
     String fullpath = '',
   })  : assert(path.isEmpty == fullpath.isEmpty),
         pageKey = ValueKey(fullpath);
 }
 
-class GoNestedRoute {
-  final String path;
-  final GoRouterNestedBuilder builder;
-  final List<GoRoute>? nested;
-
-  GoNestedRoute({required this.path, required this.builder, this.nested});
-}
-
 /// a declarative mapping between a route name path and a route page builder
 class GoRoute {
-  /// the path in the form `/path/with/:var` interpretted using
-  /// path_to_regexp package
-  final String path;
-
-  /// a function to create a page when the route path is matched
-  final GoRouterPageBuilder builder;
-
-  /// the list of sub-route builders for a given location
-  final List<GoRoute>? stacked;
-
-  /// the list of nested route builders for a given location
-  final List<GoNestedRoute>? nested;
-
   final _pathParams = <String>[];
   late final RegExp _pathRE;
+
+  final String path;
+  final GoRouterPageBuilder builder;
+  final List<GoRoute>? routes;
+  final GoRouterRedirect redirect;
 
   /// ctor
   GoRoute({
     required this.path,
     required this.builder,
-    this.stacked,
-    this.nested,
+    this.routes,
+    this.redirect = _redirect,
   }) {
-    if ((stacked ?? []).isNotEmpty && (nested ?? []).isNotEmpty) {
-      throw Exception("can't set both stacked and nested parameters");
-    }
-
     // cache the path regexp and parameters
     _pathRE = p2re.pathToRegExp(
       path,
@@ -185,16 +86,7 @@ class GoRoute {
     );
 
     // check stacked sub-route paths
-    for (final route in stacked ?? <GoRoute>[]) {
-      if (route.path != '/' &&
-          (route.path.startsWith('/') || route.path.endsWith('/'))) {
-        throw Exception(
-            'sub-route path may not start or end with /: ${route.path}');
-      }
-    }
-
-    // check nested sub-route paths
-    for (final route in nested ?? <GoNestedRoute>[]) {
+    for (final route in routes ?? <GoRoute>[]) {
       if (route.path != '/' &&
           (route.path.startsWith('/') || route.path.endsWith('/'))) {
         throw Exception(
@@ -206,49 +98,45 @@ class GoRoute {
   Match? matchPatternAsPrefix(String loc) => _pathRE.matchAsPrefix(loc);
   Map<String, String> extractPatternParams(Match match) =>
       p2re.extract(_pathParams, match);
+
+  static String? _redirect(String location) => null;
 }
 
 /// top-level go_router class; create one of these to initialize your app's
 /// routing policy
 class GoRouter {
-  final _routeInformationParser = GoRouteInformationParser();
-  late final GoRouterDelegate _routerDelegate;
+  final routeInformationParser = GoRouteInformationParser();
+  late final GoRouterDelegate routerDelegate;
+  final GoRouterRedirect redirect;
   final _locPages = <String, Page<dynamic>>{};
 
   /// configure a GoRouter with a routes builder and an error page builder
   GoRouter({
-    /// a function to create the list of page route builders for a given
-    /// location
-    required GoRouterRoutesBuilder routes,
-
-    /// a function to create the error page for a given location
+    required Iterable<GoRoute> routes,
     required GoRouterPageBuilder error,
-
-    /// an object to create the redirect for a given location
-    GoRouterGuard? guard,
-
-    /// the initial location to use for routing
+    this.redirect = _redirect,
+    Listenable? refreshListenable,
     String initialLocation = '/',
-
-    /// the URL path strategy to use for routing
     UrlPathStrategy? urlPathStrategy = UrlPathStrategy.hash,
   }) {
     _init(
       builder: (context, location) => _builder(
         context: context,
-        routes: routes(context, location),
+        routes: routes,
         error: error,
         location: location,
       ),
       initialLocation: initialLocation,
       urlPathStrategy: urlPathStrategy,
-      guard: guard,
+      refreshListenable: refreshListenable,
     );
   }
 
   /// configure a GoRouter with a widget builder
   GoRouter.builder({
-    required GoRouterWidgetBuilder builder,
+    required GoRouterBuilder builder,
+    this.redirect = _redirect,
+    Listenable? refreshListenable,
     String initialLocation = '/',
     UrlPathStrategy? urlPathStrategy,
   }) {
@@ -256,41 +144,35 @@ class GoRouter {
       builder: builder,
       initialLocation: initialLocation,
       urlPathStrategy: urlPathStrategy,
+      refreshListenable: refreshListenable,
     );
   }
 
   void _init({
-    required GoRouterWidgetBuilder builder,
+    required GoRouterBuilder builder,
     required String initialLocation,
     required UrlPathStrategy? urlPathStrategy,
-    GoRouterGuard? guard,
+    Listenable? refreshListenable,
   }) {
     if (urlPathStrategy != null) setUrlPathStrategy(urlPathStrategy);
 
-    _routerDelegate = GoRouterDelegate(
+    routerDelegate = GoRouterDelegate(
       // wrap the returned Navigator to enable GoRouter.of(context).go()
       builder: (context, location) => InheritedGoRouter(
         goRouter: this,
         child: builder(context, location),
       ),
-      guard: guard,
+      refreshListenable: refreshListenable,
       initialLocation: Uri.parse(initialLocation),
     );
   }
-
-  /// the RouteInformationParser associated with this GoRouter
-  GoRouteInformationParser get routeInformationParser =>
-      _routeInformationParser;
-
-  /// the RouterDelegate associated with this GoRouter
-  GoRouterDelegate get routerDelegate => _routerDelegate;
 
   /// get the current location
   String get location => _locPages.isEmpty ? '' : _locPages.keys.last;
 
   /// navigate to a URI location w/ optional query parameters, e.g.
   /// /family/f1/person/p2?color=blue
-  void go(String location) => _routerDelegate.go(location);
+  void go(String location) => routerDelegate.go(location);
 
   /// set the app's URL path strategy (defaults to hash). call before runApp().
   static void setUrlPathStrategy(UrlPathStrategy strategy) =>
@@ -335,12 +217,14 @@ class GoRouter {
         // location up
         assert(_locPages.isNotEmpty);
         _locPages.remove(_locPages.keys.last);
-        _routerDelegate.go(_locPages.keys.last);
+        routerDelegate.go(_locPages.keys.last);
 
         return true;
       },
     );
   }
+
+  static String? _redirect(String location) => null;
 
   /// get the stack of routes that matches the location and turn it into a stack
   /// of sub-location, page pairs
@@ -523,7 +407,7 @@ class GoRouter {
       }
 
       // if we have a partial match but no sub-routes, bail
-      if (route.stacked == null) continue;
+      if (route.routes == null) continue;
 
       // otherwise recurse
       final rest = loc.substring(match.loc.length + (match.loc == '/' ? 0 : 1));
@@ -534,7 +418,7 @@ class GoRouter {
       // location
       final subRouteMatchStacks = _getLocRouteMatchStacks(
         loc: rest,
-        routes: route.stacked!,
+        routes: route.routes!,
         parentFullpath: fullpath,
       ).toList();
       if (subRouteMatchStacks.isEmpty) continue;

@@ -1,3 +1,16 @@
+# TODO
+- use static routes instead of route builder
+- add redirect callback to .builder ctor
+- rewrite samples
+- write nested routes sample
+- move redirect to global and per-page
+- add refreshListenable
+- separate params and query params
+- rewrite tests
+- add named routes
+  - allows passing parameters
+  - allows passing query parameters
+
 # go_router
 The goal of the [go_router package](https://pub.dev/packages/go_router) is to
 simplify use of [the `Router` in

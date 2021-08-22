@@ -29,7 +29,7 @@ class App extends StatelessWidget {
     error: _errorBuilder,
 
     // the guard checks if the user is logged in via the GoRouterLoggedIn mixin
-    guard: GoRouterLoginGuard(loginInfo, loginPath: '/login'),
+    refreshListenable: GoRouterLoginGuard(loginInfo, loginPath: '/login'),
   );
 
   List<GoRoute> _routesBuilder(BuildContext context, String location) => [
