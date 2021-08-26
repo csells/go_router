@@ -20,31 +20,31 @@ class App extends StatelessWidget {
 
   late final _router = GoRouter(
     routes: [
-        GoRoute(
-          path: '/',
-          builder: (context, state) => MaterialPage<void>(
-            key: state.pageKey,
-            child: ScaffoldPage(child: state.child!),
-          ),
-          routes: [
-            GoNestedRoute(
-              path: 'family/:fid',
-              builder: (context, state) {
-                final fid = state.params['fid']!;
-                return FamiliesView(
-                  key: state.pageKey,
-                  family: Families.data.singleWhere((f) => f.id == fid),
-                );
-              },
-            ),
-          ],
-        ),
-      ],
-    error: _errorBuilder,
-    initialLocation: '/family/${Families.data[0].id}',
-  );
+      GoRoute(
+        path: '/',
+        redirect: (location) => '/family/${Families.data[0].id}',
+        routes: [
+          GoRoute(
+            path: 'family/:fid',
+            builder: (context, state) {
+              final fid = state.params['fid']!;
+              final family = Families.data.firstWhere((f) => f.id == fid);
 
-  List<GoRoute> _routesBuilder(BuildContext context, String location) => ;
+              return MaterialPage<void>(
+                key: state.pageKey,
+                child: FamilyTabsPage(
+                  key: state.pageKey,
+                  currentFamily: family,
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    ],
+    
+    errorBuilder: _errorBuilder,
+  );
 
   Page<dynamic> _errorBuilder(BuildContext context, GoRouterState state) =>
       MaterialPage<ErrorPage>(
@@ -53,33 +53,19 @@ class App extends StatelessWidget {
       );
 }
 
-class ScaffoldPage extends StatelessWidget {
-  final Widget child;
-  const ScaffoldPage({required this.child, Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: Text(_title(context))),
-        body: child,
-      );
-
-  String _title(BuildContext context) =>
-      (context as Element).findAncestorWidgetOfExactType<MaterialApp>()!.title;
-}
-
-class FamiliesView extends StatefulWidget {
+class FamilyTabsPage extends StatefulWidget {
   final int index;
-  FamiliesView({required Family family, Key? key})
-      : index = Families.data.indexWhere((f) => f.id == family.id),
+  FamilyTabsPage({required Family currentFamily, Key? key})
+      : index = Families.data.indexWhere((f) => f.id == currentFamily.id),
         super(key: key) {
     assert(index != -1);
   }
 
   @override
-  _FamiliesViewState createState() => _FamiliesViewState();
+  _FamilyTabsPageState createState() => _FamilyTabsPageState();
 }
 
-class _FamiliesViewState extends State<FamiliesView>
+class _FamilyTabsPageState extends State<FamilyTabsPage>
     with TickerProviderStateMixin {
   late final TabController _controller;
 
@@ -100,14 +86,20 @@ class _FamiliesViewState extends State<FamiliesView>
   }
 
   @override
-  Widget build(BuildContext context) => Center(
-        child: Column(
-          children: [
-            TabBar(
-              tabs: [for (final f in Families.data) Tab(text: f.name)],
-            ),
-            Text(Families.data[widget.index].name),
-          ],
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: Text(_title(context))),
+        body: Center(
+          child: Column(
+            children: [
+              TabBar(
+                tabs: [for (final f in Families.data) Tab(text: f.name)],
+              ),
+              Text(Families.data[widget.index].name),
+            ],
+          ),
         ),
       );
+
+  String _title(BuildContext context) =>
+      (context as Element).findAncestorWidgetOfExactType<MaterialApp>()!.title;
 }

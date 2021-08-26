@@ -25,58 +25,55 @@ class App extends StatelessWidget {
       );
 
   late final _router = GoRouter(
-    routes: _routesBuilder,
-    error: _errorBuilder,
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) => MaterialPage<HomePage>(
+          key: state.pageKey,
+          child: HomePage(families: Families.data),
+        ),
+        routes: [
+          GoRoute(
+            path: 'family/:fid',
+            builder: (context, state) {
+              final family = Families.family(state.params['fid']!);
+              return MaterialPage<FamilyPage>(
+                key: state.pageKey,
+                child: FamilyPage(family: family),
+              );
+            },
+            routes: [
+              GoRoute(
+                path: 'person/:pid',
+                builder: (context, state) {
+                  final family = Families.family(state.params['fid']!);
+                  final person = family.person(state.params['pid']!);
+                  return MaterialPage<PersonPage>(
+                    key: state.pageKey,
+                    child: PersonPage(family: family, person: person),
+                  );
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/login',
+        builder: (context, state) => MaterialPage<LoginPage>(
+          key: state.pageKey,
+          child: const LoginPage(),
+        ),
+      ),
+    ],
 
-    // the guard checks if the user is logged in via the GoRouterLoggedIn mixin
-    refreshListenable: GoRouterLoginGuard(loginInfo, loginPath: '/login'),
+    errorBuilder: (context, state) => MaterialPage<ErrorPage>(
+      key: state.pageKey,
+      child: ErrorPage(state.error),
+    ),
+
+    // changes on the listenable will cause the router to refresh it's route and
+    // potentially redirect
+    refreshListenable: loginInfo,
   );
-
-  List<GoRoute> _routesBuilder(BuildContext context, String location) => [
-        GoRoute(
-          path: '/',
-          builder: (context, state) => MaterialPage<HomePage>(
-            key: state.pageKey,
-            child: HomePage(families: Families.data),
-          ),
-          stacked: [
-            GoRoute(
-              path: 'family/:fid',
-              builder: (context, state) {
-                final family = Families.family(state.params['fid']!);
-                return MaterialPage<FamilyPage>(
-                  key: state.pageKey,
-                  child: FamilyPage(family: family),
-                );
-              },
-              stacked: [
-                GoRoute(
-                  path: 'person/:pid',
-                  builder: (context, state) {
-                    final family = Families.family(state.params['fid']!);
-                    final person = family.person(state.params['pid']!);
-                    return MaterialPage<PersonPage>(
-                      key: state.pageKey,
-                      child: PersonPage(family: family, person: person),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ],
-        ),
-        GoRoute(
-          path: '/login',
-          builder: (context, state) => MaterialPage<LoginPage>(
-            key: state.pageKey,
-            child: const LoginPage(),
-          ),
-        ),
-      ];
-
-  Page<dynamic> _errorBuilder(BuildContext context, GoRouterState state) =>
-      MaterialPage<ErrorPage>(
-        key: state.pageKey,
-        child: ErrorPage(state.error),
-      );
 }

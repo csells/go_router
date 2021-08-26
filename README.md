@@ -1,15 +1,22 @@
 # TODO
 - use static routes instead of route builder
 - add redirect callback to .builder ctor
-- rewrite samples
-- write nested routes sample
 - move redirect to global and per-page
 - add refreshListenable
-- separate params and query params
+- rewrite samples
 - rewrite tests
+- update README (including removing this TODO)
+- publish
+- write nested routes sample
+- publish
+- separate params and query params
+- publish
+- add context.push
+- publish
 - add named routes
   - allows passing parameters
   - allows passing query parameters
+- publish
 
 # go_router
 The goal of the [go_router package](https://pub.dev/packages/go_router) is to
@@ -30,18 +37,11 @@ This separation of responsibilities allows the Flutter developer to implement a
 number of routing and navigation policies at the cost of
 [complexity](https://www.reddit.com/r/FlutterDev/comments/koxx4w/why_navigator_20_sucks/).
 
-The go_router makes three simplifying assumptions to reduce complexity:
-1. all routing in the app will happen via schemeless absolute
-   [URI](https://en.wikipedia.org/wiki/Uniform_Resource_Identifier)-compliant
-   names
-1. an entire stack of pages can be constructed from the location alone
-1. the concept of "back" in your app is "up" the stack of pages
-
-These assumptions allow go_router to provide a simpler implementation of your
-app's custom router regardless of the platform you're targeting. Specifically,
-since web users can enter arbitrary locations to navigate your app, go_router is
-designed to be able to handle arbitrary locations while still allowing an
-easy-to-use developer experience.
+The purpose of the go_router is to use declarative routes to reduce complexity,
+regardless of the platform you're targeting. Specifically, since web users can
+enter arbitrary locations to navigate your app, go_router is designed to be able
+to handle arbitrary locations while still allowing an easy-to-use developer
+experience.
 
 # Getting Started
 To use the go_router package, [follow these
@@ -254,156 +254,6 @@ Also, the go_router will pass parameters from higher level sub-routes so that
 they can be used in lower level routes, e.g. `fid` is matched as part of the
 `family/:fid` route, but it's passed along to the `person/:pid` route because
 it's a sub-route of the `family/:fid` route.
-
-# Conditional Routes
-The routes builder is called each time that the location changes, which allows
-you to change the routes based on the location. Furthermore, if you'd like to
-change the set of routes based on conditional app state, you can do so using
-`InheritedWidget` or one of it's wrappers. For example, imagine a simple class
-to track the app's current logged in state:
-
-```dart
-class LoginInfo extends ChangeNotifier {
-  var _userName = '';
-  String get userName => _userName;
-  bool get loggedIn => _userName.isNotEmpty;
-
-  void login(String userName) {
-    _userName = userName;
-    notifyListeners();
-  }
-
-  void logout(String userName) {
-    _userName = '';
-    notifyListeners();
-  }
-}
-```
-
-Because the `LoginInfo` is a `ChangeNotifier`, it can accept listeners and
-notify them of data changes. We can then use [the provider
-package](https://pub.dev/packages/provider) (which is based on
-`InheritedWidget`) to drop an instance of `LoginInfo` into the widget tree:
-
-```dart
-class App extends StatelessWidget {
-  // add the login info into the tree as app state that can change over time
-  @override
-  Widget build(BuildContext context) => ChangeNotifierProvider<LoginInfo>(
-        create: (context) => LoginInfo(),
-        child: MaterialApp.router(
-          routeInformationParser: _router.routeInformationParser,
-          routerDelegate: _router.routerDelegate,
-          title: 'Conditional Routes GoRouter Example',
-        ),
-      );
-...
-}
-```
-
-Now imagine a login page that pulls the login info out of the widget tree and
-changes the login state as appropriate:
-
-```dart
-class LoginPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: Text(_title(context))),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                // log a user in, letting all the listeners know
-                onPressed: () => context.read<LoginInfo>().login('user1'),
-                child: const Text('Login'),
-              ),
-            ],
-          ),
-        ),
-      );
-...
-}
-```
-
-Notice the use of `context.read` from the provider package to walk the widget
-tree to find the login info and login a sample user. This causes the listeners
-to this data to be notified and for any widgets listening for this change to
-rebuild. We can then use this data when implementing the `GoRouter` routes
-builder to decide which routes are allowed:
-
-```dart
-class App extends StatelessWidget {
-  ...
-  late final _router = GoRouter(routes: _routeBuilder, error: _errorBuilder);
-
-  // the routes when the user is logged in
-  final _loggedInRoutes = [
-    GoRoute(
-      path: '/',
-      builder: (context, state) => MaterialPage<HomePage>(
-        key: state.pageKey,
-        child: HomePage(families: Families.data),
-      ),
-      routes: [
-        GoRoute(
-          path: 'family/:fid',
-          builder: (context, state) {
-            final family = Families.family(state.params['fid']!);
-
-            return MaterialPage<FamilyPage>(
-              key: state.pageKey,
-              child: FamilyPage(family: family),
-            );
-          },
-          routes: [
-            GoRoute(
-              path: 'person/:pid',
-              builder: (context, state) {
-                final family = Families.family(state.params['fid']!);
-                final person = family.person(state.params['pid']!);
-
-                return MaterialPage<PersonPage>(
-                  key: state.pageKey,
-                  child: PersonPage(family: family, person: person),
-                );
-              },
-            ),
-          ],
-        ),
-      ],
-    ),
-  ];
-
-  // the routes when the user is not logged in
-  final _loggedOutRoutes = [
-    GoRoute(
-      path: '/',
-      builder: (context, state) => MaterialPage<LoginPage>(
-        key: state.pageKey,
-        child: LoginPage(),
-      ),
-    ),
-  ];
-
-  // changes in the login info will rebuild the stack of routes
-  List<GoRoute> _routeBuilder(BuildContext context, String location) =>
-      context.watch<LoginInfo>().loggedIn ? _loggedInRoutes : _loggedOutRoutes;
-
-  ...
-}
-```
-
-Here we've defined two lists of routes, one for when the user is logged in and
-one for when they're not. Then, we use `context.watch` to read the login info to
-determine which list of routes to return. And because we used `context.watch`
-instead of `context.read`, whenever the login info object changes, the routes
-builder is automatically called for the correct list of routes based on the
-current app state.
-
-Conditional routes are useful for when your app's routes change based on app
-state changes. However, for the right way to guard against a user accessing
-pages for which they don't have access, you should use [guards](#guards-for-redirection) instead.
 
 # Guards for redirection
 Sometimes you want to guard pages from being accessed when they shouldn't be,
@@ -837,8 +687,6 @@ You can see the go_router in action via the following examples:
   instead of home (`/`), which is the default
 - [`sub_routes.dart`](example/lib/sub_routes.dart): provide a stack of pages
   based on a set of sub routes
-- [`conditional.dart`](example/lib/conditional.dart): provide different routes
-  based on changing app state
 - [`redirection.dart`](example/lib/redirection.dart): redirect one route to
   another based on changing app state
 - [`query_params.dart`](example/lib/query_params.dart): optional query
@@ -861,3 +709,26 @@ file has been provided with these examples configured.
 # Issues
 Do you have an issue with or feature request for go_router? Log it on the [issue
 tracker](https://github.com/csells/go_router/issues).
+
+# Design Notes/Open Questions
+- Redirect depends on go or push wrt what page(s) it replaces
+- What does refresh mean? How does it work with login state change?
+- Restoration state is list of URLs
+  - first is deep link: stack of pages
+  - rest are top links: just one new page
+  - should the parsing into params etc be the core state? Makes popping faster
+- Is the router just a container for the parser and the delegate? Is all the
+  work done in the delegate?
+- Problem: Back button in app is push on browser
+- Redirect: need a stack to track cycles
+- Stack of pages:
+  - Redirect is matching the stack of pages and checking for redirect on the top
+    most page
+  - Go is matching the stack of pages and building the entire stack
+  - Push is matching the stack of pages and adding the top most page to the go
+    stack
+  - Pop is cropping the top page off the stack of pages. Does that mean that go
+    is just turning a stack of matches into a stack of pushes? And the state of
+    the router is that stack of pushes?
+- Sub routes are needed to translate /login into a one-page stack (no home page)
+  and /settings into a two-page stack (include the home page).

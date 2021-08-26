@@ -25,32 +25,29 @@ class App extends StatelessWidget {
       );
 
   late final _router = GoRouter(
-    routes: _routesBuilder,
-    error: _errorBuilder,
     // turn off the # in the URLs on the web
     urlPathStrategy: UrlPathStrategy.path,
+
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) => MaterialPage<Page1Page>(
+          key: state.pageKey,
+          child: const Page1Page(),
+        ),
+      ),
+      GoRoute(
+        path: '/page2',
+        builder: (context, state) => MaterialPage<Page2Page>(
+          key: state.pageKey,
+          child: const Page2Page(),
+        ),
+      ),
+    ],
+
+    errorBuilder: (context, state) => MaterialPage<ErrorPage>(
+      key: state.pageKey,
+      child: ErrorPage(state.error),
+    ),
   );
-
-  List<GoRoute> _routesBuilder(BuildContext context, String location) => [
-        GoRoute(
-          path: '/',
-          builder: (context, state) => MaterialPage<Page1Page>(
-            key: state.pageKey,
-            child: const Page1Page(),
-          ),
-        ),
-        GoRoute(
-          path: '/page2',
-          builder: (context, state) => MaterialPage<Page2Page>(
-            key: state.pageKey,
-            child: const Page2Page(),
-          ),
-        ),
-      ];
-
-  Page<dynamic> _errorBuilder(BuildContext context, GoRouterState state) =>
-      MaterialPage<ErrorPage>(
-        key: state.pageKey,
-        child: ErrorPage(state.error),
-      );
 }

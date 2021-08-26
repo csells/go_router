@@ -1,6 +1,11 @@
 import 'package:flutter/widgets.dart';
 import '../go_router.dart';
 
+typedef GoRouterBuilder = Widget Function(
+  BuildContext context,
+  String location,
+);
+
 /// GoRouter implementation of the RouterDelegate base class
 class GoRouterDelegate extends RouterDelegate<Uri>
     with
@@ -10,23 +15,20 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   var _loc = Uri();
   final _key = GlobalKey<NavigatorState>();
   final GoRouterBuilder builder;
-  final GoRouterGuard? refreshListenable;
+  final GoRouterRedirect redirect;
+  final Listenable? refreshListenable;
 
   GoRouterDelegate({
     required this.builder,
+    required this.redirect,
     this.refreshListenable,
     Uri? initialLocation,
   }) {
     // may need to redirect the initial location
     setNewRoutePath(initialLocation ?? _loc);
 
-    // when the guard's contained listener changes, refresh the route
-    refreshListenable?.addListener(_refreshRoute);
-  }
-
-  void _refreshRoute() {
-    setNewRoutePath(_loc);
-    notifyListeners();
+    // when the listener changes, refresh the route
+    refreshListenable?.addListener(refresh);
   }
 
   void go(String route) {
@@ -34,9 +36,14 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     notifyListeners();
   }
 
+  void refresh() {
+    setNewRoutePath(_loc);
+    notifyListeners();
+  }
+
   @override
   void dispose() {
-    refreshListenable?.removeListener(_refreshRoute);
+    refreshListenable?.removeListener(refresh);
     super.dispose();
   }
 
@@ -60,7 +67,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   Future<void> setNewRoutePath(Uri configuration) async {
     // check for redirect
     final loc = configuration.toString();
-    final redirectLoc = refreshListenable?.redirect(loc);
+    final redirectLoc = redirect(loc);
     if (redirectLoc == null) {
       _loc = configuration;
       return;
@@ -75,7 +82,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     if (loop) throw Exception('redirecting to same location: $loc');
 
     // check for redirect redirecting
-    final redirectLoc2 = refreshListenable!.redirect(redirectLoc);
+    final redirectLoc2 = redirect(redirectLoc);
     if (redirectLoc2 != null) {
       throw Exception(
         'redirect redirecting: $loc => $redirectLoc => $redirectLoc2',
@@ -134,7 +141,7 @@ class GoRouteMatch {
 
     final match = route.matchPatternAsPrefix(location);
     if (match == null) return null;
-    
+
     final params = route.extractPatternParams(match);
     final subloc = GoRouter.locationFor(route.path, params);
     return GoRouteMatch(

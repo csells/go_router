@@ -10,12 +10,6 @@ import 'src/path_strategy_nonweb.dart'
 /// for use in GoRouter.setUrlPathStrategy
 enum UrlPathStrategy { hash, path }
 
-/// the signature of the function to pass to the GoRouter.builder ctor
-typedef GoRouterBuilder = Widget Function(
-  BuildContext context,
-  String location,
-);
-
 /// the signature of the page builder callback for a matched GoRoute
 typedef GoRouterPageBuilder = Page<dynamic> Function(
   BuildContext context,
@@ -33,17 +27,17 @@ class GoRouterState {
   // the full location of the route, e.g. /family/f1/person/p2
   final String location;
 
-  // the location to this sub-route, e.g. /family/f1
+  // the location of this sub-route, e.g. /family/f1
   final String subloc;
 
   // the path to this sub-route, e.g. family/:fid
   final String path;
 
+  // the full path to this sub-route, e.g. /family/:fid
+  final String subpath;
+
   // the parameters for this sub-route, e.g. {'fid': 'f1'}
   final Map<String, String> params;
-
-  // the unique key for this sub-route, e.g. ValueKey('/family/:fid')
-  final ValueKey<String> pageKey;
 
   // the error associated with this sub-route
   final Exception? error;
@@ -53,28 +47,30 @@ class GoRouterState {
     required this.location,
     required this.subloc,
     this.path = '',
+    this.subpath = '',
     this.params = const <String, String>{},
     this.error,
-    String fullpath = '',
-  })  : assert(path.isEmpty == fullpath.isEmpty),
-        pageKey = ValueKey(fullpath);
+  }) : assert(path.isEmpty == subpath.isEmpty);
+
+  // the unique key for this sub-route, e.g. ValueKey('/family/:fid')
+  ValueKey<String> get pageKey => ValueKey(subpath);
 }
 
-/// a declarative mapping between a route name path and a route page builder
+/// a declarative mapping between a route path and a route page builder
 class GoRoute {
   final _pathParams = <String>[];
   late final RegExp _pathRE;
 
   final String path;
   final GoRouterPageBuilder builder;
-  final List<GoRoute>? routes;
+  final List<GoRoute> routes;
   final GoRouterRedirect redirect;
 
   /// ctor
   GoRoute({
     required this.path,
-    required this.builder,
-    this.routes,
+    this.builder = _builder,
+    this.routes = const [],
     this.redirect = _redirect,
   }) {
     // cache the path regexp and parameters
@@ -85,8 +81,8 @@ class GoRoute {
       parameters: _pathParams,
     );
 
-    // check stacked sub-route paths
-    for (final route in routes ?? <GoRoute>[]) {
+    // check sub-route paths
+    for (final route in routes) {
       if (route.path != '/' &&
           (route.path.startsWith('/') || route.path.endsWith('/'))) {
         throw Exception(
@@ -100,6 +96,8 @@ class GoRoute {
       p2re.extract(_pathParams, match);
 
   static String? _redirect(String location) => null;
+  static Page<dynamic> _builder(BuildContext context, GoRouterState state) =>
+      throw Exception('GoRoute builder parameter not set');
 }
 
 /// top-level go_router class; create one of these to initialize your app's
@@ -107,52 +105,19 @@ class GoRoute {
 class GoRouter {
   final routeInformationParser = GoRouteInformationParser();
   late final GoRouterDelegate routerDelegate;
+  final Iterable<GoRoute> routes;
   final GoRouterRedirect redirect;
+  final GoRouterPageBuilder errorBuilder;
   final _locPages = <String, Page<dynamic>>{};
 
   /// configure a GoRouter with a routes builder and an error page builder
   GoRouter({
-    required Iterable<GoRoute> routes,
-    required GoRouterPageBuilder error,
-    this.redirect = _redirect,
+    required this.routes,
+    required this.errorBuilder,
+    this.redirect = _noop,
     Listenable? refreshListenable,
     String initialLocation = '/',
     UrlPathStrategy? urlPathStrategy = UrlPathStrategy.hash,
-  }) {
-    _init(
-      builder: (context, location) => _builder(
-        context: context,
-        routes: routes,
-        error: error,
-        location: location,
-      ),
-      initialLocation: initialLocation,
-      urlPathStrategy: urlPathStrategy,
-      refreshListenable: refreshListenable,
-    );
-  }
-
-  /// configure a GoRouter with a widget builder
-  GoRouter.builder({
-    required GoRouterBuilder builder,
-    this.redirect = _redirect,
-    Listenable? refreshListenable,
-    String initialLocation = '/',
-    UrlPathStrategy? urlPathStrategy,
-  }) {
-    _init(
-      builder: builder,
-      initialLocation: initialLocation,
-      urlPathStrategy: urlPathStrategy,
-      refreshListenable: refreshListenable,
-    );
-  }
-
-  void _init({
-    required GoRouterBuilder builder,
-    required String initialLocation,
-    required UrlPathStrategy? urlPathStrategy,
-    Listenable? refreshListenable,
   }) {
     if (urlPathStrategy != null) setUrlPathStrategy(urlPathStrategy);
 
@@ -160,8 +125,9 @@ class GoRouter {
       // wrap the returned Navigator to enable GoRouter.of(context).go()
       builder: (context, location) => InheritedGoRouter(
         goRouter: this,
-        child: builder(context, location),
+        child: _builder(context: context, location: location),
       ),
+      redirect: _redirect,
       refreshListenable: refreshListenable,
       initialLocation: Uri.parse(initialLocation),
     );
@@ -174,6 +140,9 @@ class GoRouter {
   /// /family/f1/person/p2?color=blue
   void go(String location) => routerDelegate.go(location);
 
+  /// refresh the route
+  void refresh() => routerDelegate.refresh();
+
   /// set the app's URL path strategy (defaults to hash). call before runApp().
   static void setUrlPathStrategy(UrlPathStrategy strategy) =>
       setUrlPathStrategyImpl(strategy);
@@ -182,10 +151,18 @@ class GoRouter {
   static GoRouter of(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<InheritedGoRouter>()!.goRouter;
 
+  /// expand a path w/ param slots using params, e.g. family/:fid => family/f1
+  static String locationFor(String path, Map<String, String> params) =>
+      p2re.pathToFunction(path)(params);
+
+  /// redirect based on the current location
+  String? _redirect(String location) {
+    // TODO
+    return null;
+  }
+
   Widget _builder({
     required BuildContext context,
-    required Iterable<GoRoute> routes,
-    required GoRouterPageBuilder error,
     required String location,
   }) {
     try {
@@ -197,7 +174,7 @@ class GoRouter {
     } on Exception catch (ex) {
       // if there's an error, show an error page
       _locPages.clear();
-      _locPages[location] = error(
+      _locPages[location] = errorBuilder(
         context,
         GoRouterState(
           router: this,
@@ -224,7 +201,7 @@ class GoRouter {
     );
   }
 
-  static String? _redirect(String location) => null;
+  static String? _noop(String location) => null;
 
   /// get the stack of routes that matches the location and turn it into a stack
   /// of sub-location, page pairs
@@ -298,7 +275,7 @@ class GoRouter {
           location: location,
           subloc: subloc,
           path: match.route.path,
-          fullpath: match.fullpath,
+          subpath: match.fullpath,
           params: params,
         ),
       );
@@ -407,7 +384,7 @@ class GoRouter {
       }
 
       // if we have a partial match but no sub-routes, bail
-      if (route.routes == null) continue;
+      if (route.routes.isEmpty) continue;
 
       // otherwise recurse
       final rest = loc.substring(match.loc.length + (match.loc == '/' ? 0 : 1));
@@ -418,7 +395,7 @@ class GoRouter {
       // location
       final subRouteMatchStacks = _getLocRouteMatchStacks(
         loc: rest,
-        routes: route.routes!,
+        routes: route.routes,
         parentFullpath: fullpath,
       ).toList();
       if (subRouteMatchStacks.isEmpty) continue;
@@ -442,9 +419,6 @@ class GoRouter {
     assert(!path.endsWith('/'));
     return '${parentFullpath == '/' ? '' : parentFullpath}/$path';
   }
-
-  static String locationFor(String path, Map<String, String> params) =>
-      p2re.pathToFunction(path)(params);
 }
 
 /// Dart extension to add the go() function to a BuildContext object, e.g.

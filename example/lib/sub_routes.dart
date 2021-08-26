@@ -17,48 +17,47 @@ class App extends StatelessWidget {
         title: 'Sub-routes GoRouter Example',
       );
 
-  late final _router = GoRouter(routes: _routesBuilder, error: _errorBuilder);
-
-  List<GoRoute> _routesBuilder(BuildContext context, String location) => [
-        GoRoute(
-          path: '/',
-          builder: (context, state) => MaterialPage<HomePage>(
-            key: state.pageKey,
-            child: HomePage(families: Families.data),
-          ),
-          stacked: [
-            GoRoute(
-              path: 'family/:fid',
-              builder: (context, state) {
-                final family = Families.family(state.params['fid']!);
-
-                return MaterialPage<FamilyPage>(
-                  key: state.pageKey,
-                  child: FamilyPage(family: family),
-                );
-              },
-              stacked: [
-                GoRoute(
-                  path: 'person/:pid',
-                  builder: (context, state) {
-                    final family = Families.family(state.params['fid']!);
-                    final person = family.person(state.params['pid']!);
-
-                    return MaterialPage<PersonPage>(
-                      key: state.pageKey,
-                      child: PersonPage(family: family, person: person),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ],
+  late final _router = GoRouter(
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) => MaterialPage<HomePage>(
+          key: state.pageKey,
+          child: HomePage(families: Families.data),
         ),
-      ];
+        routes: [
+          GoRoute(
+            path: 'family/:fid',
+            builder: (context, state) {
+              final family = Families.family(state.params['fid']!);
 
-  Page<dynamic> _errorBuilder(BuildContext context, GoRouterState state) =>
-      MaterialPage<ErrorPage>(
-        key: state.pageKey,
-        child: ErrorPage(state.error),
-      );
+              return MaterialPage<FamilyPage>(
+                key: state.pageKey,
+                child: FamilyPage(family: family),
+              );
+            },
+            routes: [
+              GoRoute(
+                path: 'person/:pid',
+                builder: (context, state) {
+                  final family = Families.family(state.params['fid']!);
+                  final person = family.person(state.params['pid']!);
+
+                  return MaterialPage<PersonPage>(
+                    key: state.pageKey,
+                    child: PersonPage(family: family, person: person),
+                  );
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    ],
+  
+    errorBuilder: (context, state) => MaterialPage<ErrorPage>(
+      key: state.pageKey,
+      child: ErrorPage(state.error),
+    ),
+  );
 }

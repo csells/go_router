@@ -1,3 +1,12 @@
+### 0.8.0
+- move to fixed routing from conditional routing; simplies API and allows for
+  redirection at the route level
+- TODO: add redirection at the route level
+- TODO: add `refresh` method and `refreshListener`
+- TODO: removed `.builder` ctor from `GoRouter` (not reasonable to implement)
+- TODO: add Dynamic Routing section to the README
+
+
 ### 0.7.1
 - update to pageKey to take sub-routes into account
 
