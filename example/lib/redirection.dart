@@ -67,7 +67,7 @@ class App extends StatelessWidget {
       ),
     ],
 
-    errorBuilder: (context, state) => MaterialPage<ErrorPage>(
+    error: (context, state) => MaterialPage<ErrorPage>(
       key: state.pageKey,
       child: ErrorPage(state.error),
     ),

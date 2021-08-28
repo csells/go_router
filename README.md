@@ -1,21 +1,8 @@
 # TODO
-- use static routes instead of route builder
-- add redirect callback to .builder ctor
-- move redirect to global and per-page
-- add refreshListenable
-- rewrite samples
 - rewrite tests
+- move GoRouter._builder to GoRouterDelegate to hid GRD.pop method
+- merge GoRouter and GoRouterDelegate?
 - update README (including removing this TODO)
-- publish
-- write nested routes sample
-- publish
-- separate params and query params
-- publish
-- add context.push
-- publish
-- add named routes
-  - allows passing parameters
-  - allows passing query parameters
 - publish
 
 # go_router
@@ -38,10 +25,8 @@ number of routing and navigation policies at the cost of
 [complexity](https://www.reddit.com/r/FlutterDev/comments/koxx4w/why_navigator_20_sucks/).
 
 The purpose of the go_router is to use declarative routes to reduce complexity,
-regardless of the platform you're targeting. Specifically, since web users can
-enter arbitrary locations to navigate your app, go_router is designed to be able
-to handle arbitrary locations while still allowing an easy-to-use developer
-experience.
+regardless of the platform you're targeting, handling deep linking from Android,
+iOS, the web, etc. while still allowing an easy-to-use developer experience.
 
 # Getting Started
 To use the go_router package, [follow these
@@ -732,3 +717,4 @@ tracker](https://github.com/csells/go_router/issues).
     the router is that stack of pushes?
 - Sub routes are needed to translate /login into a one-page stack (no home page)
   and /settings into a two-page stack (include the home page).
+- How does state restoration work wrt routing?

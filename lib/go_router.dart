@@ -34,7 +34,7 @@ class GoRouterState {
   final String path;
 
   // the full path to this sub-route, e.g. /family/:fid
-  final String subpath;
+  final String fullpath;
 
   // the parameters for this sub-route, e.g. {'fid': 'f1'}
   final Map<String, String> params;
@@ -47,13 +47,13 @@ class GoRouterState {
     required this.location,
     required this.subloc,
     this.path = '',
-    this.subpath = '',
+    this.fullpath = '',
     this.params = const <String, String>{},
     this.error,
-  }) : assert(path.isEmpty == subpath.isEmpty);
+  }) : assert(path.isEmpty == fullpath.isEmpty);
 
   // the unique key for this sub-route, e.g. ValueKey('/family/:fid')
-  ValueKey<String> get pageKey => ValueKey(subpath);
+  ValueKey<String> get pageKey => ValueKey(fullpath);
 }
 
 /// a declarative mapping between a route path and a route page builder
@@ -105,36 +105,37 @@ class GoRoute {
 class GoRouter {
   final routeInformationParser = GoRouteInformationParser();
   late final GoRouterDelegate routerDelegate;
-  final Iterable<GoRoute> routes;
   final GoRouterRedirect redirect;
-  final GoRouterPageBuilder errorBuilder;
-  final _locPages = <String, Page<dynamic>>{};
+  final GoRouterPageBuilder error;
 
   /// configure a GoRouter with a routes builder and an error page builder
   GoRouter({
-    required this.routes,
-    required this.errorBuilder,
-    this.redirect = _noop,
+    required List<GoRoute> routes,
+    required this.error,
+    this.redirect = _redirect,
     Listenable? refreshListenable,
     String initialLocation = '/',
     UrlPathStrategy? urlPathStrategy = UrlPathStrategy.hash,
+    bool debugOutputFullPaths = false,
   }) {
     if (urlPathStrategy != null) setUrlPathStrategy(urlPathStrategy);
 
     routerDelegate = GoRouterDelegate(
       // wrap the returned Navigator to enable GoRouter.of(context).go()
-      builder: (context, location) => InheritedGoRouter(
+      builder: (context, matches) => InheritedGoRouter(
         goRouter: this,
-        child: _builder(context: context, location: location),
+        child: _builder(context: context, matches: matches),
       ),
-      redirect: _redirect,
+      routes: routes,
+      topRedirect: redirect,
       refreshListenable: refreshListenable,
-      initialLocation: Uri.parse(initialLocation),
+      initUri: Uri.parse(initialLocation),
+      debugOutputFullPaths: debugOutputFullPaths,
     );
   }
 
   /// get the current location
-  String get location => _locPages.isEmpty ? '' : _locPages.keys.last;
+  String get location => routerDelegate.currentConfiguration.toString();
 
   /// navigate to a URI location w/ optional query parameters, e.g.
   /// /family/f1/person/p2?color=blue
@@ -155,26 +156,19 @@ class GoRouter {
   static String locationFor(String path, Map<String, String> params) =>
       p2re.pathToFunction(path)(params);
 
-  /// redirect based on the current location
-  String? _redirect(String location) {
-    // TODO
-    return null;
-  }
-
   Widget _builder({
     required BuildContext context,
-    required String location,
+    required Iterable<GoRouteMatch> matches,
   }) {
+    final pages = <Page<dynamic>>[];
+
     try {
       // build the stack of pages
-      final locPages = getLocPages(context, location, routes);
-      assert(locPages.isNotEmpty);
-      _locPages.clear();
-      _locPages.addAll(locPages);
+      final routePages = getPages(context, matches);
+      pages.addAll(routePages);
     } on Exception catch (ex) {
       // if there's an error, show an error page
-      _locPages.clear();
-      _locPages[location] = errorBuilder(
+      final errorPage = error(
         context,
         GoRouterState(
           router: this,
@@ -183,84 +177,50 @@ class GoRouter {
           error: ex,
         ),
       );
+      pages.add(errorPage);
     }
 
     return Navigator(
-      pages: _locPages.values.toList(),
+      pages: pages,
       onPopPage: (route, dynamic result) {
         if (!route.didPop(result)) return false;
-
-        // remove the route for the page we're showing and go to the next
-        // location up
-        assert(_locPages.isNotEmpty);
-        _locPages.remove(_locPages.keys.last);
-        routerDelegate.go(_locPages.keys.last);
-
+        routerDelegate.pop();
         return true;
       },
     );
   }
 
-  static String? _noop(String location) => null;
+  static String? _redirect(String location) => null;
 
-  /// get the stack of routes that matches the location and turn it into a stack
-  /// of sub-location, page pairs
-  /// e.g. routes: [
+  /// get the stack of sub-routes that matches the location and turn it into a
+  /// stack of pages, e.g.
+  /// routes: [
   ///   /
   ///     family/:fid
+  ///       person/:pid
   ///   /login
   /// ]
   ///
   /// loc: /
-  /// pairs: [
-  ///   / => HomePage()
-  /// ]
+  /// pages: [ HomePage()]
   ///
   /// loc: /login
-  /// pairs: [
-  ///   /login => LoginPage()
-  /// ]
+  /// pages: [ LoginPage() ]
   ///
   /// loc: /family/f2
-  /// pairs: [
-  ///   / => HomePage()
-  ///   /family/f2 => FamilyPage(f2)
-  /// ]
+  /// pages: [  HomePage(), FamilyPage(f2) ]
   ///
   /// loc: /family/f2/person/p1
-  /// pairs: [
-  ///   / => HomePage()
-  ///   /family/f2 => FamilyPage(f2)
-  ///   /family/f2/person/p1 => PersonPage(f2, p1)
-  /// ]
+  /// pages: [ HomePage(), FamilyPage(f2), PersonPage(f2, p1) ]
   @visibleForTesting
-  Map<String, Page<dynamic>> getLocPages(
+  List<Page<dynamic>> getPages(
     BuildContext context,
-    String location,
-    Iterable<GoRoute> routes,
+    Iterable<GoRouteMatch> matches,
   ) {
-    // check all of the top level routes
-    for (final route in routes) {
-      if (!route.path.startsWith('/')) {
-        throw Exception(
-            'top level route paths must start with /: ${route.path}');
-      }
-    }
-
-    final uri = Uri.parse(location);
-    final matchStack = _getLocRouteMatchStack(uri.path, routes);
-    assert(matchStack.isNotEmpty);
-
-    final locPages = <String, Page<dynamic>>{};
-    var subloc = ''; // start w/ an empty sub-location
+    final pages = <Page<dynamic>>[];
+    final uri = Uri.parse(matches.last.subloc);
     var params = uri.queryParameters; // start w/ the query parameters
-    for (final match in matchStack) {
-      // append each sub-location, e.g. / + family/:fid + person/:pid
-      // ignore: use_string_buffers
-      subloc = subloc +
-          (subloc.endsWith('/') || match.loc.startsWith('/') ? '' : '/') +
-          match.loc;
-
+    for (final match in matches) {
       // merge new params, overriding old ones, i.e. path params override
       // query parameters, sub-location params override top level params, etc.
       // this also keeps params from previously matched paths, e.g.
@@ -268,156 +228,22 @@ class GoRouter {
       params = {...params, ...match.params};
 
       // get a page from the builder and associate it with a sub-location
-      locPages[subloc.toString()] = match.route.builder(
+      final page = match.route.builder(
         context,
         GoRouterState(
           router: this,
           location: location,
-          subloc: subloc,
+          subloc: match.subloc,
           path: match.route.path,
-          subpath: match.fullpath,
+          fullpath: match.fullpath,
           params: params,
         ),
       );
+      pages.add(page);
     }
 
-    assert(locPages.isNotEmpty);
-    return locPages;
-  }
-
-  /// Call _getLocRouteMatchStacks and check for errors
-  static List<GoRouteMatch> _getLocRouteMatchStack(
-    String loc,
-    Iterable<GoRoute> routes,
-  ) {
-    // assume somebody else has removed the query params
-    assert(Uri.parse(loc).path == loc);
-
-    final matchStacks = _getLocRouteMatchStacks(
-      loc: loc,
-      routes: routes,
-      parentFullpath: '',
-    );
-
-    if (matchStacks.isEmpty) {
-      throw Exception('no routes for location: $loc');
-    }
-
-    if (matchStacks.length > 1) {
-      final sb = StringBuffer();
-      sb.writeln('too many routes for location: $loc');
-
-      for (final stack in matchStacks) {
-        sb.writeln('\t${stack.map((m) => m.route.path).join(' => ')}');
-      }
-
-      throw Exception(sb.toString());
-    }
-
-    assert(matchStacks.length == 1);
-    return matchStacks.first;
-  }
-
-  /// turns a list of routes into a list of routes match stacks for the location
-  /// e.g. routes: [
-  ///   /
-  ///     family/:fid
-  ///   /login
-  /// ]
-  ///
-  /// loc: /
-  /// stacks: [
-  ///   matches: [
-  ///     match(route.path=/, loc=/)
-  ///   ]
-  /// ]
-  ///
-  /// loc: /login
-  /// stacks: [
-  ///   matches: [
-  ///     match(route.path=/login, loc=login)
-  ///   ]
-  /// ]
-  ///
-  /// loc: /family/f2
-  /// stacks: [
-  ///   matches: [
-  ///     match(route.path=/, loc=/),
-  ///     match(route.path=family/:fid, loc=family/f2, params=[fid=f2])
-  ///   ]
-  /// ]
-  ///
-  /// loc: /family/f2/person/p1
-  /// stacks: [
-  ///   matches: [
-  ///     match(route.path=/, loc=/),
-  ///     match(route.path=family/:fid, loc=family/f2, params=[fid=f2])
-  ///     match(route.path=person/:pid, loc=person/p1, params=[fid=f2, pid=p1])
-  ///   ]
-  /// ]
-  ///
-  /// A stack count of 0 means there's no match.
-  /// A stack count of >1 means there's a malformed set of routes.
-  ///
-  /// NOTE: Uses recursion, which is why _getLocRouteMatchStacks calls this
-  /// function and does the actual error checking, using the returned stacks to
-  /// provide better errors
-  static Iterable<List<GoRouteMatch>> _getLocRouteMatchStacks({
-    required String loc,
-    required Iterable<GoRoute> routes,
-    required String parentFullpath,
-  }) sync* {
-    // find the set of matches at this level of the tree
-    for (final route in routes) {
-      final fullpath = _fullpathFor(parentFullpath, route.path);
-      final match = GoRouteMatch.match(
-        route: route,
-        location: loc,
-        fullpath: fullpath,
-      );
-      if (match == null) continue;
-
-      // if we have a complete match, then return the matched route
-      if (match.loc == loc) {
-        yield [match];
-        continue;
-      }
-
-      // if we have a partial match but no sub-routes, bail
-      if (route.routes.isEmpty) continue;
-
-      // otherwise recurse
-      final rest = loc.substring(match.loc.length + (match.loc == '/' ? 0 : 1));
-      assert(loc.startsWith(match.loc));
-      assert(rest.isNotEmpty);
-
-      // if there's no sub-route matches, then we don't have a match for this
-      // location
-      final subRouteMatchStacks = _getLocRouteMatchStacks(
-        loc: rest,
-        routes: route.routes,
-        parentFullpath: fullpath,
-      ).toList();
-      if (subRouteMatchStacks.isEmpty) continue;
-
-      // add the match to each of the sub-route match stacks and return them
-      for (final stack in subRouteMatchStacks) yield [match, ...stack];
-    }
-  }
-
-  static String _fullpathFor(String parentFullpath, String path) {
-    // at the root, just return the path
-    if (parentFullpath.isEmpty) {
-      assert(path.startsWith('/'));
-      assert(path == '/' || !path.endsWith('/'));
-      return path;
-    }
-
-    // not at the root, so append the parent path
-    assert(path.isNotEmpty);
-    assert(!path.startsWith('/'));
-    assert(!path.endsWith('/'));
-    return '${parentFullpath == '/' ? '' : parentFullpath}/$path';
+    assert(pages.isNotEmpty);
+    return pages;
   }
 }
 

@@ -25,7 +25,7 @@ class Bookstore extends StatelessWidget {
         ),
       ),
     ],
-    errorBuilder: (context, state) => MaterialPage<void>(
+    error: (context, state) => MaterialPage<void>(
       key: state.pageKey,
       child: ErrorScreen(state.error),
     ),

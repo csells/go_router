@@ -43,7 +43,7 @@ class App extends StatelessWidget {
       ),
     ],
     
-    errorBuilder: _errorBuilder,
+    error: _errorBuilder,
   );
 
   Page<dynamic> _errorBuilder(BuildContext context, GoRouterState state) =>
