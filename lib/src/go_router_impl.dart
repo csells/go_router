@@ -97,40 +97,67 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
   void _go(String location) {
     assert(Uri.tryParse(location) != null);
+    final matches = <GoRouteMatch>[];
 
-    // watch redirects for loops
-    var loc = location;
-    final redirects = List<String>.filled(1, loc, growable: true);
-    bool redirected(String? redir) {
-      if (redir == null) return false;
+    try {
+      // watch redirects for loops
+      var loc = location;
+      final redirects = List<String>.filled(1, loc, growable: true);
+      bool redirected(String? redir) {
+        if (redir == null) return false;
 
-      if (redirects.contains(redir)) {
+        if (redirects.contains(redir)) {
+          redirects.add(redir);
+          final msg = 'Redirect loop detected: ${redirects.join(' => ')}';
+          throw Exception(msg);
+        }
+
         redirects.add(redir);
-        final msg = 'Redirect loop detected: ${redirects.join(' => ')}';
-        throw Exception(msg);
+        loc = redir;
+        return true;
       }
 
-      redirects.add(redir);
-      loc = redir;
-      return true;
+      // keep looping till we're done redirecting
+      for (;;) {
+        // check for top-level redirect
+        if (redirected(topRedirect(loc))) continue;
+
+        // get stack of route matches
+        matches.clear();
+        matches.addAll(getLocRouteMatches(loc));
+
+        // check top route for redirect
+        if (redirected(matches.last.route.redirect(loc))) continue;
+
+        // no more redirects!
+        break;
+      }
+    } on Exception catch (ex) {
+      // create a match that routes to the error page
+      matches.add(
+        GoRouteMatch(
+          subloc: location,
+          fullpath: location,
+          params: {},
+          route: GoRoute(
+            path: location,
+            builder: (context, state) => errorBuilder(
+              context,
+              GoRouterState(
+                location: state.location,
+                subloc: state.subloc,
+                error: ex,
+                fullpath: '',
+              ),
+            ),
+          ),
+        ),
+      );
     }
 
-    // keep looping till we're done redirecting
-    for (;;) {
-      // check for top-level redirect
-      if (redirected(topRedirect(loc))) continue;
-
-      // get stack of route matches
-      final matches = getLocRouteMatches(loc);
-
-      // check top route for redirect
-      if (redirected(matches.last.route.redirect(loc))) continue;
-
-      // no more redirects!
-      _matches.clear();
-      _matches.addAll(matches);
-      break;
-    }
+    assert(matches.isNotEmpty);
+    _matches.clear();
+    _matches.addAll(matches);
   }
 
   /// Call _getLocRouteMatchStacks and check for errors
@@ -290,10 +317,16 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       pages.addAll(getPages(context, matches));
     } on Exception catch (ex) {
       // if there's an error, show an error page
-      pages.add(errorBuilder(
-        context,
-        GoRouterState(location: location, subloc: location, error: ex),
-      ));
+      pages.add(
+        errorBuilder(
+          context,
+          GoRouterState(
+            location: location,
+            subloc: location,
+            error: ex,
+          ),
+        ),
+      );
     }
 
     // wrap the returned Navigator to enable GoRouter.of(context).go()

@@ -1,7 +1,5 @@
 # TODO
-- rewrite tests
-- move GoRouter._builder to GoRouterDelegate to hid GRD.pop method
-- merge GoRouter and GoRouterDelegate?
+- test samples
 - update README (including removing this TODO)
 - publish
 
