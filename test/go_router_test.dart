@@ -208,40 +208,40 @@ void main() {
     }
   });
 
-  // test('match too many sub-routes', () {
-  //   const loc = '/foo/bar';
-  //   final routes = [
-  //     GoRoute(
-  //       path: '/',
-  //       builder: _dummy,
-  //       routes: [
-  //         GoRoute(
-  //           path: 'foo/bar',
-  //           builder: _dummy,
-  //         ),
-  //         GoRoute(
-  //           path: 'foo',
-  //           builder: _dummy,
-  //           routes: [
-  //             GoRoute(
-  //               path: 'bar',
-  //               builder: _dummy,
-  //             ),
-  //           ],
-  //         ),
-  //       ],
-  //     ),
-  //   ];
+  test('match too many sub-routes', () {
+    const loc = '/foo/bar';
+    final routes = [
+      GoRoute(
+        path: '/',
+        builder: _dummy,
+        routes: [
+          GoRoute(
+            path: 'foo/bar',
+            builder: _dummy,
+          ),
+          GoRoute(
+            path: 'foo',
+            builder: _dummy,
+            routes: [
+              GoRoute(
+                path: 'bar',
+                builder: _dummy,
+              ),
+            ],
+          ),
+        ],
+      ),
+    ];
 
-  //   try {
-  //     final router = _router(routes);
-  //     router.getLocPages(context, loc, routes);
-  //     expect(false, true);
-  //   } on Exception catch (ex) {
-  //     dump(ex);
-  //     expect(true, true);
-  //   }
-  // });
+    try {
+      final router = _router(routes);
+      router.routerDelegate.getLocRouteMatches(loc);
+      expect(false, true);
+    } on Exception catch (ex) {
+      dump(ex);
+      expect(true, true);
+    }
+  });
 
   test('router state', () {
     final routes = [

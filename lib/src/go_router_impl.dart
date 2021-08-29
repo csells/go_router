@@ -129,9 +129,10 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     final loc = Uri.parse(location).path;
     final matchStacks = _getLocRouteMatchStacks(
       loc: loc,
-      partLoc: loc,
+      restLoc: loc,
       routes: routes,
       parentFullpath: '',
+      parentSubloc: '',
     ).toList();
 
     if (matchStacks.isEmpty) {
@@ -200,19 +201,22 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   /// provide better errors
   static Iterable<List<GoRouteMatch>> _getLocRouteMatchStacks({
     required String loc,
-    required String partLoc,
+    required String restLoc,
+    required String parentSubloc,
     required List<GoRoute> routes,
     required String parentFullpath,
   }) sync* {
     // assume somebody else has removed the query params
-    assert(Uri.parse(partLoc).path == partLoc);
+    assert(Uri.parse(restLoc).path == restLoc);
 
     // find the set of matches at this level of the tree
     for (final route in routes) {
-      final fullpath = _fullpathFor(parentFullpath, route.path);
+      final fullpath = _fullLocFor(parentFullpath, route.path);
       final match = GoRouteMatch.match(
         route: route,
-        partLoc: partLoc,
+        restLoc: restLoc,
+        parentSubloc: parentSubloc,
+        path: route.path,
         fullpath: fullpath,
       );
       if (match == null) continue;
@@ -227,16 +231,17 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       if (route.routes.isEmpty) continue;
 
       // otherwise recurse
-      final rest = partLoc
-          .substring(match.subloc.length + (match.subloc == '/' ? 0 : 1));
+      final childRestLoc =
+          loc.substring(match.subloc.length + (match.subloc == '/' ? 0 : 1));
       assert(loc.startsWith(match.subloc));
-      assert(rest.isNotEmpty);
+      assert(restLoc.isNotEmpty);
 
       // if there's no sub-route matches, then we don't have a match for this
       // location
       final subRouteMatchStacks = _getLocRouteMatchStacks(
         loc: loc,
-        partLoc: rest,
+        restLoc: childRestLoc,
+        parentSubloc: match.subloc,
         routes: route.routes,
         parentFullpath: fullpath,
       ).toList();
@@ -247,9 +252,14 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     }
   }
 
-  static String _fullpathFor(String parentFullpath, String path) {
+  // e.g.
+  // parentFullLoc: '',          path =>                  '/'
+  // parentFullLoc: '/',         path => 'family/:fid' => '/family/:fid'
+  // parentFullLoc: '/',         path => 'family/f2' =>   '/family/f2'
+  // parentFullLoc: '/famiy/f2', path => 'parent/p1' =>   '/family/f2/person/p1'
+  static String _fullLocFor(String parentFullLoc, String path) {
     // at the root, just return the path
-    if (parentFullpath.isEmpty) {
+    if (parentFullLoc.isEmpty) {
       assert(path.startsWith('/'));
       assert(path == '/' || !path.endsWith('/'));
       return path;
@@ -259,7 +269,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     assert(path.isNotEmpty);
     assert(!path.startsWith('/'));
     assert(!path.endsWith('/'));
-    return '${parentFullpath == '/' ? '' : parentFullpath}/$path';
+    return '${parentFullLoc == '/' ? '' : parentFullLoc}/$path';
   }
 
   void _outputFullPaths() {
@@ -278,7 +288,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     int depth,
   ) {
     for (final route in routes) {
-      final fullpath = _fullpathFor(parentFullpath, route.path);
+      final fullpath = _fullLocFor(parentFullpath, route.path);
       // ignore: avoid_print
       print('${''.padLeft(depth * 2)}$fullpath');
       _outputFullPathsFor(route.routes, fullpath, depth + 1);
@@ -327,16 +337,19 @@ class GoRouteMatch {
 
   static GoRouteMatch? match({
     required GoRoute route,
-    required String partLoc,
+    required String restLoc,
+    required String parentSubloc,
+    required String path,
     required String fullpath,
   }) {
-    assert(!fullpath.contains('//'));
+    assert(!path.contains('//'));
 
-    final match = route.matchPatternAsPrefix(partLoc);
+    final match = route.matchPatternAsPrefix(restLoc);
     if (match == null) return null;
 
     final params = route.extractPatternParams(match);
-    final subloc = GoRouter.locationFor(fullpath, params);
+    final pathLoc = GoRouter.locationFor(path, params);
+    final subloc = GoRouterDelegate._fullLocFor(parentSubloc, pathLoc);
     return GoRouteMatch(
       route: route,
       subloc: subloc,
