@@ -35,14 +35,14 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       }
     }
 
+    // output known routes
+    if (debugOutputFullPaths) _outputFullPaths();
+
     // build the list of route matches
     _go((initUri ?? Uri()).toString());
 
     // when the listener changes, refresh the route
     refreshListenable?.addListener(refresh);
-
-    // output known routes
-    if (debugOutputFullPaths) _outputFullPaths();
   }
 
   void go(String location) {
@@ -97,10 +97,12 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       if (redir == null) return false;
 
       if (redirects.contains(redir)) {
+        redirects.add(redir);
         final msg = 'Redirect loop detected: ${redirects.join(' => ')}';
         throw Exception(msg);
       }
 
+      redirects.add(redir);
       loc = redir;
       return true;
     }

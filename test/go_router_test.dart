@@ -81,7 +81,7 @@ void main() {
     }
   });
 
-  test('lack of leading / on top level route', () {
+  test('lack of leading / on top-level route', () {
     try {
       final routes = [
         GoRoute(path: 'foo', builder: _dummy),
@@ -315,70 +315,179 @@ void main() {
     router.go('/family/f2/person/p1');
   });
 
-  // test('top-level redirect', () {
-  //   final routes = [
-  //     GoRoute(
-  //       path: '/',
-  //       builder: (builder, state) => HomePage(),
-  //       routes: [
-  //         GoRoute(path: 'dummy', builder: (builder, state) => DummyPage()),
-  //         GoRoute(path: 'login', builder: (builder, state) => LoginPage()),
-  //       ],
-  //     ),
-  //   ];
+  test('top-level redirect', () {
+    final routes = [
+      GoRoute(
+        path: '/',
+        builder: (builder, state) => HomePage(),
+        routes: [
+          GoRoute(path: 'dummy', builder: (builder, state) => DummyPage()),
+          GoRoute(path: 'login', builder: (builder, state) => LoginPage()),
+        ],
+      ),
+    ];
 
-  //   final router = GoRouter(
-  //     routes: routes,
-  //     error: _dummy,
-  //     redirect: (location) => location == '/login' ? null : '/login',
-  //   );
-  //   expect(router.routerDelegate.currentConfiguration.toString(), '/login');
-  // });
+    final router = GoRouter(
+      routes: routes,
+      error: _dummy,
+      redirect: (location) => location == '/login' ? null : '/login',
+    );
+    expect(router.location, '/login');
+  });
 
-  // test('route-level redirect', () {
-  //   final routes = [
-  //     GoRoute(
-  //       path: '/',
-  //       builder: (builder, state) => HomePage(),
-  //       routes: [
-  //         GoRoute(
-  //           path: 'dummy',
-  //           builder: (builder, state) => DummyPage(),
-  //           redirect: (location) => '/login',
-  //         ),
-  //         GoRoute(
-  //           path: 'login',
-  //           builder: (builder, state) => LoginPage(),
-  //         ),
-  //       ],
-  //     ),
-  //   ];
+  test('route-level redirect', () {
+    final routes = [
+      GoRoute(
+        path: '/',
+        builder: (builder, state) => HomePage(),
+        routes: [
+          GoRoute(
+            path: 'dummy',
+            builder: (builder, state) => DummyPage(),
+            redirect: (location) => '/login',
+          ),
+          GoRoute(
+            path: 'login',
+            builder: (builder, state) => LoginPage(),
+          ),
+        ],
+      ),
+    ];
 
-  //   final router = GoRouter(
-  //     routes: routes,
-  //     error: _dummy,
-  //   );
-  //   expect(router.routerDelegate.currentConfiguration.toString(), '/login');
-  // });
+    final router = GoRouter(
+      routes: routes,
+      error: _dummy,
+    );
+    router.go('/dummy');
+    expect(router.location, '/login');
+  });
 
-  // test('initial location', () {
-  //   final routes = [
-  //     GoRoute(
-  //       path: '/',
-  //       builder: (builder, state) => HomePage(),
-  //       routes: [
-  //         GoRoute(path: 'dummy', builder: (builder, state) => DummyPage()),
-  //       ],
-  //     ),
-  //   ];
+  test('multiple mixed redirect', () {
+    final routes = [
+      GoRoute(
+        path: '/',
+        builder: (builder, state) => HomePage(),
+        routes: [
+          GoRoute(
+            path: 'dummy1',
+            builder: (builder, state) => DummyPage(),
+          ),
+          GoRoute(
+            path: 'dummy2',
+            builder: (builder, state) => DummyPage(),
+            redirect: (location) => '/',
+          ),
+        ],
+      ),
+    ];
 
-  //   final router = GoRouter(
-  //     routes: routes,
-  //     error: _dummy,
-  //     initialLocation: '/dummy',
-  //   );
-  //   expect(router.routerDelegate.currentConfiguration.toString(), '/dummy');
-  // });
+    final router = GoRouter(
+      routes: routes,
+      error: _dummy,
+      redirect: (location) => location == '/dummy1' ? '/dummy2' : null,
+    );
+    router.go('/dummy1');
+    expect(router.location, '/');
+  });
+
+  test('top-level redirect loop', () {
+    try {
+      GoRouter(
+        routes: [],
+        error: _dummy,
+        redirect: (location) => location == '/'
+            ? '/login'
+            : location == '/login'
+                ? '/'
+                : null,
+      );
+      expect(false, true);
+    } on Exception catch (ex) {
+      dump(ex);
+      expect(true, true);
+    }
+  });
+
+  test('route-level redirect loop', () {
+    final routes = [
+      GoRoute(
+        path: '/',
+        redirect: (location) => '/login',
+      ),
+      GoRoute(
+        path: '/login',
+        redirect: (location) => '/',
+      ),
+    ];
+    try {
+      _router(routes);
+      expect(false, true);
+    } on Exception catch (ex) {
+      dump(ex);
+      expect(true, true);
+    }
+  });
+
+  test('mixed redirect loop', () {
+    try {
+      GoRouter(
+        routes: [
+          GoRoute(
+            path: '/login',
+            redirect: (location) => '/',
+          ),
+        ],
+        error: _dummy,
+        redirect: (location) => location == '/' ? '/login' : null,
+      );
+      expect(false, true);
+    } on Exception catch (ex) {
+      dump(ex);
+      expect(true, true);
+    }
+  });
+
+  test('initial location', () {
+    final routes = [
+      GoRoute(
+        path: '/',
+        builder: (builder, state) => HomePage(),
+        routes: [
+          GoRoute(
+            path: 'dummy',
+            builder: (builder, state) => DummyPage(),
+          ),
+        ],
+      ),
+    ];
+
+    final router = GoRouter(
+      routes: routes,
+      error: _dummy,
+      initialLocation: '/dummy',
+    );
+    expect(router.location, '/dummy');
+  });
+
+  test('initial location w/ redirection', () {
+    final routes = [
+      GoRoute(
+        path: '/',
+        builder: (builder, state) => HomePage(),
+      ),
+      GoRoute(
+        path: '/dummy',
+        redirect: (location) => '/',
+      ),
+    ];
+
+    final router = GoRouter(
+      routes: routes,
+      error: _dummy,
+      initialLocation: '/dummy',
+    );
+    expect(router.location, '/');
+  });
 
   // test('duplicate path param', () {
   //   // TODO
