@@ -1,9 +1,16 @@
 import 'package:flutter/widgets.dart';
+import 'package:path_to_regexp/path_to_regexp.dart' as p2re;
+
 import '../go_router.dart';
 
-typedef GoRouterBuilder = Widget Function(
+typedef GoRouterBuilderWithMatches = Widget Function(
   BuildContext context,
   Iterable<GoRouteMatch> matches,
+);
+
+typedef GoRouterBuilderWithNav = Widget Function(
+  BuildContext context,
+  Navigator navigator,
 );
 
 /// GoRouter implementation of the RouterDelegate base class
@@ -12,22 +19,24 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         PopNavigatorRouterDelegateMixin<Uri>,
         // ignore: prefer_mixin
         ChangeNotifier {
-  final GoRouterBuilder builder;
+  final GoRouterBuilderWithNav builderWithNav;
   final List<GoRoute> routes;
   final GoRouterRedirect topRedirect;
   final Listenable? refreshListenable;
+  final GoRouterPageBuilder errorBuilder;
 
   final _key = GlobalKey<NavigatorState>();
   final List<GoRouteMatch> _matches = [];
 
   GoRouterDelegate({
-    required this.builder,
+    required this.builderWithNav,
     required this.routes,
-    required this.topRedirect,
+    required this.errorBuilder,
+    GoRouterRedirect? topRedirect,
     this.refreshListenable,
     Uri? initUri,
     bool debugOutputFullPaths = false,
-  }) {
+  }) : topRedirect = topRedirect ?? _redirect {
     // check that the route paths are valid
     for (final route in routes) {
       if (!route.path.startsWith('/')) {
@@ -57,8 +66,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
   String get location => _matches.last.subloc;
 
-  // TODO: make this private
-  void pop() => _matches.remove(_matches.last);
+  void _pop() => _matches.remove(_matches.last);
 
   @override
   void dispose() {
@@ -73,7 +81,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   Uri get currentConfiguration => Uri.parse(location);
 
   @override
-  Widget build(BuildContext context) => builder(context, _matches);
+  Widget build(BuildContext context) => _builder(context, _matches);
 
   @override
   Future<void> setInitialRoutePath(Uri configuration) async {
@@ -86,6 +94,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   @override
   Future<void> setNewRoutePath(Uri configuration) async =>
       _go(configuration.toString());
+
+  static String? _redirect(String location) => null;
 
   void _go(String location) {
     assert(Uri.tryParse(location) != null);
@@ -274,6 +284,93 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     return '${parentFullLoc == '/' ? '' : parentFullLoc}/$path';
   }
 
+  Widget _builder(BuildContext context, Iterable<GoRouteMatch> matches) {
+    final pages = <Page<dynamic>>[];
+
+    try {
+      // build the stack of pages
+      final routePages = getPages(context, matches);
+      pages.addAll(routePages);
+    } on Exception catch (ex) {
+      // if there's an error, show an error page
+      final errorPage = errorBuilder(
+        context,
+        GoRouterState(
+          location: location,
+          subloc: location,
+          error: ex,
+        ),
+      );
+      pages.add(errorPage);
+    }
+
+    // wrap the returned Navigator to enable GoRouter.of(context).go()
+    return builderWithNav(
+      context,
+      Navigator(
+        pages: pages,
+        onPopPage: (route, dynamic result) {
+          if (!route.didPop(result)) return false;
+          _pop();
+          return true;
+        },
+      ),
+    );
+  }
+
+  /// get the stack of sub-routes that matches the location and turn it into a
+  /// stack of pages, e.g.
+  /// routes: [
+  ///   /
+  ///     family/:fid
+  ///       person/:pid
+  ///   /login
+  /// ]
+  ///
+  /// loc: /
+  /// pages: [ HomePage()]
+  ///
+  /// loc: /login
+  /// pages: [ LoginPage() ]
+  ///
+  /// loc: /family/f2
+  /// pages: [  HomePage(), FamilyPage(f2) ]
+  ///
+  /// loc: /family/f2/person/p1
+  /// pages: [ HomePage(), FamilyPage(f2), PersonPage(f2, p1) ]
+  @visibleForTesting
+  List<Page<dynamic>> getPages(
+    BuildContext context,
+    Iterable<GoRouteMatch> matches,
+  ) {
+    final pages = <Page<dynamic>>[];
+    final uri = Uri.parse(matches.last.subloc);
+    var params = uri.queryParameters; // start w/ the query parameters
+    for (final match in matches) {
+      // merge new params, overriding old ones, i.e. path params override
+      // query parameters, sub-location params override top level params, etc.
+      // this also keeps params from previously matched paths, e.g.
+      // /family/:fid/person/:pid provides fid and pid to person/:pid
+      params = {...params, ...match.params};
+
+      // get a page from the builder and associate it with a sub-location
+      final page = match.route.builder(
+        context,
+        GoRouterState(
+          location: location,
+          subloc: match.subloc,
+          path: match.route.path,
+          fullpath: match.fullpath,
+          params: params,
+        ),
+      );
+      pages.add(page);
+    }
+
+    assert(pages.isNotEmpty);
+    return pages;
+  }
+
   void _outputFullPaths() {
     // ignore: avoid_print
     print('');
@@ -350,7 +447,7 @@ class GoRouteMatch {
     if (match == null) return null;
 
     final params = route.extractPatternParams(match);
-    final pathLoc = GoRouter.locationFor(path, params);
+    final pathLoc = _locationFor(path, params);
     final subloc = GoRouterDelegate._fullLocFor(parentSubloc, pathLoc);
     return GoRouteMatch(
       route: route,
@@ -359,4 +456,8 @@ class GoRouteMatch {
       params: params,
     );
   }
+
+  /// expand a path w/ param slots using params, e.g. family/:fid => family/f1
+  static String _locationFor(String path, Map<String, String> params) =>
+      p2re.pathToFunction(path)(params);
 }
