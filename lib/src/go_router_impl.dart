@@ -100,7 +100,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
   void _go(String location) {
     assert(Uri.tryParse(location) != null);
-    final matches = <GoRouteMatch>[];
+    List<GoRouteMatch> matches;
 
     try {
       // watch redirects for loops
@@ -126,8 +126,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         if (redirected(topRedirect(loc))) continue;
 
         // get stack of route matches
-        matches.clear();
-        matches.addAll(getLocRouteMatches(loc));
+        matches = getLocRouteMatches(loc);
 
         // check top route for redirect
         if (redirected(matches.last.route.redirect(loc))) continue;
@@ -137,8 +136,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       }
     } on Exception catch (ex) {
       // create a match that routes to the error page
-      matches.clear();
-      matches.add(
+      matches = [
         GoRouteMatch(
           subloc: location,
           fullpath: location,
@@ -156,9 +154,10 @@ class GoRouterDelegate extends RouterDelegate<Uri>
             ),
           ),
         ),
-      );
+      ];
     }
 
+    // update the matches
     assert(matches.isNotEmpty);
     _matches.clear();
     _matches.addAll(matches);
