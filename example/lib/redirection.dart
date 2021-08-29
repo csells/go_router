@@ -62,7 +62,7 @@ class App extends StatelessWidget {
         path: '/login',
         builder: (context, state) => MaterialPage<LoginPage>(
           key: state.pageKey,
-          child: const LoginPage(),
+          child: LoginPage(),
         ),
       ),
     ],

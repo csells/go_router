@@ -172,7 +172,9 @@ class ErrorPage extends StatelessWidget {
 /// sample login page
 class LoginPage extends StatelessWidget {
   final String? from;
-  const LoginPage({this.from, Key? key}) : super(key: key);
+  LoginPage({this.from, Key? key}) : super(key: key) {
+    print('LoginPage: from= $from');
+  }
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -184,7 +186,7 @@ class LoginPage extends StatelessWidget {
               ElevatedButton(
                 onPressed: () {
                   // log a user in, letting all the listeners know
-                  context.read<LoginInfo>().login('user1');
+                  context.read<LoginInfo>().login('test-user');
 
                   // if there's a deep link, go there
                   if (from != null) context.go(from!);

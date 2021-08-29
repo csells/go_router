@@ -132,6 +132,9 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         if (redirected(matches.last.route.redirect(loc))) continue;
 
         // no more redirects!
+        // HACK: this seems like the only way to update the address bar...
+        if (redirects.length > 1) // the initial route is not a redirect
+          WidgetsBinding.instance?.addPostFrameCallback((_) => refresh());
         break;
       }
     } on Exception catch (ex) {
@@ -313,14 +316,14 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   }
 
   Widget _builder(BuildContext context, Iterable<GoRouteMatch> matches) {
-    final pages = <Page<dynamic>>[];
+    List<Page<dynamic>> pages;
 
     try {
       // build the stack of pages
-      pages.addAll(getPages(context, matches));
+      pages = getPages(context, matches).toList();
     } on Exception catch (ex) {
       // if there's an error, show an error page
-      pages.add(
+      pages = [
         errorBuilder(
           context,
           GoRouterState(
@@ -329,7 +332,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
             error: ex,
           ),
         ),
-      );
+      ];
     }
 
     // wrap the returned Navigator to enable GoRouter.of(context).go()

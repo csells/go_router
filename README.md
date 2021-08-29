@@ -1,6 +1,6 @@
 # TODO
 - test samples
-- update README
+- update README (including debugging)
 - update CHANGELOG
 - remove this TODO section
 - merge branch
