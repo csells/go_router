@@ -72,8 +72,22 @@ class App extends StatelessWidget {
       child: ErrorPage(state.error),
     ),
 
-    // changes on the listenable will cause the router to refresh it's route and
-    // potentially redirect
+    // redirect to the login page if the user is not logged in
+    redirect: (location) {
+      final loggedIn = loginInfo.loggedIn;
+      final goingToLogin = location == '/login';
+
+      // the user is not logged in and not headed to /login, they need to login
+      if (!loggedIn && !goingToLogin) return '/login';
+
+      // the user is logged in and headed to /login, no need to login again
+      if (loggedIn && goingToLogin) return '/';
+
+      // no need to redirect at all
+      return null;
+    },
+
+    // changes on the listenable will cause the router to refresh it's route
     refreshListenable: loginInfo,
   );
 }

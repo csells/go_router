@@ -1,6 +1,9 @@
 # TODO
 - test samples
-- update README (including removing this TODO)
+- update README
+- update CHANGELOG
+- remove this TODO section
+- merge branch
 - publish
 
 # go_router

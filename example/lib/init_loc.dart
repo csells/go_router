@@ -17,7 +17,7 @@ class App extends StatelessWidget {
       );
 
   final _router = GoRouter(
-    initialLocation: '/page2',
+    initialLocation: '/page3',
 
     routes: [
       GoRoute(

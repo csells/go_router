@@ -23,13 +23,6 @@
       "program": "lib/sub_routes.dart"
     },
     {
-      "name": "Conditional Routes",
-      "request": "launch",
-      "type": "dart",
-      "cwd": "example",
-      "program": "lib/conditional.dart"
-    },
-    {
       "name": "Route Redirection",
       "request": "launch",
       "type": "dart",

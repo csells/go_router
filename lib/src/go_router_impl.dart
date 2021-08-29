@@ -66,6 +66,9 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
   String get location => _matches.last.subloc;
 
+  @visibleForTesting
+  List<GoRouteMatch> get matches => _matches;
+
   @override
   void dispose() {
     refreshListenable?.removeListener(refresh);
@@ -134,6 +137,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       }
     } on Exception catch (ex) {
       // create a match that routes to the error page
+      matches.clear();
       matches.add(
         GoRouteMatch(
           subloc: location,

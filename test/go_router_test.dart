@@ -33,7 +33,6 @@ void main() {
       expect(false, true);
     } on Exception catch (ex) {
       dump(ex);
-      expect(true, true);
     }
   });
 
@@ -55,7 +54,6 @@ void main() {
       expect(false, true);
     } on Exception catch (ex) {
       dump(ex);
-      expect(true, true);
     }
   });
 
@@ -77,7 +75,6 @@ void main() {
       expect(false, true);
     } on Exception catch (ex) {
       dump(ex);
-      expect(true, true);
     }
   });
 
@@ -90,7 +87,6 @@ void main() {
       expect(false, true);
     } on Exception catch (ex) {
       dump(ex);
-      expect(true, true);
     }
   });
 
@@ -106,7 +102,6 @@ void main() {
       expect(false, true);
     } on Exception catch (ex) {
       dump(ex);
-      expect(true, true);
     }
   });
 
@@ -239,7 +234,6 @@ void main() {
       expect(false, true);
     } on Exception catch (ex) {
       dump(ex);
-      expect(true, true);
     }
   });
 
@@ -391,60 +385,83 @@ void main() {
   });
 
   test('top-level redirect loop', () {
-    try {
-      GoRouter(
-        routes: [],
-        error: _dummy,
-        redirect: (location) => location == '/'
-            ? '/login'
-            : location == '/login'
-                ? '/'
-                : null,
-      );
-      expect(false, true);
-    } on Exception catch (ex) {
-      dump(ex);
-      expect(true, true);
-    }
+    final router = GoRouter(
+      routes: [],
+      error: (context, state) => ErrorPage(state.error!),
+      redirect: (location) => location == '/'
+          ? '/login'
+          : location == '/login'
+              ? '/'
+              : null,
+    );
+
+    final matches = router.routerDelegate.matches;
+    expect(matches.length, 1);
+    expect(router.pageFor(matches[0]).runtimeType, ErrorPage);
+    expect((router.pageFor(matches[0]) as ErrorPage).ex, isNotNull);
+    dump((router.pageFor(matches[0]) as ErrorPage).ex);
   });
 
   test('route-level redirect loop', () {
-    final routes = [
-      GoRoute(
-        path: '/',
-        redirect: (location) => '/login',
-      ),
-      GoRoute(
-        path: '/login',
-        redirect: (location) => '/',
-      ),
-    ];
-    try {
-      _router(routes);
-      expect(false, true);
-    } on Exception catch (ex) {
-      dump(ex);
-      expect(true, true);
-    }
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          redirect: (location) => '/login',
+        ),
+        GoRoute(
+          path: '/login',
+          redirect: (location) => '/',
+        ),
+      ],
+      error: (context, state) => ErrorPage(state.error!),
+    );
+
+    final matches = router.routerDelegate.matches;
+    expect(matches.length, 1);
+    expect(router.pageFor(matches[0]).runtimeType, ErrorPage);
+    expect((router.pageFor(matches[0]) as ErrorPage).ex, isNotNull);
+    dump((router.pageFor(matches[0]) as ErrorPage).ex);
   });
 
   test('mixed redirect loop', () {
-    try {
-      GoRouter(
-        routes: [
-          GoRoute(
-            path: '/login',
-            redirect: (location) => '/',
-          ),
-        ],
-        error: _dummy,
-        redirect: (location) => location == '/' ? '/login' : null,
-      );
-      expect(false, true);
-    } on Exception catch (ex) {
-      dump(ex);
-      expect(true, true);
-    }
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/login',
+          redirect: (location) => '/',
+        ),
+      ],
+      error: (context, state) => ErrorPage(state.error!),
+      redirect: (location) => location == '/' ? '/login' : null,
+    );
+
+    final matches = router.routerDelegate.matches;
+    expect(matches.length, 1);
+    expect(router.pageFor(matches[0]).runtimeType, ErrorPage);
+    expect((router.pageFor(matches[0]) as ErrorPage).ex, isNotNull);
+    dump((router.pageFor(matches[0]) as ErrorPage).ex);
+  });
+
+  test('top-level redirect loop w/ query params', () {
+    final router = GoRouter(
+      routes: [],
+      error: (context, state) => ErrorPage(state.error!),
+      redirect: (location) {
+        final loc = Uri.parse(location).path;
+        return loc == '/'
+            ? '/login?from=$location'
+            : loc == '/login'
+                ? '/'
+                : null;
+      },
+    );
+
+    final matches = router.routerDelegate.matches;
+    expect(matches.length, 1);
+    expect(router.pageFor(matches[0]).runtimeType, ErrorPage);
+    expect((router.pageFor(matches[0]) as ErrorPage).ex, isNotNull);
+    dump((router.pageFor(matches[0]) as ErrorPage).ex);
   });
 
   test('initial location', () {
@@ -507,6 +524,11 @@ GoRouter _router(List<GoRoute> routes) => GoRouter(
       error: _dummy,
       debugOutputFullPaths: true,
     );
+
+class ErrorPage extends DummyPage {
+  final Exception ex;
+  ErrorPage(this.ex);
+}
 
 class HomePage extends DummyPage {}
 
