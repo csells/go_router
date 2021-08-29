@@ -21,9 +21,9 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         ChangeNotifier {
   final GoRouterBuilderWithNav builderWithNav;
   final List<GoRoute> routes;
+  final GoRouterPageBuilder errorBuilder;
   final GoRouterRedirect topRedirect;
   final Listenable? refreshListenable;
-  final GoRouterPageBuilder errorBuilder;
 
   final _key = GlobalKey<NavigatorState>();
   final List<GoRouteMatch> _matches = [];
@@ -65,8 +65,6 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   }
 
   String get location => _matches.last.subloc;
-
-  void _pop() => _matches.remove(_matches.last);
 
   @override
   void dispose() {
@@ -289,19 +287,13 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
     try {
       // build the stack of pages
-      final routePages = getPages(context, matches);
-      pages.addAll(routePages);
+      pages.addAll(getPages(context, matches));
     } on Exception catch (ex) {
       // if there's an error, show an error page
-      final errorPage = errorBuilder(
+      pages.add(errorBuilder(
         context,
-        GoRouterState(
-          location: location,
-          subloc: location,
-          error: ex,
-        ),
-      );
-      pages.add(errorPage);
+        GoRouterState(location: location, subloc: location, error: ex),
+      ));
     }
 
     // wrap the returned Navigator to enable GoRouter.of(context).go()
@@ -311,7 +303,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         pages: pages,
         onPopPage: (route, dynamic result) {
           if (!route.didPop(result)) return false;
-          _pop();
+          _matches.remove(_matches.last);
           return true;
         },
       ),
@@ -334,18 +326,19 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   /// pages: [ LoginPage() ]
   ///
   /// loc: /family/f2
-  /// pages: [  HomePage(), FamilyPage(f2) ]
+  /// pages: [ HomePage(), FamilyPage(f2) ]
   ///
   /// loc: /family/f2/person/p1
   /// pages: [ HomePage(), FamilyPage(f2), PersonPage(f2, p1) ]
   @visibleForTesting
-  List<Page<dynamic>> getPages(
+  Iterable<Page<dynamic>> getPages(
     BuildContext context,
     Iterable<GoRouteMatch> matches,
-  ) {
-    final pages = <Page<dynamic>>[];
+  ) sync* {
+    assert(matches.isNotEmpty);
     final uri = Uri.parse(matches.last.subloc);
     var params = uri.queryParameters; // start w/ the query parameters
+
     for (final match in matches) {
       // merge new params, overriding old ones, i.e. path params override
       // query parameters, sub-location params override top level params, etc.
@@ -354,7 +347,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       params = {...params, ...match.params};
 
       // get a page from the builder and associate it with a sub-location
-      final page = match.route.builder(
+      yield match.route.builder(
         context,
         GoRouterState(
           location: location,
@@ -364,11 +357,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
           params: params,
         ),
       );
-      pages.add(page);
     }
-
-    assert(pages.isNotEmpty);
-    return pages;
   }
 
   void _outputFullPaths() {
