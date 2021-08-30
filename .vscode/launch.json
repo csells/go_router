@@ -44,18 +44,11 @@
       "program": "lib/url_strategy.dart"
     },
     {
-      "name": "Books",
-      "type": "dart",
-      "request": "launch",
-      "cwd": "example",
-      "program": "lib/books/main.dart"
-    },
-    {
-      "name": "Custom Builder",
+      "name": "Nested Navigation",
       "request": "launch",
       "type": "dart",
       "cwd": "example",
-      "program": "lib/builder.dart"
+      "program": "lib/nested.dart"
     },
   ]
 }

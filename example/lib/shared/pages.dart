@@ -146,6 +146,79 @@ class PersonPage extends StatelessWidget {
       );
 }
 
+class FamilyTabsPage extends StatefulWidget {
+  final int index;
+  FamilyTabsPage({required Family currentFamily, Key? key})
+      : index = Families.data.indexWhere((f) => f.id == currentFamily.id),
+        super(key: key) {
+    assert(index != -1);
+  }
+
+  @override
+  _FamilyTabsPageState createState() => _FamilyTabsPageState();
+}
+
+class _FamilyTabsPageState extends State<FamilyTabsPage>
+    with TickerProviderStateMixin {
+  late final TabController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TabController(
+      length: Families.data.length,
+      vsync: this,
+      initialIndex: widget.index,
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _controller.index = widget.index;
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(
+          title: Text(_title(context)),
+          bottom: TabBar(
+            controller: _controller,
+            tabs: [for (final f in Families.data) Tab(text: f.name)],
+            onTap: (index) => _tap(context, index),
+          ),
+        ),
+        body: TabBarView(
+          controller: _controller,
+          children: [for (final f in Families.data) FamilyView(family: f)],
+        ),
+      );
+
+  void _tap(BuildContext context, int index) =>
+      context.go('/family/${Families.data[index].id}');
+
+  String _title(BuildContext context) =>
+      (context as Element).findAncestorWidgetOfExactType<MaterialApp>()!.title;
+}
+
+class FamilyView extends StatelessWidget {
+  final Family family;
+  const FamilyView({required this.family, Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) => ListView(
+        children: [
+          for (final p in family.people) ListTile(title: Text(p.name)),
+        ],
+      );
+}
+
 /// sample error page
 class ErrorPage extends StatelessWidget {
   final Exception? error;
