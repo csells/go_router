@@ -134,9 +134,10 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         if (redirected(matches.last.route.redirect(loc))) continue;
 
         // no more redirects!
-        // HACK: this seems like the only way to update the address bar...
+        // // HACK: this seems like the only way to update the address bar...
         if (redirects.length > 1) // the initial route is not a redirect
-          WidgetsBinding.instance?.addPostFrameCallback((_) => refresh());
+          notifyListeners();
+
         break;
       }
     } on Exception catch (ex) {
@@ -168,7 +169,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     assert(matches.isNotEmpty);
     _matches.clear();
     _matches.addAll(matches);
-    assert(loc == this.location);
+    // assert(loc == this.location);
   }
 
   /// Call _getLocRouteMatchStacks and check for errors
@@ -444,8 +445,9 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   // e.g. %20 => +
   static String _canonicalUri(String loc) {
     final uri = Uri.parse(loc);
-    final canon =
-        Uri(path: uri.path, queryParameters: uri.queryParameters).toString();
+    final canon = Uri.decodeFull(
+      Uri(path: uri.path, queryParameters: uri.queryParameters).toString(),
+    );
     return canon.endsWith('?') ? canon.substring(0, canon.length - 1) : canon;
   }
 

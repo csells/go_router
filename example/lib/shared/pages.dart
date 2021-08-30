@@ -172,9 +172,7 @@ class ErrorPage extends StatelessWidget {
 /// sample login page
 class LoginPage extends StatelessWidget {
   final String? from;
-  LoginPage({this.from, Key? key}) : super(key: key) {
-    print('LoginPage: from= $from');
-  }
+  const LoginPage({this.from, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) => Scaffold(
