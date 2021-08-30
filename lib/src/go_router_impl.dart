@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:path_to_regexp/path_to_regexp.dart' as p2re;
 
@@ -64,7 +65,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     notifyListeners();
   }
 
-  String get location => _matches.last.subloc;
+  String get location =>
+      _addQueryParams(_matches.last.subloc, _matches.last.queryParams);
 
   @visibleForTesting
   List<GoRouteMatch> get matches => _matches;
@@ -99,12 +101,12 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   static String? _redirect(String location) => null;
 
   void _go(String location) {
-    assert(Uri.tryParse(location) != null);
+    // start redirecting from the initial location
+    var loc = _canonicalUri(location);
     List<GoRouteMatch> matches;
 
     try {
       // watch redirects for loops
-      var loc = location;
       final redirects = List<String>.filled(1, loc, growable: true);
       bool redirected(String? redir) {
         if (redir == null) return false;
@@ -139,11 +141,13 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       }
     } on Exception catch (ex) {
       // create a match that routes to the error page
+      final uri = Uri.parse(location);
       matches = [
         GoRouteMatch(
-          subloc: location,
-          fullpath: location,
+          subloc: uri.path,
+          fullpath: uri.path,
           params: {},
+          queryParams: uri.queryParameters,
           route: GoRoute(
             path: location,
             builder: (context, state) => errorBuilder(
@@ -164,27 +168,29 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     assert(matches.isNotEmpty);
     _matches.clear();
     _matches.addAll(matches);
+    assert(loc == this.location);
   }
 
   /// Call _getLocRouteMatchStacks and check for errors
   @visibleForTesting
   List<GoRouteMatch> getLocRouteMatches(String location) {
-    final loc = Uri.parse(location).path;
+    final uri = Uri.parse(location);
     final matchStacks = _getLocRouteMatchStacks(
-      loc: loc,
-      restLoc: loc,
+      loc: uri.path,
+      restLoc: uri.path,
       routes: routes,
       parentFullpath: '',
       parentSubloc: '',
+      queryParams: uri.queryParameters,
     ).toList();
 
     if (matchStacks.isEmpty) {
-      throw Exception('no routes for location: $loc');
+      throw Exception('no routes for location: $location');
     }
 
     if (matchStacks.length > 1) {
       final sb = StringBuffer();
-      sb.writeln('too many routes for location: $loc');
+      sb.writeln('too many routes for location: $location');
 
       for (final stack in matchStacks) {
         sb.writeln('\t${stack.map((m) => m.route.path).join(' => ')}');
@@ -193,8 +199,17 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       throw Exception(sb.toString());
     }
 
-    assert(matchStacks.length == 1);
-    assert(matchStacks.first.last.subloc.toLowerCase() == loc.toLowerCase());
+    if (kDebugMode) {
+      assert(matchStacks.length == 1);
+      final match = matchStacks.first.last;
+      final loc1 = _addQueryParams(
+        match.subloc.toLowerCase(),
+        match.queryParams,
+      );
+      final loc2 = _canonicalUri(location.toLowerCase());
+      assert(loc1 == loc2);
+    }
+
     return matchStacks.first;
   }
 
@@ -248,10 +263,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     required String parentSubloc,
     required List<GoRoute> routes,
     required String parentFullpath,
+    required Map<String, String> queryParams,
   }) sync* {
-    // assume somebody else has removed the query params
-    assert(Uri.parse(restLoc).path == restLoc);
-
     // find the set of matches at this level of the tree
     for (final route in routes) {
       final fullpath = _fullLocFor(parentFullpath, route.path);
@@ -261,6 +274,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         parentSubloc: parentSubloc,
         path: route.path,
         fullpath: fullpath,
+        queryParams: queryParams,
       );
       if (match == null) continue;
 
@@ -287,6 +301,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         parentSubloc: match.subloc,
         routes: route.routes,
         parentFullpath: fullpath,
+        queryParams: queryParams,
       ).toList();
       if (subRouteMatchStacks.isEmpty) continue;
 
@@ -320,7 +335,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
     try {
       // build the stack of pages
-      pages = getPages(context, matches).toList();
+      pages = getPages(context, matches.toList()).toList();
     } on Exception catch (ex) {
       // if there's an error, show an error page
       pages = [
@@ -372,11 +387,15 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   @visibleForTesting
   Iterable<Page<dynamic>> getPages(
     BuildContext context,
-    Iterable<GoRouteMatch> matches,
+    List<GoRouteMatch> matches,
   ) sync* {
     assert(matches.isNotEmpty);
-    final uri = Uri.parse(matches.last.subloc);
-    var params = uri.queryParameters; // start w/ the query parameters
+    var params = matches.first.queryParams; // start w/ the query parameters
+    if (kDebugMode) {
+      for (final match in matches) {
+        assert(match.queryParams == matches.first.queryParams);
+      }
+    }
 
     for (final match in matches) {
       // merge new params, overriding old ones, i.e. path params override
@@ -421,6 +440,21 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       _outputFullPathsFor(route.routes, fullpath, depth + 1);
     }
   }
+
+  // e.g. %20 => +
+  static String _canonicalUri(String loc) {
+    final uri = Uri.parse(loc);
+    final canon =
+        Uri(path: uri.path, queryParameters: uri.queryParameters).toString();
+    return canon.endsWith('?') ? canon.substring(0, canon.length - 1) : canon;
+  }
+
+  static String _addQueryParams(String loc, Map<String, String> queryParams) {
+    final uri = Uri.parse(loc);
+    assert(uri.queryParameters.isEmpty);
+    return _canonicalUri(
+        Uri(path: uri.path, queryParameters: queryParams).toString());
+  }
 }
 
 /// GoRouter implementation of the RouteInformationParser base class
@@ -451,23 +485,28 @@ class InheritedGoRouter extends InheritedWidget {
 
 class GoRouteMatch {
   final GoRoute route;
-  final String subloc;
-  final String fullpath;
+  final String subloc; // e.g. /family/f2
+  final String fullpath; // e.g. /family/:fid
   final Map<String, String> params;
+  final Map<String, String> queryParams;
   GoRouteMatch({
     required this.route,
     required this.subloc,
     required this.fullpath,
     required this.params,
+    required this.queryParams,
   })  : assert(subloc.startsWith('/')),
-        assert(fullpath.startsWith('/'));
+        assert(Uri.parse(subloc).queryParameters.isEmpty),
+        assert(fullpath.startsWith('/')),
+        assert(Uri.parse(fullpath).queryParameters.isEmpty);
 
   static GoRouteMatch? match({
     required GoRoute route,
-    required String restLoc,
-    required String parentSubloc,
-    required String path,
-    required String fullpath,
+    required String restLoc, // e.g. person/p1
+    required String parentSubloc, // e.g. /family/f2
+    required String path, // e.g. person/:pid
+    required String fullpath, // e.g. /family/:fid/person/:pid
+    required Map<String, String> queryParams,
   }) {
     assert(!path.contains('//'));
 
@@ -482,6 +521,7 @@ class GoRouteMatch {
       subloc: subloc,
       fullpath: fullpath,
       params: params,
+      queryParams: queryParams,
     );
   }
 
