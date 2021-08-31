@@ -1,12 +1,14 @@
 ### 0.8.0
+- breaking build to refactor the API for simplicity and capability
 - move to fixed routing from conditional routing; simplies API, allows for
   redirection at the route level and there scenario was sketchy anyway
 - add redirection at the route level
+- replace guard objects w/ redirect functions
 - add `refresh` method and `refreshListener`
 - removed `.builder` ctor from `GoRouter` (not reasonable to implement)
 - add Dynamic linking section to the README
 - replaced Books sample with Nested Navigation sample
-- add ability to do Debugging of the known full paths to your routes
+- add ability to dump the known full paths to your routes to debug output
 
 
 ### 0.7.1
@@ -24,21 +26,21 @@
 
 
 ### 0.6.1
-- added GoRouterState.pageKey
-- removed cupertino_icons from main pubspec.yaml
+- added `GoRouterState.pageKey`
+- removed `cupertino_icons` from main `pubspec.yaml`
 
 
 ### 0.6.0
 - refactor to support sub-routes to build a stack of pages instead of matching
   multiple routes
 - added unit tests for building the stack of pages
-- some renaming of the types, e.g. Four04Page and FamiliesPage to ErrorPage and
-  HomePage respectively
+- some renaming of the types, e.g. `Four04Page` and `FamiliesPage` to
+  `ErrorPage` and `HomePage` respectively
 - fix a redirection error shown in the debug output
 
 
 ### 0.5.2
-- add urlPathStrategy argument to GoRouter ctor
+- add `urlPathStrategy` argument to `GoRouter` ctor
 
 
 ### 0.5.1
@@ -60,7 +62,7 @@
 
 
 ### 0.3.2
-- formatting update to appease the pub.deb gods...
+- formatting update to appease the pub.dev gods...
 
 
 ### 0.3.1
@@ -73,7 +75,8 @@
 
 
 ### 0.2.3
-- move outstanding issues to [issue tracker](https://github.com/csells/go_router/issues)
+- move outstanding issues to [issue
+  tracker](https://github.com/csells/go_router/issues)
 - added explanation of Deep Linking to README
 - reformatting to meet pub.dev scoring guidelines
 
@@ -93,7 +96,8 @@
 - added support for setting the URL path strategy
 - added support for conditional routing
 - added support for redirection
-- added support for optional query parameters as well as positional parameters in route names
+- added support for optional query parameters as well as positional parameters
+  in route names
 
 
 ### 0.1.0
