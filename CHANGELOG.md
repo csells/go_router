@@ -1,3 +1,7 @@
+### 0.8.2
+- updated README for `Link` widget support
+
+
 ### 0.8.1
 - added Books sample; fixed some issues it revealed
 
