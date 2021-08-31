@@ -129,6 +129,22 @@ The simplified version maps directly to the more fully-specified version, so you
 can use either. If you're curious, the ability to just call `context.go(...)`
 and have magic happen is where the name of the go_router came from.
 
+If you'd like to navigate via the `Link` widget, that works, too:
+
+```dart
+Link(
+  uri: Uri.parse('/page2'),
+  builder: (context, followLink) => TextButton(
+    onPressed: followLink,
+    child: const Text('Go to page 2'),
+  ),
+),
+```
+
+If the `Link` widget is given a URL with a scheme, e.g. `https://flutter.dev`,
+then it will launch the link in a browser. Otherwise, it'll navigate to the link
+inside the app using the built-in navigation system.
+
 # Initial Location
 If you'd like to set an initial location for routing, you can set the
 `initialLocation` argument of the `GoRouter` ctor:
