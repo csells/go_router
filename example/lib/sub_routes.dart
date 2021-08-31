@@ -17,7 +17,7 @@ class App extends StatelessWidget {
         title: 'Sub-routes GoRouter Example',
       );
 
-  late final _router = GoRouter(
+  final _router = GoRouter(
     routes: [
       GoRoute(
         path: '/',
@@ -54,7 +54,6 @@ class App extends StatelessWidget {
         ],
       ),
     ],
-  
     error: (context, state) => MaterialPage<ErrorPage>(
       key: state.pageKey,
       child: ErrorPage(state.error),

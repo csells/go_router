@@ -1,5 +1,3 @@
-import 'dart:html';
-
 import 'package:flutter/material.dart';
 
 import 'package:go_router/go_router.dart';
@@ -20,11 +18,11 @@ class App extends StatelessWidget {
         title: 'Nested Routes GoRouter Example',
       );
 
-  late final _router = GoRouter(
+  final _router = GoRouter(
     routes: [
       GoRoute(
         path: '/',
-        redirect: (location) => '/family/${Families.data[0].id}',
+        redirect: (_) => '/family/${Families.data[0].id}',
       ),
       GoRoute(
         path: '/family/:fid',
@@ -40,12 +38,9 @@ class App extends StatelessWidget {
         },
       ),
     ],
-    error: _errorBuilder,
+    error: (context, state) => MaterialPage<ErrorPage>(
+      key: state.pageKey,
+      child: ErrorPage(state.error),
+    ),
   );
-
-  Page<dynamic> _errorBuilder(BuildContext context, GoRouterState state) =>
-      MaterialPage<ErrorPage>(
-        key: state.pageKey,
-        child: ErrorPage(state.error),
-      );
 }

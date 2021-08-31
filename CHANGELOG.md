@@ -1,10 +1,12 @@
 ### 0.8.0
-- move to fixed routing from conditional routing; simplies API and allows for
-  redirection at the route level
-- TODO: add redirection at the route level
-- TODO: add `refresh` method and `refreshListener`
-- TODO: removed `.builder` ctor from `GoRouter` (not reasonable to implement)
-- TODO: add Dynamic Routing section to the README
+- move to fixed routing from conditional routing; simplies API, allows for
+  redirection at the route level and there scenario was sketchy anyway
+- add redirection at the route level
+- add `refresh` method and `refreshListener`
+- removed `.builder` ctor from `GoRouter` (not reasonable to implement)
+- add Dynamic linking section to the README
+- replaced Books sample with Nested Navigation sample
+- add ability to do Debugging of the known full paths to your routes
 
 
 ### 0.7.1

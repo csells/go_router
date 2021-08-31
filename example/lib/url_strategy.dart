@@ -24,7 +24,7 @@ class App extends StatelessWidget {
         title: 'URL Path Strategy GoRouter Example',
       );
 
-  late final _router = GoRouter(
+  final _router = GoRouter(
     // turn off the # in the URLs on the web
     urlPathStrategy: UrlPathStrategy.path,
 
