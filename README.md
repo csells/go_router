@@ -129,7 +129,9 @@ The simplified version maps directly to the more fully-specified version, so you
 can use either. If you're curious, the ability to just call `context.go(...)`
 and have magic happen is where the name of the go_router came from.
 
-If you'd like to navigate via the `Link` widget, that works, too:
+If you'd like to navigate via [the `Link`
+widget](https://pub.dev/documentation/url_launcher/latest/link/link-library.html),
+that works, too:
 
 ```dart
 Link(
