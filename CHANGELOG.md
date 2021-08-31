@@ -1,3 +1,7 @@
+### 0.8.1
+- added Books sample; fixed some issues it revealed
+
+
 ### 0.8.0
 - breaking build to refactor the API for simplicity and capability
 - move to fixed routing from conditional routing; simplies API, allows for

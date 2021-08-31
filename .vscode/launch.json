@@ -3,52 +3,59 @@
   "configurations": [
     {
       "name": "Declarative Routes",
-      "request": "launch",
       "type": "dart",
+      "request": "launch",
       "cwd": "example",
       "program": "lib/main.dart"
     },
     {
       "name": "Initial Location",
-      "type": "dart",
       "request": "launch",
+      "type": "dart",
       "cwd": "example",
       "program": "lib/init_loc.dart"
     },
     {
       "name": "Sub-routes",
-      "request": "launch",
       "type": "dart",
+      "request": "launch",
       "cwd": "example",
       "program": "lib/sub_routes.dart"
     },
     {
       "name": "Route Redirection",
-      "request": "launch",
       "type": "dart",
+      "request": "launch",
       "cwd": "example",
       "program": "lib/redirection.dart"
     },
     {
       "name": "Query Parameters",
-      "request": "launch",
       "type": "dart",
+      "request": "launch",
       "cwd": "example",
       "program": "lib/query_params.dart"
     },
     {
       "name": "URL Strategy",
-      "request": "launch",
       "type": "dart",
+      "request": "launch",
       "cwd": "example",
       "program": "lib/url_strategy.dart"
     },
     {
       "name": "Nested Navigation",
-      "request": "launch",
       "type": "dart",
+      "request": "launch",
       "cwd": "example",
       "program": "lib/nested.dart"
     },
+    {
+      "name": "Books",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "example",
+      "program": "lib/books/main.dart"
+    }
   ]
 }

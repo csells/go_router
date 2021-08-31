@@ -57,12 +57,12 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
   void go(String location) {
     _go(location);
-    notifyListeners();
+    safeNotifyListeners();
   }
 
   void refresh() {
     _go(_matches.last.subloc);
-    notifyListeners();
+    safeNotifyListeners();
   }
 
   String get location =>
@@ -102,12 +102,11 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
   void _go(String location) {
     // start redirecting from the initial location
-    var loc = _canonicalUri(location);
     List<GoRouteMatch> matches;
 
     try {
       // watch redirects for loops
-      final redirects = List<String>.filled(1, loc, growable: true);
+      final redirects = [_canonicalUri(location)];
       bool redirected(String? redir) {
         if (redir == null) return false;
 
@@ -118,12 +117,13 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         }
 
         redirects.add(redir);
-        loc = redir;
         return true;
       }
 
       // keep looping till we're done redirecting
       for (;;) {
+        final loc = redirects.last;
+
         // check for top-level redirect
         if (redirected(topRedirect(loc))) continue;
 
@@ -133,11 +133,11 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         // check top route for redirect
         if (redirected(matches.last.route.redirect(loc))) continue;
 
-        // no more redirects!
-        // // HACK: this seems like the only way to update the address bar...
+        // let Router know to update the address bar
         if (redirects.length > 1) // the initial route is not a redirect
-          notifyListeners();
+          safeNotifyListeners();
 
+        // no more redirects!
         break;
       }
     } on Exception catch (ex) {
@@ -169,7 +169,6 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     assert(matches.isNotEmpty);
     _matches.clear();
     _matches.addAll(matches);
-    // assert(loc == this.location);
   }
 
   /// Call _getLocRouteMatchStacks and check for errors
@@ -456,6 +455,17 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     assert(uri.queryParameters.isEmpty);
     return _canonicalUri(
         Uri(path: uri.path, queryParameters: queryParams).toString());
+  }
+
+  // HACK: this is a hack to fix the following error:
+  // The following assertion was thrown while dispatching notifications for
+  // GoRouterDelegate: setState() or markNeedsBuild() called during build.
+  void safeNotifyListeners() {
+    final instance = WidgetsBinding.instance;
+    if (instance != null)
+      instance.addPostFrameCallback((_) => notifyListeners());
+    else
+      notifyListeners();
   }
 }
 
