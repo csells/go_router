@@ -4,6 +4,12 @@ import 'package:path_to_regexp/path_to_regexp.dart' as p2re;
 
 import '../go_router.dart';
 
+const _debugLog2Diagnostics = true;
+
+void _log2(String s) {
+  if (_debugLog2Diagnostics) debugPrint(s);
+}
+
 typedef GoRouterBuilderWithMatches = Widget Function(
   BuildContext context,
   Iterable<GoRouteMatch> matches,
@@ -25,6 +31,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   final GoRouterPageBuilder errorBuilder;
   final GoRouterRedirect topRedirect;
   final Listenable? refreshListenable;
+  final bool debugLogDiagnostics;
 
   final _key = GlobalKey<NavigatorState>();
   final List<GoRouteMatch> _matches = [];
@@ -33,10 +40,10 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     required this.builderWithNav,
     required this.routes,
     required this.errorBuilder,
-    GoRouterRedirect? topRedirect,
-    this.refreshListenable,
-    Uri? initUri,
-    bool debugOutputFullPaths = false,
+    required GoRouterRedirect? topRedirect,
+    required this.refreshListenable,
+    required Uri? initUri,
+    required this.debugLogDiagnostics,
   }) : topRedirect = topRedirect ?? _redirect {
     // check that the route paths are valid
     for (final route in routes) {
@@ -45,8 +52,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       }
     }
 
-    // output known routes
-    if (debugOutputFullPaths) _outputFullPaths();
+    // output known full paths for routes
+    _outputFullPaths();
 
     // build the list of route matches
     _go((initUri ?? Uri()).toString());
@@ -81,13 +88,23 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   GlobalKey<NavigatorState> get navigatorKey => _key;
 
   @override
-  Uri get currentConfiguration => Uri.parse(location);
+  Uri get currentConfiguration {
+    _log2('GoRouterDelegate.currentConfiguration: $location');
+    return Uri.parse(location);
+  }
 
   @override
-  Widget build(BuildContext context) => _builder(context, _matches);
+  Widget build(BuildContext context) {
+    _log2('GoRouterDelegate.build: matches=');
+    for (final match in matches) _log2('  GoRouterDelegate.build: $match');
+    return _builder(context, _matches);
+  }
 
   @override
   Future<void> setInitialRoutePath(Uri configuration) async {
+    _log2(
+        'GoRouterDelegate.setInitialRoutePath: configuration= $configuration');
+
     // if the initial location is /, then use the dev initial location;
     // otherwise, we're cruising to a deep link, so ignore dev initial location
     final config = configuration.toString();
@@ -95,12 +112,20 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   }
 
   @override
-  Future<void> setNewRoutePath(Uri configuration) async =>
-      _go(configuration.toString());
+  Future<void> setNewRoutePath(Uri configuration) async {
+    _log2('GoRouterDelegate.setNewRoutePath: configuration= $configuration');
+    _go(configuration.toString());
+  }
+
+  void _log(Object o) {
+    if (debugLogDiagnostics) debugPrint('GoRouter: $o');
+  }
 
   static String? _redirect(String location) => null;
 
   void _go(String location) {
+    _log('going to $location');
+
     // start redirecting from the initial location
     List<GoRouteMatch> matches;
 
@@ -117,6 +142,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         }
 
         redirects.add(redir);
+        _log('redirecting to $redir');
         return true;
       }
 
@@ -357,7 +383,10 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         pages: pages,
         onPopPage: (route, dynamic result) {
           if (!route.didPop(result)) return false;
+
+          _log2('GoRouterDelegate.onPopPage: matches.last= ${_matches.last}');
           _matches.remove(_matches.last);
+
           return true;
         },
       ),
@@ -419,13 +448,9 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   }
 
   void _outputFullPaths() {
-    // ignore: avoid_print
-    print('');
-    // ignore: avoid_print
-    print('GoRouter: full paths');
+    if (!debugLogDiagnostics) return;
+    _log('known full paths for routes');
     _outputFullPathsFor(routes, '', 0);
-    // ignore: avoid_print
-    print('');
   }
 
   void _outputFullPathsFor(
@@ -433,10 +458,11 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     String parentFullpath,
     int depth,
   ) {
+    assert(debugLogDiagnostics);
+
     for (final route in routes) {
       final fullpath = _fullLocFor(parentFullpath, route.path);
-      // ignore: avoid_print
-      print('${''.padLeft(depth * 2)}$fullpath');
+      _log('=> ${''.padLeft(depth * 2)}$fullpath');
       _outputFullPathsFor(route.routes, fullpath, depth + 1);
     }
   }
@@ -461,6 +487,9 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   // The following assertion was thrown while dispatching notifications for
   // GoRouterDelegate: setState() or markNeedsBuild() called during build.
   void safeNotifyListeners() {
+    _log2(
+        'GoRouterDelegate.safeNotifyListeners: WidgetsBinding.instance= ${WidgetsBinding.instance == null ? 'null' : 'non-null'}');
+
     final instance = WidgetsBinding.instance;
     if (instance != null)
       instance.addPostFrameCallback((_) => notifyListeners());
@@ -472,12 +501,18 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 /// GoRouter implementation of the RouteInformationParser base class
 class GoRouteInformationParser extends RouteInformationParser<Uri> {
   @override
-  Future<Uri> parseRouteInformation(RouteInformation routeInformation) async =>
-      Uri.parse(routeInformation.location!);
+  Future<Uri> parseRouteInformation(RouteInformation routeInformation) async {
+    _log2(
+        'GoRouteInformationParser.parseRouteInformation: routeInformation= $routeInformation');
+    return Uri.parse(routeInformation.location!);
+  }
 
   @override
-  RouteInformation restoreRouteInformation(Uri configuration) =>
-      RouteInformation(location: configuration.toString());
+  RouteInformation restoreRouteInformation(Uri configuration) {
+    _log2(
+        'GoRouteInformationParser.parseRouteInformation: configuration= $configuration');
+    return RouteInformation(location: configuration.toString());
+  }
 }
 
 /// GoRouter implementation of InheritedWidget for purposes of finding the
@@ -536,6 +571,9 @@ class GoRouteMatch {
       queryParams: queryParams,
     );
   }
+
+  @override
+  String toString() => 'GoRouteMatch($fullpath, $params)';
 
   /// expand a path w/ param slots using params, e.g. family/:fid => family/f1
   static String _locationFor(String path, Map<String, String> params) =>

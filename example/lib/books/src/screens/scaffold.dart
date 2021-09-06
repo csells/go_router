@@ -5,7 +5,7 @@
 import 'package:adaptive_navigation/adaptive_navigation.dart';
 import 'package:flutter/material.dart';
 
-import '../routing.dart';
+import 'package:go_router/go_router.dart';
 
 class BookstoreScaffold extends StatelessWidget {
   final int selectedIndex;

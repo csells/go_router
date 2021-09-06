@@ -110,7 +110,7 @@ class GoRouter {
     Listenable? refreshListenable,
     String initialLocation = '/',
     UrlPathStrategy? urlPathStrategy = UrlPathStrategy.hash,
-    bool debugOutputFullPaths = false,
+    bool debugLogDiagnostics = false,
   }) {
     if (urlPathStrategy != null) setUrlPathStrategy(urlPathStrategy);
 
@@ -120,7 +120,7 @@ class GoRouter {
       topRedirect: redirect,
       refreshListenable: refreshListenable,
       initUri: Uri.parse(initialLocation),
-      debugOutputFullPaths: debugOutputFullPaths,
+      debugLogDiagnostics: debugLogDiagnostics,
       // wrap the returned Navigator to enable GoRouter.of(context).go() et al
       builderWithNav: (context, nav) =>
           InheritedGoRouter(goRouter: this, child: nav),

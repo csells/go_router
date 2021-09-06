@@ -3,9 +3,9 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../data.dart';
-import '../routing.dart';
 import '../widgets/book_list.dart';
 
 class BooksScreen extends StatefulWidget {

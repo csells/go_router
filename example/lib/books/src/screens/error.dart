@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../routing.dart';
+import 'package:go_router/go_router.dart';
 
 class ErrorScreen extends StatelessWidget {
   final Exception? error;

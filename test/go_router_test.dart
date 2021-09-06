@@ -519,7 +519,7 @@ void main() {
 GoRouter _router(List<GoRoute> routes) => GoRouter(
       routes: routes,
       error: _dummy,
-      debugOutputFullPaths: true,
+      debugLogDiagnostics: true,
     );
 
 class ErrorPage extends DummyPage {

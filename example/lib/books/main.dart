@@ -2,12 +2,13 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import 'src/auth.dart';
 import 'src/data/library.dart';
-import 'src/routing.dart';
 import 'src/screens/author_details.dart';
 import 'src/screens/authors.dart';
 import 'src/screens/book_details.dart';
@@ -123,6 +124,7 @@ class Bookstore extends StatelessWidget {
     ),
     redirect: _guard,
     refreshListenable: _auth,
+    debugLogDiagnostics: kDebugMode,
   );
 
   String? _guard(String location) {

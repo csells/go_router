@@ -781,29 +781,36 @@ you have in your app. Sometimes it's handy to be able to see the full paths of
 the router you've created as a debugging tool, e.g.
 
 ```
-GoRouter: full paths
-/
-  /family/:fid
-    /family/:fid/person/:pid
-/login
+GoRouter: => /
+GoRouter: => /signin
+GoRouter: => /books
+GoRouter: => /books/:kind(new|all|popular)
+GoRouter: =>   /books/:kind(new|all|popular)/book/:bookId
+GoRouter: => /authors
+GoRouter: =>   /authors/author/:authorId
+GoRouter: => /settings
 ```
 
-In this case, there's two top-level routes, `/` and `/login`. Below the `/`
-route, is the `family` route, which has a `:fid` parameter. Below that, is the
-`person` route, which has a `:pid` parameter. Furthermore, if you go to the
-`/login` route, you'll get a single page in your stack but if you go to the
-`/family/:fid/person/:pid` route, you'll have three pages.
+Likewise, there are multiple ways to navigate, e.g. `context.go()`, the `Link`
+widget, `navigator.push()`, etc., as well as redirection, so it's handy to be
+able to see how that's going under the covers, e.g.
+
+```
+GoRouter: going to /
+GoRouter: redirecting to /signin
+GoRouter: going to /signin
+```
 
 To enable this kind of output when your `GoRouter` is first created, you can use
-the `debugOutputFullPaths` argument:
+the `debugLogDiagnostics` argument:
 
 ```dart
 final _router = GoRouter(
   routes: ...,
   error: ...,
 
-  // show the set of known full paths for your routes
-  debugOutputFullPaths: true,
+  // log diagnostic info for your routes
+  debugLogDiagnostics: true,
 );
 ```
 
