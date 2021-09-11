@@ -4,10 +4,10 @@ import 'package:path_to_regexp/path_to_regexp.dart' as p2re;
 
 import '../go_router.dart';
 
-const _debugLog2Diagnostics = true;
+const _debugLog2Diagnostics = kDebugMode;
 
 void _log2(String s) {
-  if (_debugLog2Diagnostics) debugPrint(s);
+  if (_debugLog2Diagnostics) debugPrint('  $s');
 }
 
 typedef GoRouterBuilderWithMatches = Widget Function(
@@ -56,6 +56,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     _outputFullPaths();
 
     // build the list of route matches
+    _log('setting initial location ${initUri ?? '/'}');
     _go((initUri ?? Uri()).toString());
 
     // when the listener changes, refresh the route
@@ -63,12 +64,14 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   }
 
   void go(String location) {
+    _log('going to $location');
     _go(location);
     safeNotifyListeners();
   }
 
   void refresh() {
-    _go(_matches.last.subloc);
+    _log('refreshing $location');
+    _go(location);
     safeNotifyListeners();
   }
 
@@ -96,12 +99,13 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   @override
   Widget build(BuildContext context) {
     _log2('GoRouterDelegate.build: matches=');
-    for (final match in matches) _log2('  GoRouterDelegate.build: $match');
+    for (final match in matches) _log2('  $match');
     return _builder(context, _matches);
   }
 
   @override
   Future<void> setInitialRoutePath(Uri configuration) async {
+    _log('deep link to $configuration');
     _log2(
         'GoRouterDelegate.setInitialRoutePath: configuration= $configuration');
 
@@ -124,8 +128,6 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   static String? _redirect(String location) => null;
 
   void _go(String location) {
-    _log('going to $location');
-
     // start redirecting from the initial location
     List<GoRouteMatch> matches;
 
@@ -503,7 +505,7 @@ class GoRouteInformationParser extends RouteInformationParser<Uri> {
   @override
   Future<Uri> parseRouteInformation(RouteInformation routeInformation) async {
     _log2(
-        'GoRouteInformationParser.parseRouteInformation: routeInformation= $routeInformation');
+        'GoRouteInformationParser.parseRouteInformation: routeInformation.location= ${routeInformation.location}');
     return Uri.parse(routeInformation.location!);
   }
 

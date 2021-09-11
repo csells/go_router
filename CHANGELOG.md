@@ -1,9 +1,7 @@
 ### 0.8.3
 - Changed `debugOutputFullPaths` to `debugLogDiagnostics` and added add'l
   debugging logging
-- TODO: fix `context.go` and `Link.followLink` in `settings.dart`
-- TODO: pass state to redirect to package up `location` and `params` to enable
-  redirection of '/books/:bookId' => '/books/all/${state.params['bookId']}'
+- TODO: parameterized redirect
 
 
 ### 0.8.2
