@@ -223,7 +223,8 @@ class RouterLocationView extends StatelessWidget {
   const RouterLocationView({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) => Text(context.watch<GoRouter>().location);
+  Widget build(BuildContext context) =>
+      Text(context.watch<GoRouter>().location);
 }
 
 class FamilyView extends StatelessWidget {
@@ -233,7 +234,11 @@ class FamilyView extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ListView(
         children: [
-          for (final p in family.people) ListTile(title: Text(p.name)),
+          for (final p in family.people)
+            ListTile(
+              title: Text(p.name),
+              onTap: () => context.go('/family/${family.id}/person/${p.id}'),
+            ),
         ],
       );
 }

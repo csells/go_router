@@ -38,6 +38,20 @@ class App extends StatelessWidget {
             child: FamilyTabsPage(key: state.pageKey, selectedFamily: family),
           );
         },
+        routes: [
+          GoRoute(
+            path: 'person/:pid',
+            builder: (context, state) {
+              final family = Families.family(state.params['fid']!);
+              final person = family.person(state.params['pid']!);
+
+              return MaterialPage<void>(
+                key: state.pageKey,
+                child: PersonPage(family: family, person: person),
+              );
+            },
+          ),
+        ],
       ),
     ],
     error: (context, state) => MaterialPage<void>(

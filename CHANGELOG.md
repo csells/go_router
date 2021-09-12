@@ -1,3 +1,7 @@
+### 0.8.8
+- FIX: made `GoRouter` notify on pop
+
+
 ### 0.8.7
 - made `GoRouter` a `ChangeNotifier` so you can listen for `location` changes
 

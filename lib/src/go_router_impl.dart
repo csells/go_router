@@ -228,8 +228,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     assert(matches.isNotEmpty);
     _matches.clear();
     _matches.addAll(matches);
-    _log('location changed to $location');
-    onLocationChanged?.call();
+    _locationChanged();
   }
 
   /// Call _getLocRouteMatchStacks and check for errors
@@ -421,6 +420,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
           _log2('GoRouterDelegate.onPopPage: matches.last= ${_matches.last}');
           _matches.remove(_matches.last);
+          _locationChanged();
 
           return true;
         },
@@ -530,6 +530,11 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       instance.addPostFrameCallback((_) => notifyListeners());
     else
       notifyListeners();
+  }
+
+  void _locationChanged() {
+    _log('location changed to $location');
+    onLocationChanged?.call();
   }
 }
 
