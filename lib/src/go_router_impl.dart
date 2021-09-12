@@ -4,7 +4,8 @@ import 'package:path_to_regexp/path_to_regexp.dart' as p2re;
 
 import '../go_router.dart';
 
-const _debugLog2Diagnostics = false; //kDebugMode;
+const _debugLog2Diagnostics = false;
+// const _debugLog2Diagnostics = kDebugMode;
 
 void _log2(String s) {
   if (_debugLog2Diagnostics) debugPrint('  $s');

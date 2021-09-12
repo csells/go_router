@@ -31,6 +31,9 @@ class _BooksScreenState extends State<BooksScreen>
   void didChangeDependencies() {
     super.didChangeDependencies();
 
+    // don't navigate when setting the tab here
+    _tabController.removeListener(_handleTabIndexChanged);
+
     switch (widget.kind) {
       case 'popular':
         _tabController.index = 0;
@@ -44,11 +47,15 @@ class _BooksScreenState extends State<BooksScreen>
         _tabController.index = 2;
         break;
     }
+
+    // navigate when setting the tab via user input
+    _tabController.addListener(_handleTabIndexChanged);
   }
 
   @override
   void dispose() {
     _tabController.removeListener(_handleTabIndexChanged);
+    _tabController.dispose();
     super.dispose();
   }
 

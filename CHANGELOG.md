@@ -1,3 +1,7 @@
+### 0.8.6
+- books sample bug fix
+
+
 ### 0.8.5
 - added Cupertino sample
 - added example of async data lookup
