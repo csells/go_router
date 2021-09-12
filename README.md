@@ -341,7 +341,7 @@ class App extends StatelessWidget {
 ```
 
 In this code, if the user is not logged in and not going to the `/login`
-path, we redirect to `/login`. Likewise, if the user *is* logged in but going
+path, we redirect to `/login`. Likewise, if the user *is* logged in but going to
 `/login`, we redirect to `/`.
 
 To make it easy to access this info wherever it's need in the app, consider
