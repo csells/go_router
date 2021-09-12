@@ -20,7 +20,7 @@ class AuthorsScreen extends StatelessWidget {
         body: AuthorList(
           authors: libraryInstance.allAuthors,
           onTap: (author) {
-            context.go('/authors/author/${author.id}');
+            context.go('/author/${author.id}');
           },
         ),
       );

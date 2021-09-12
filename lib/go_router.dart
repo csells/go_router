@@ -1,5 +1,6 @@
 library go_router;
 
+import 'package:collection/collection.dart';
 import 'package:flutter/widgets.dart';
 import 'package:path_to_regexp/path_to_regexp.dart' as p2re;
 
@@ -17,7 +18,7 @@ typedef GoRouterPageBuilder = Page<dynamic> Function(
 );
 
 /// the signation of the redirect callback
-typedef GoRouterRedirect = String? Function(String location);
+typedef GoRouterRedirect = String? Function(GoRouterState state);
 
 /// for route state during routing
 class GoRouterState {
@@ -28,10 +29,10 @@ class GoRouterState {
   final String subloc;
 
   // the path to this sub-route, e.g. family/:fid
-  final String path;
+  final String? path;
 
   // the full path to this sub-route, e.g. /family/:fid
-  final String fullpath;
+  final String? fullpath;
 
   // the parameters for this sub-route, e.g. {'fid': 'f1'}
   final Map<String, String> params;
@@ -40,16 +41,16 @@ class GoRouterState {
   final Exception? error;
 
   // the unique key for this sub-route, e.g. ValueKey('/family/:fid')
-  ValueKey<String> get pageKey => ValueKey(fullpath);
+  ValueKey<String> get pageKey => ValueKey(error != null ? 'error' : fullpath!);
 
   GoRouterState({
     required this.location,
     required this.subloc,
-    this.path = '',
-    this.fullpath = '',
+    this.path,
+    this.fullpath,
     this.params = const <String, String>{},
     this.error,
-  }) : assert(path.isEmpty == fullpath.isEmpty);
+  }) : assert((path ?? '').isEmpty == (fullpath ?? '').isEmpty);
 }
 
 /// a declarative mapping between a route path and a page builder
@@ -77,8 +78,20 @@ class GoRoute {
       parameters: _pathParams,
     );
 
-    // check sub-route paths
+    // check path params
+    final paramNames = <String>[];
+    p2re.parse(path, parameters: paramNames);
+    final groupedParams = paramNames.groupListsBy((p) => p);
+    final dupParams = Map<String, List<String>>.fromEntries(
+      groupedParams.entries.where((e) => e.value.length > 1),
+    );
+    if (dupParams.isNotEmpty) {
+      throw Exception('duplication path params: ${dupParams.keys.join(', ')}');
+    }
+
+    // check sub-routes
     for (final route in routes) {
+      // check paths
       if (route.path != '/' &&
           (route.path.startsWith('/') || route.path.endsWith('/'))) {
         throw Exception(
@@ -91,7 +104,7 @@ class GoRoute {
   Map<String, String> extractPatternParams(Match match) =>
       p2re.extract(_pathParams, match);
 
-  static String? _redirect(String location) => null;
+  static String? _redirect(GoRouterState state) => null;
   static Page<dynamic> _builder(BuildContext context, GoRouterState state) =>
       throw Exception('GoRoute builder parameter not set');
 }
@@ -117,7 +130,7 @@ class GoRouter {
     routerDelegate = GoRouterDelegate(
       routes: routes,
       errorBuilder: error,
-      topRedirect: redirect,
+      topRedirect: redirect ?? (_) => null,
       refreshListenable: refreshListenable,
       initUri: Uri.parse(initialLocation),
       debugLogDiagnostics: debugLogDiagnostics,

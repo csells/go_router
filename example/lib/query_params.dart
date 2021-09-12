@@ -74,14 +74,14 @@ class App extends StatelessWidget {
     ),
 
     // redirect to the login page if the user is not logged in
-    redirect: (location) {
+    redirect: (state) {
       final loggedIn = loginInfo.loggedIn;
 
       // check just the path in case there are query parameters
-      final goingToLogin = Uri.parse(location).path == '/login';
+      final goingToLogin = state.subloc == '/login';
 
       // the user is not logged in and not headed to /login, they need to login
-      if (!loggedIn && !goingToLogin) return '/login?from=$location';
+      if (!loggedIn && !goingToLogin) return '/login?from=${state.location}';
 
       // the user is logged in and headed to /login, no need to login again
       if (loggedIn && goingToLogin) return '/';

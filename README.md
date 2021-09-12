@@ -323,9 +323,9 @@ class App extends StatelessWidget {
     error: ...,
 
     // redirect to the login page if the user is not logged in
-    redirect: (location) {
+    redirect: (state) {
       final loggedIn = loginInfo.loggedIn;
-      final goingToLogin = location == '/login';
+      final goingToLogin = state.location == '/login';
 
       // the user is not logged in and not headed to /login, they need to login
       if (!loggedIn && !goingToLogin) return '/login';
@@ -456,7 +456,22 @@ final _router = GoRouter(
 ```
 
 In this case, when the user navigates to `/`, the `redirect` function will be
-called to redirect to the first family's page. No muss, no fuss.
+called to redirect to the first family's page. Redirection will only occur on
+the last sub-route matched, so you can't have to worry about redirecting in the
+middle of a location being parsed when you're already on your way to another
+page anyway.
+
+## Parameterized redirection
+In some cases, a path is parameterized and you'd like to redirect with those
+parameters in mind. You can do that with the `params` argument to the `state`
+object passed to the `redirect` function:
+
+```dart
+GoRoute(
+  path: '/author/:authorId',
+  redirect: (state) => '/authors/${state.params['authorId']}',
+),
+```
 
 ## Multiple redirections
 It's possible to redirect multiple times w/ a single navigation, e.g. ```/ =>
@@ -485,14 +500,14 @@ class App extends StatelessWidget {
     error: ...,
 
     // redirect to the login page if the user is not logged in
-    redirect: (location) {
+    redirect: (state) {
       final loggedIn = loginInfo.loggedIn;
 
       // check just the path in case there are query parameters
-      final goingToLogin = Uri.parse(location).path == '/login';
+      final goingToLogin = state.subloc == '/login';
 
       // the user is not logged in and not headed to /login, they need to login
-      if (!loggedIn && !goingToLogin) return '/login?from=$location';
+      if (!loggedIn && !goingToLogin) return '/login?from=${state.location}';
 
       // the user is logged in and headed to /login, no need to login again
       if (loggedIn && goingToLogin) return '/';
@@ -508,9 +523,15 @@ class App extends StatelessWidget {
 ```
 
 In this example, if the user isn't logged in, they're redirected to `/login`
-with a `from` query parameter set to the deep link. Now, when the
-`/login` route is matched, we want to pull the `from` parameter out of the
-`state` object to pass along to the `LoginPage`:
+with a `from` query parameter set to the deep link. The `state` object has the
+`location` and the `subloc` to choose from. The `location` includes the query
+parameters whereas the `subloc` does not. Since the `/login` route may include
+query parameters, it's easiest to use the `subloc` in this case (and using the
+raw `location` will cause a stack overflow, an exercise that I'll leave to the
+reader).
+
+Now, when the `/login` route is matched, we want to pull the `from` parameter
+out of the `state` object to pass along to the `LoginPage`:
 
 ```dart
 GoRoute(
@@ -785,9 +806,11 @@ GoRouter: => /
 GoRouter: => /signin
 GoRouter: => /books
 GoRouter: => /books/:kind(new|all|popular)
-GoRouter: =>   /books/:kind(new|all|popular)/book/:bookId
+GoRouter: =>   /books/:kind(new|all|popular)/:bookId
+GoRouter: => /book/:bookId
 GoRouter: => /authors
-GoRouter: =>   /authors/author/:authorId
+GoRouter: =>   /authors/:authorId
+GoRouter: => /author/:authorId
 GoRouter: => /settings
 ```
 

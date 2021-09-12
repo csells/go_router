@@ -1,7 +1,7 @@
 ### 0.8.3
 - Changed `debugOutputFullPaths` to `debugLogDiagnostics` and added add'l
   debugging logging
-- TODO: parameterized redirect
+- parameterized redirect
 
 
 ### 0.8.2

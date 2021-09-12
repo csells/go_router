@@ -52,7 +52,7 @@ class BookDetailsScreen extends StatelessWidget {
               child: const Text('View author (Push)'),
             ),
             Link(
-              uri: Uri.parse('/authors/author/${book!.author.id}'),
+              uri: Uri.parse('/author/${book!.author.id}'),
               builder: (context, followLink) => TextButton(
                 onPressed: followLink,
                 child: const Text('View author (Link)'),

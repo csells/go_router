@@ -58,6 +58,10 @@ class Bookstore extends StatelessWidget {
         redirect: (_) => '/books/popular',
       ),
       GoRoute(
+        path: '/book/:bookId',
+        redirect: (state) => '/books/all/${state.params['bookId']}',
+      ),
+      GoRoute(
         path: '/books/:kind(new|all|popular)',
         builder: (context, state) => FadeTransitionPage<void>(
           key: _scaffoldKey,
@@ -68,7 +72,7 @@ class Bookstore extends StatelessWidget {
         ),
         routes: [
           GoRoute(
-            path: 'book/:bookId',
+            path: ':bookId',
             builder: (context, state) {
               final bookId = state.params['bookId']!;
               final selectedBook = libraryInstance.allBooks
@@ -83,6 +87,10 @@ class Bookstore extends StatelessWidget {
         ],
       ),
       GoRoute(
+        path: '/author/:authorId',
+        redirect: (state) => '/authors/${state.params['authorId']}',
+      ),
+      GoRoute(
         path: '/authors',
         builder: (context, state) => FadeTransitionPage<void>(
           key: _scaffoldKey,
@@ -93,7 +101,7 @@ class Bookstore extends StatelessWidget {
         ),
         routes: [
           GoRoute(
-            path: 'author/:authorId',
+            path: ':authorId',
             builder: (context, state) {
               final authorId = state.params['authorId']!;
               final selectedAuthor = libraryInstance.allAuthors
@@ -127,9 +135,9 @@ class Bookstore extends StatelessWidget {
     debugLogDiagnostics: kDebugMode,
   );
 
-  String? _guard(String location) {
+  String? _guard(GoRouterState state) {
     final signedIn = _auth.signedIn;
-    final signingIn = location == '/signin';
+    final signingIn = state.subloc == '/signin';
 
     // Go to /signin if the user is not signed in
     if (!signedIn && !signingIn) {

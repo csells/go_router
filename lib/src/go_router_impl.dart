@@ -4,7 +4,7 @@ import 'package:path_to_regexp/path_to_regexp.dart' as p2re;
 
 import '../go_router.dart';
 
-const _debugLog2Diagnostics = kDebugMode;
+const _debugLog2Diagnostics = false; //kDebugMode;
 
 void _log2(String s) {
   if (_debugLog2Diagnostics) debugPrint('  $s');
@@ -40,11 +40,11 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     required this.builderWithNav,
     required this.routes,
     required this.errorBuilder,
-    required GoRouterRedirect? topRedirect,
+    required this.topRedirect,
     required this.refreshListenable,
-    required Uri? initUri,
+    required Uri initUri,
     required this.debugLogDiagnostics,
-  }) : topRedirect = topRedirect ?? _redirect {
+  }) {
     // check that the route paths are valid
     for (final route in routes) {
       if (!route.path.startsWith('/')) {
@@ -56,8 +56,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     _outputFullPaths();
 
     // build the list of route matches
-    _log('setting initial location ${initUri ?? '/'}');
-    _go((initUri ?? Uri()).toString());
+    _log('setting initial location $initUri');
+    _go((initUri).toString());
 
     // when the listener changes, refresh the route
     refreshListenable?.addListener(refresh);
@@ -105,27 +105,31 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
   @override
   Future<void> setInitialRoutePath(Uri configuration) async {
-    _log('deep link to $configuration');
     _log2(
         'GoRouterDelegate.setInitialRoutePath: configuration= $configuration');
 
     // if the initial location is /, then use the dev initial location;
     // otherwise, we're cruising to a deep link, so ignore dev initial location
     final config = configuration.toString();
-    _go(config == '/' ? location : config);
+    if (config == '/') {
+      _go(location);
+    } else {
+      _log('deep linking to $config');
+      _go(config);
+    }
   }
 
   @override
   Future<void> setNewRoutePath(Uri configuration) async {
     _log2('GoRouterDelegate.setNewRoutePath: configuration= $configuration');
-    _go(configuration.toString());
+    final config = configuration.toString();
+    _log('going to $config');
+    _go(config);
   }
 
   void _log(Object o) {
     if (debugLogDiagnostics) debugPrint('GoRouter: $o');
   }
-
-  static String? _redirect(String location) => null;
 
   void _go(String location) {
     // start redirecting from the initial location
@@ -153,13 +157,32 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         final loc = redirects.last;
 
         // check for top-level redirect
-        if (redirected(topRedirect(loc))) continue;
+        if (redirected(
+          topRedirect(
+            GoRouterState(
+              location: loc,
+              // trim the query params off the subloc to match route.redirect
+              subloc: Uri.parse(loc).path,
+            ),
+          ),
+        )) continue;
 
         // get stack of route matches
         matches = getLocRouteMatches(loc);
 
         // check top route for redirect
-        if (redirected(matches.last.route.redirect(loc))) continue;
+        final top = matches.last;
+        if (redirected(
+          top.route.redirect(
+            GoRouterState(
+              location: loc,
+              subloc: top.subloc,
+              path: top.route.path,
+              fullpath: top.fullpath,
+              params: top.params,
+            ),
+          ),
+        )) continue;
 
         // let Router know to update the address bar
         if (redirects.length > 1) // the initial route is not a redirect

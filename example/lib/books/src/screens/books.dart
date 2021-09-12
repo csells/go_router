@@ -94,7 +94,7 @@ class _BooksScreenState extends State<BooksScreen>
       );
 
   void _handleBookTapped(Book book) {
-    context.go('/books/all/book/${book.id}');
+    context.go('/book/${book.id}');
   }
 
   void _handleTabIndexChanged() {

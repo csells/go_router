@@ -73,9 +73,9 @@ class App extends StatelessWidget {
     ),
 
     // redirect to the login page if the user is not logged in
-    redirect: (location) {
+    redirect: (state) {
       final loggedIn = loginInfo.loggedIn;
-      final goingToLogin = location == '/login';
+      final goingToLogin = state.location == '/login';
 
       // the user is not logged in and not headed to /login, they need to login
       if (!loggedIn && !goingToLogin) return '/login';

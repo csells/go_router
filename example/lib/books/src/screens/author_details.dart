@@ -34,7 +34,7 @@ class AuthorDetailsScreen extends StatelessWidget {
             Expanded(
               child: BookList(
                 books: author!.books,
-                onTap: (book) => context.go('/books/all/book/${book.id}'),
+                onTap: (book) => context.go('/book/${book.id}'),
               ),
             ),
           ],
