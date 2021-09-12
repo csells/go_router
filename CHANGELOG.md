@@ -1,3 +1,7 @@
+### 0.8.4
+- added state restoration sample
+
+
 ### 0.8.3
 - Changed `debugOutputFullPaths` to `debugLogDiagnostics` and added add'l
   debugging logging

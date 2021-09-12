@@ -51,11 +51,18 @@
       "program": "lib/nested.dart"
     },
     {
+      "name": "State Restoration",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "example",
+      "program": "lib/state_restoration.dart"
+    },
+    {
       "name": "Books",
       "type": "dart",
       "request": "launch",
       "cwd": "example",
       "program": "lib/books/main.dart"
-    }
+    },
   ]
 }

@@ -855,6 +855,8 @@ You can see the go_router in action via the following examples:
   on a page as part of the route path
 - [`url_strategy.dart`](example/lib/url_strategy.dart): turn off the # in the
   Flutter web URL
+- [`state_restoration.dart`](example/lib/state_restoration.dart): test to ensure
+  that go_router works with state restoration (it does)
 - [`bools/main.dart`](example/lib/books/main.dart): update of the
   [navigation_and_routing](https://github.com/flutter/samples/tree/master/navigation_and_routing)
   sample to use go_router
