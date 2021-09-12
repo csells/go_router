@@ -36,14 +36,14 @@ class App extends StatelessWidget {
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => MaterialPage<Page1Page>(
+        builder: (context, state) => MaterialPage<void>(
           key: state.pageKey,
           child: const Page1Page(),
         ),
       ),
       GoRoute(
         path: '/page2',
-        builder: (context, state) => MaterialPage<Page2Page>(
+        builder: (context, state) => MaterialPage<void>(
           key: state.pageKey,
           child: const Page2Page(),
         ),
@@ -78,7 +78,7 @@ class App extends StatelessWidget {
   ...
   final _router = GoRouter(
     ...
-    error: (context, state) => MaterialPage<ErrorPage>(
+    error: (context, state) => MaterialPage<void>(
       key: state.pageKey,
       child: ErrorPage(state.error),
     ),
@@ -177,7 +177,7 @@ final _router = GoRouter(
         // use state.params to get router parameter values
         final family = Families.family(state.params['fid']!);
 
-        return MaterialPage<FamilyPage>(
+        return MaterialPage<void>(
           key: state.pageKey,
           child: FamilyPage(family: family),
         );
@@ -220,7 +220,7 @@ final _router = GoRouter(
   routes: [
     GoRoute(
       path: '/',
-      builder: (context, state) => MaterialPage<HomePage>(
+      builder: (context, state) => MaterialPage<void>(
         key: state.pageKey,
         child: HomePage(families: Families.data),
       ),
@@ -230,7 +230,7 @@ final _router = GoRouter(
           builder: (context, state) {
             final family = Families.family(state.params['fid']!);
 
-            return MaterialPage<FamilyPage>(
+            return MaterialPage<void>(
               key: state.pageKey,
               child: FamilyPage(family: family),
             );
@@ -242,7 +242,7 @@ final _router = GoRouter(
                 final family = Families.family(state.params['fid']!);
                 final person = family.person(state.params['pid']!);
 
-                return MaterialPage<PersonPage>(
+                return MaterialPage<void>(
                   key: state.pageKey,
                   child: PersonPage(family: family, person: person),
                 );
@@ -305,7 +305,7 @@ class App extends StatelessWidget {
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => MaterialPage<HomePage>(
+        builder: (context, state) => MaterialPage<void>(
           key: state.pageKey,
           child: HomePage(families: Families.data),
         ),
@@ -313,7 +313,7 @@ class App extends StatelessWidget {
       ...,
       GoRoute(
         path: '/login',
-        builder: (context, state) => MaterialPage<LoginPage>(
+        builder: (context, state) => MaterialPage<void>(
           key: state.pageKey,
           child: const LoginPage(),
         ),
@@ -536,7 +536,7 @@ out of the `state` object to pass along to the `LoginPage`:
 ```dart
 GoRoute(
   path: '/login',
-  builder: (context, state) => MaterialPage<LoginPage>(
+  builder: (context, state) => MaterialPage<void>(
     key: state.pageKey,
     // pass the original location to the LoginPage (if there is one)
     child: LoginPage(from: state.params['from']),
@@ -580,6 +580,62 @@ It's still good practice to pass in the `refreshListener` when manually
 redirecting, as we do in this case, to ensure any change to the login info
 causes the right routing to happen automatically, e.g. the user logging out will
 cause them to be routed back to the login page.
+
+# Async Data
+Sometimes you'll want to load data asynchronously and you'll need to wait for
+the data before showing content. Flutter provides a way to do this with the
+`FutureBuilder` widget that works just the same with the go_router as it always
+does in Flutter. For example, imagine you've got a `Repository` class that does
+network communication when it looks up data:
+
+```dart
+class Repository {
+  Future<List<Family>> getFamilies() async { /* network comm */ }
+  Future<Family> getFamily(String fid) async => { /* network comm */ }
+  ...
+}
+```
+
+Now you can use the `FutureBuilder` to show a loading indicator while the data
+is loading:
+
+```dart
+late final _router = GoRouter(
+  routes: [
+    GoRoute(
+      path: '/',
+      builder: (context, state) => MaterialPage<void>(
+        key: state.pageKey,
+        child: FutureBuilder<List<Family>>(
+          future: repo.getFamilies(),
+          builder: (context, snapshot) {
+            if (snapshot.hasError) return Text(snapshot.error.toString());
+            if (snapshot.hasData) return HomePage(families: snapshot.data!);
+            return const Center(child: CircularProgressIndicator());
+          },
+        ),
+      ),
+      routes: [
+        GoRoute(
+          path: 'family/:fid',
+          builder: (context, state) => MaterialPage<void>(
+            key: state.pageKey,
+            child: FutureBuilder<Family>(
+              future: repo.getFamily(state.params['fid']!),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) return Text(snapshot.error.toString());
+                if (snapshot.hasData)
+                  return FamilyPage(family: snapshot.data!);
+                return const Center(child: CircularProgressIndicator());
+              },
+            ),
+          ),
+        ),
+      ],
+    ),
+  ],
+);
+```
 
 # Nested Navigation
 Sometimes you want to choose a page based on a route as well as the state of
@@ -851,12 +907,15 @@ You can see the go_router in action via the following examples:
   another based on changing app state
 - [`query_params.dart`](example/lib/query_params.dart): optional query
   parameters will be passed to all page builders
+- [`async_data.dart`](example/lib/async_data.dart): async data lookup
 - [`nested.dart`](example/lib/nested.dart): include information about children
   on a page as part of the route path
 - [`url_strategy.dart`](example/lib/url_strategy.dart): turn off the # in the
   Flutter web URL
 - [`state_restoration.dart`](example/lib/state_restoration.dart): test to ensure
   that go_router works with state restoration (it does)
+- [`cupertino.dart`](example/lib/cupertino.dart): test to ensure that go_router
+  works with the Cupertino design language as well as Material (it does)
 - [`bools/main.dart`](example/lib/books/main.dart): update of the
   [navigation_and_routing](https://github.com/flutter/samples/tree/master/navigation_and_routing)
   sample to use go_router

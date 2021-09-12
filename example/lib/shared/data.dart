@@ -56,7 +56,11 @@ class Families {
     ),
   ];
 
-  static Family family(String fid) => data.singleWhere(
+  static Family family(String fid) => data.family(fid);
+}
+
+extension on List<Family> {
+  Family family(String fid) => singleWhere(
         (f) => f.id == fid,
         orElse: () => throw Exception('unknown family $fid'),
       );
@@ -76,5 +80,27 @@ class LoginInfo extends ChangeNotifier {
   void logout() {
     _userName = '';
     notifyListeners();
+  }
+}
+
+class FamilyPerson {
+  final Family family;
+  final Person person;
+  FamilyPerson({required this.family, required this.person});
+}
+
+class Repository {
+  Future<List<Family>> getFamilies() async {
+    // simulate network delay
+    await Future<void>.delayed(const Duration(seconds: 1));
+    return Families.data;
+  }
+
+  Future<Family> getFamily(String fid) async =>
+      (await getFamilies()).family(fid);
+
+  Future<FamilyPerson> getPerson(String fid, String pid) async {
+    final family = await getFamily(fid);
+    return FamilyPerson(family: family, person: family.person(pid));
   }
 }

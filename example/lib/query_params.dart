@@ -28,7 +28,7 @@ class App extends StatelessWidget {
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => MaterialPage<HomePage>(
+        builder: (context, state) => MaterialPage<void>(
           key: state.pageKey,
           child: HomePage(families: Families.data),
         ),
@@ -37,7 +37,7 @@ class App extends StatelessWidget {
             path: 'family/:fid',
             builder: (context, state) {
               final family = Families.family(state.params['fid']!);
-              return MaterialPage<FamilyPage>(
+              return MaterialPage<void>(
                 key: state.pageKey,
                 child: FamilyPage(family: family),
               );
@@ -48,7 +48,7 @@ class App extends StatelessWidget {
                 builder: (context, state) {
                   final family = Families.family(state.params['fid']!);
                   final person = family.person(state.params['pid']!);
-                  return MaterialPage<PersonPage>(
+                  return MaterialPage<void>(
                     key: state.pageKey,
                     child: PersonPage(family: family, person: person),
                   );
@@ -60,7 +60,7 @@ class App extends StatelessWidget {
       ),
       GoRoute(
         path: '/login',
-        builder: (context, state) => MaterialPage<LoginPage>(
+        builder: (context, state) => MaterialPage<void>(
           key: state.pageKey,
           // pass the original location to the LoginPage (if there is one)
           child: LoginPage(from: state.params['from']),
@@ -68,7 +68,7 @@ class App extends StatelessWidget {
       ),
     ],
 
-    error: (context, state) => MaterialPage<ErrorPage>(
+    error: (context, state) => MaterialPage<void>(
       key: state.pageKey,
       child: ErrorPage(state.error),
     ),

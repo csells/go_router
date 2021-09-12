@@ -44,6 +44,13 @@
       "program": "lib/url_strategy.dart"
     },
     {
+      "name": "Async Data",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "example",
+      "program": "lib/async_data.dart"
+    },
+    {
       "name": "Nested Navigation",
       "type": "dart",
       "request": "launch",
@@ -56,6 +63,13 @@
       "request": "launch",
       "cwd": "example",
       "program": "lib/state_restoration.dart"
+    },
+    {
+      "name": "Cupertino",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "example",
+      "program": "lib/cupertino.dart"
     },
     {
       "name": "Books",

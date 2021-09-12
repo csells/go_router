@@ -31,21 +31,21 @@ class App extends StatelessWidget {
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => MaterialPage<Page1Page>(
+        builder: (context, state) => MaterialPage<void>(
           key: state.pageKey,
           child: const Page1Page(),
         ),
       ),
       GoRoute(
         path: '/page2',
-        builder: (context, state) => MaterialPage<Page2Page>(
+        builder: (context, state) => MaterialPage<void>(
           key: state.pageKey,
           child: const Page2Page(),
         ),
       ),
     ],
 
-    error: (context, state) => MaterialPage<ErrorPage>(
+    error: (context, state) => MaterialPage<void>(
       key: state.pageKey,
       child: ErrorPage(state.error),
     ),

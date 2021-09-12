@@ -1,3 +1,8 @@
+### 0.8.5
+- added Cupertino sample
+- added example of async data lookup
+
+
 ### 0.8.4
 - added state restoration sample
 
