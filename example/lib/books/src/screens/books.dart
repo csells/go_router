@@ -23,16 +23,12 @@ class _BooksScreenState extends State<BooksScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this)
-      ..addListener(_handleTabIndexChanged);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
-    // don't navigate when setting the tab here
-    _tabController.removeListener(_handleTabIndexChanged);
 
     switch (widget.kind) {
       case 'popular':
@@ -47,14 +43,10 @@ class _BooksScreenState extends State<BooksScreen>
         _tabController.index = 2;
         break;
     }
-
-    // navigate when setting the tab via user input
-    _tabController.addListener(_handleTabIndexChanged);
   }
 
   @override
   void dispose() {
-    _tabController.removeListener(_handleTabIndexChanged);
     _tabController.dispose();
     super.dispose();
   }
@@ -65,6 +57,7 @@ class _BooksScreenState extends State<BooksScreen>
           title: const Text('Books'),
           bottom: TabBar(
             controller: _tabController,
+            onTap: _handleTabTapped,
             tabs: const [
               Tab(
                 text: 'Popular',
@@ -104,8 +97,8 @@ class _BooksScreenState extends State<BooksScreen>
     context.go('/book/${book.id}');
   }
 
-  void _handleTabIndexChanged() {
-    switch (_tabController.index) {
+  void _handleTabTapped(int index) {
+    switch (index) {
       case 1:
         context.go('/books/new');
         break;
