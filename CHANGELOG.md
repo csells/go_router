@@ -1,3 +1,7 @@
+### 0.8.7
+- made `GoRouter` a `ChangeNotifier` so you can listen for `location` changes
+
+
 ### 0.8.6
 - books sample bug fix
 

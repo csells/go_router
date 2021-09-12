@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'shared/data.dart';
 
 import 'shared/pages.dart';
@@ -12,13 +13,16 @@ class App extends StatelessWidget {
   App({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) => MaterialApp.router(
-        routeInformationParser: _router.routeInformationParser,
-        routerDelegate: _router.routerDelegate,
-        title: 'Nested Routes GoRouter Example',
+  Widget build(BuildContext context) => ChangeNotifierProvider<GoRouter>.value(
+        value: _router,
+        child: MaterialApp.router(
+          routeInformationParser: _router.routeInformationParser,
+          routerDelegate: _router.routerDelegate,
+          title: 'Nested Routes GoRouter Example',
+        ),
       );
 
-  final _router = GoRouter(
+  late final _router = GoRouter(
     routes: [
       GoRoute(
         path: '/',
@@ -27,13 +31,11 @@ class App extends StatelessWidget {
       GoRoute(
         path: '/family/:fid',
         builder: (context, state) {
-          final fid = state.params['fid']!;
-          final family = Families.data.firstWhere((f) => f.id == fid,
-              orElse: () => throw Exception('family not found: $fid'));
+          final family = Families.family(state.params['fid']!);
 
           return MaterialPage<void>(
             key: state.pageKey,
-            child: FamilyTabsPage(key: state.pageKey, currentFamily: family),
+            child: FamilyTabsPage(key: state.pageKey, selectedFamily: family),
           );
         },
       ),
@@ -42,5 +44,6 @@ class App extends StatelessWidget {
       key: state.pageKey,
       child: ErrorPage(state.error),
     ),
+    debugLogDiagnostics: true,
   );
 }

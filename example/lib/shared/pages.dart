@@ -148,8 +148,8 @@ class PersonPage extends StatelessWidget {
 
 class FamilyTabsPage extends StatefulWidget {
   final int index;
-  FamilyTabsPage({required Family currentFamily, Key? key})
-      : index = Families.data.indexWhere((f) => f.id == currentFamily.id),
+  FamilyTabsPage({required Family selectedFamily, Key? key})
+      : index = Families.data.indexWhere((f) => f.id == selectedFamily.id),
         super(key: key) {
     assert(index != -1);
   }
@@ -194,9 +194,21 @@ class _FamilyTabsPageState extends State<FamilyTabsPage>
             onTap: (index) => _tap(context, index),
           ),
         ),
-        body: TabBarView(
-          controller: _controller,
-          children: [for (final f in Families.data) FamilyView(family: f)],
+        body: Column(
+          children: [
+            Expanded(
+              child: TabBarView(
+                controller: _controller,
+                children: [
+                  for (final f in Families.data) FamilyView(family: f)
+                ],
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.all(8),
+              child: RouterLocationView(),
+            ),
+          ],
         ),
       );
 
@@ -205,6 +217,13 @@ class _FamilyTabsPageState extends State<FamilyTabsPage>
 
   String _title(BuildContext context) =>
       (context as Element).findAncestorWidgetOfExactType<MaterialApp>()!.title;
+}
+
+class RouterLocationView extends StatelessWidget {
+  const RouterLocationView({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) => Text(context.watch<GoRouter>().location);
 }
 
 class FamilyView extends StatelessWidget {

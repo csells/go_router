@@ -111,7 +111,7 @@ class GoRoute {
 
 /// top-level go_router class; create one of these to initialize your app's
 /// routing policy
-class GoRouter {
+class GoRouter extends ChangeNotifier {
   final routeInformationParser = GoRouteInformationParser();
   late final GoRouterDelegate routerDelegate;
 
@@ -133,6 +133,7 @@ class GoRouter {
       topRedirect: redirect ?? (_) => null,
       refreshListenable: refreshListenable,
       initUri: Uri.parse(initialLocation),
+      onLocationChanged: notifyListeners,
       debugLogDiagnostics: debugLogDiagnostics,
       // wrap the returned Navigator to enable GoRouter.of(context).go() et al
       builderWithNav: (context, nav) =>

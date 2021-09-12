@@ -32,6 +32,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   final GoRouterPageBuilder errorBuilder;
   final GoRouterRedirect topRedirect;
   final Listenable? refreshListenable;
+  VoidCallback? onLocationChanged;
   final bool debugLogDiagnostics;
 
   final _key = GlobalKey<NavigatorState>();
@@ -44,6 +45,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     required this.topRedirect,
     required this.refreshListenable,
     required Uri initUri,
+    required VoidCallback onLocationChanged,
     required this.debugLogDiagnostics,
   }) {
     // check that the route paths are valid
@@ -62,6 +64,11 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
     // when the listener changes, refresh the route
     refreshListenable?.addListener(refresh);
+
+    // when the location changes, call the callback
+    // NOTE: waiting until after the initial call to _go() to hook this up
+    // ignore: prefer_initializing_formals
+    this.onLocationChanged = onLocationChanged;
   }
 
   void go(String location) {
@@ -221,6 +228,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     assert(matches.isNotEmpty);
     _matches.clear();
     _matches.addAll(matches);
+    _log('location changed to $location');
+    onLocationChanged?.call();
   }
 
   /// Call _getLocRouteMatchStacks and check for errors
