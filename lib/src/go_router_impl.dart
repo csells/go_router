@@ -413,7 +413,11 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     Map<String, String> params = const {},
   ]) =>
       _getNameRouteMatch(
-          name: name, params: params, routes: routes, parentFullpath: '');
+        name: name,
+        params: params,
+        routes: routes,
+        parentFullpath: '',
+      );
 
   static GoRouteMatch? _getNameRouteMatch({
     required String name,

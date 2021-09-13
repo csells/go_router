@@ -317,6 +317,20 @@ void main() {
       router.go('/family/f2');
       router.go('/family/f2/person/p1');
     });
+
+    test('listen to the router', () {
+      final routes = [GoRoute(path: '/', builder: _dummy)];
+      final router = _router(routes);
+
+      var count = 0;
+      void counter() => ++count;
+      router.addListener(counter);
+      router.go('/');
+      expect(count, 1);
+      router.removeListener(counter);
+      router.go('/');
+      expect(count, 1);
+    });
   });
 
   group('named routes', () {
@@ -415,6 +429,58 @@ void main() {
       expect(match, isNotNull);
       expect(match!.subloc, '/login');
       expect(router.pageFor(match).runtimeType, LoginPage);
+    });
+
+    test('too few parameters', () {
+      final routes = [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => HomePage(),
+          routes: [
+            GoRoute(
+              path: 'family/:fid',
+              builder: (context, state) => FamilyPage('dummy'),
+              routes: [
+                GoRoute(
+                  path: 'person/:pid',
+                  builder: (context, state) => PersonPage('dummy', 'dummy'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ];
+
+      final router = _router(routes);
+      try {
+        router.routerDelegate.getNameRouteMatch('person', {'fid': 'f2'});
+        expect(false, true);
+      } on Exception catch (ex) {
+        dump(ex);
+      }
+    });
+
+    test('extra params as query params', () {
+      final routes = [
+        GoRoute(
+          name: 'home',
+          path: '/',
+          builder: (builder, state) => HomePage(),
+        ),
+        GoRoute(
+          name: 'login',
+          path: '/login',
+          builder: (builder, state) {
+            expect(state.location, '/login?from=/');
+            expect(state.params, {'from': '/'});
+            return LoginPage();
+          },
+        ),
+      ];
+
+      final router = _router(routes);
+      router.goName('login', {'from': '/'});
+      router.routerDelegate.build(DummyBuildContext());
     });
   });
 
