@@ -18,8 +18,33 @@ number of routing and navigation policies at the cost of
 [complexity](https://www.reddit.com/r/FlutterDev/comments/koxx4w/why_navigator_20_sucks/).
 
 The purpose of the go_router is to use declarative routes to reduce complexity,
-regardless of the platform you're targeting, handling deep linking from Android,
-iOS, the web, etc. while still allowing an easy-to-use developer experience.
+regardless of the platform you're targeting (mobile, web, desktop), handling
+deep linking from Android, iOS and the web while still allowing an easy-to-use
+developer experience.
+
+# Table of Contents
+- [Getting Started](#getting-started)
+- [Declarative Routing](#declarative-routing)
+- [Navigation](#navigation)
+  * [Current location](#current-location)
+- [Initial Location](#initial-location)
+- [Parameters](#parameters)
+  * [Dynamic linking](#dynamic-linking)
+- [Sub-routes](#sub-routes)
+- [Redirection](#redirection)
+  * [Top-level redirection](#top-level-redirection)
+  * [Route-level redirection](#route-level-redirection)
+  * [Parameterized redirection](#parameterized-redirection)
+  * [Multiple redirections](#multiple-redirections)
+- [Query Parameters](#query-parameters)
+- [Named Routes](#named-routes)
+- [Async Data](#async-data)
+- [Nested Navigation](#nested-navigation)
+- [Deep Linking](#deep-linking)
+- [URL Path Strategy](#url-path-strategy)
+- [Debugging Your Routes](#debugging-your-routes)
+- [Examples](#examples)
+- [Issues](#issues)
 
 # Getting Started
 To use the go_router package, [follow these
@@ -916,7 +941,7 @@ Of course, any local web server that can be configured to redirect all traffic
 to `index.html` will do, e.g.
 [live-server](https://www.npmjs.com/package/live-server).
 
-# Debugging your routes
+# Debugging Your Routes
 Because go_router asks that you provide a set of paths, something as fragments
 to match just part of a location, it's hard to be able to see just what routes
 you have in your app. Sometimes it's handy to be able to see the full paths of
