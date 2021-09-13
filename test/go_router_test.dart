@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:go_router/src/go_router_impl.dart';
 
 void main() {
-  group('routes', () {
+  group('path routes', () {
     test('match home route', () {
       const loc = '/';
       final routes = [
@@ -29,6 +29,15 @@ void main() {
       try {
         final router = _router(routes);
         router.routerDelegate.getLocRouteMatches(loc);
+        expect(false, true);
+      } on Exception catch (ex) {
+        dump(ex);
+      }
+    });
+
+    test('empty path', () {
+      try {
+        GoRoute(path: '');
         expect(false, true);
       } on Exception catch (ex) {
         dump(ex);
@@ -307,6 +316,105 @@ void main() {
       router.go('/login');
       router.go('/family/f2');
       router.go('/family/f2/person/p1');
+    });
+  });
+
+  group('named routes', () {
+    test('match home route', () {
+      final routes = [
+        GoRoute(
+            name: 'home', path: '/', builder: (builder, state) => HomePage()),
+      ];
+
+      final router = _router(routes);
+      final match = router.routerDelegate.getNameRouteMatch('home');
+
+      expect(match, isNotNull);
+      expect(match!.fullpath, '/');
+      expect(router.pageFor(match).runtimeType, HomePage);
+
+      router.goName('home');
+    });
+
+    test('match too many routes', () {
+      final routes = [
+        GoRoute(name: 'home', path: '/', builder: _dummy),
+        GoRoute(name: 'home', path: '/', builder: _dummy),
+      ];
+
+      try {
+        _router(routes);
+        expect(false, true);
+      } on Exception catch (ex) {
+        dump(ex);
+      }
+    });
+
+    test('empty name', () {
+      try {
+        GoRoute(name: '', path: '/');
+        expect(false, true);
+      } on Exception catch (ex) {
+        dump(ex);
+      }
+    });
+
+    test('match no routes', () {
+      final routes = [
+        GoRoute(name: 'home', path: '/', builder: _dummy),
+      ];
+
+      try {
+        final router = _router(routes);
+        router.goName('work');
+        expect(false, true);
+      } on Exception catch (ex) {
+        dump(ex);
+      }
+    });
+
+    test('match 2nd top level route', () {
+      final routes = [
+        GoRoute(
+          name: 'home',
+          path: '/',
+          builder: (builder, state) => HomePage(),
+        ),
+        GoRoute(
+          name: 'login',
+          path: '/login',
+          builder: (builder, state) => LoginPage(),
+        ),
+      ];
+
+      final router = _router(routes);
+      final match = router.routerDelegate.getNameRouteMatch('login');
+      expect(match, isNotNull);
+      expect(match!.subloc, '/login');
+      expect(router.pageFor(match).runtimeType, LoginPage);
+    });
+
+    test('match sub-route', () {
+      final routes = [
+        GoRoute(
+          name: 'home',
+          path: '/',
+          builder: (builder, state) => HomePage(),
+          routes: [
+            GoRoute(
+              name: 'login',
+              path: 'login',
+              builder: (builder, state) => LoginPage(),
+            ),
+          ],
+        ),
+      ];
+
+      final router = _router(routes);
+      final match = router.routerDelegate.getNameRouteMatch('login');
+      expect(match, isNotNull);
+      expect(match!.subloc, '/login');
+      expect(router.pageFor(match).runtimeType, LoginPage);
     });
   });
 

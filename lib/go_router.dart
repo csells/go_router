@@ -58,6 +58,7 @@ class GoRoute {
   final _pathParams = <String>[];
   late final RegExp _pathRE;
 
+  final String? name;
   final String path;
   final GoRouterPageBuilder builder;
   final List<GoRoute> routes;
@@ -66,10 +67,19 @@ class GoRoute {
   /// ctor
   GoRoute({
     required this.path,
+    this.name,
     this.builder = _builder,
     this.routes = const [],
     this.redirect = _redirect,
   }) {
+    if (path.isEmpty) {
+      throw Exception('GoRoute path cannot be empty');
+    }
+
+    if (name != null && name!.isEmpty) {
+      throw Exception('GoRoute name cannot be empty');
+    }
+
     // cache the path regexp and parameters
     _pathRE = p2re.pathToRegExp(
       path,
@@ -145,8 +155,13 @@ class GoRouter extends ChangeNotifier {
   String get location => routerDelegate.currentConfiguration.toString();
 
   /// navigate to a URI location w/ optional query parameters, e.g.
-  /// /family/f1/person/p2?color=blue
+  /// /family/f2/person/p1?color=blue
   void go(String location) => routerDelegate.go(location);
+
+  /// navigate to a named route w/ optional parameters, e.g.
+  /// name='person', params={'fid': 'f2', 'pid': 'p1'}
+  void goName(String name, [Map<String, String> params = const {}]) =>
+      routerDelegate.goName(name, params);
 
   /// refresh the route
   void refresh() => routerDelegate.refresh();
@@ -164,4 +179,6 @@ class GoRouter extends ChangeNotifier {
 /// context.go('/');
 extension GoRouterHelper on BuildContext {
   void go(String location) => GoRouter.of(this).go(location);
+  void goName(String name, [Map<String, String> params = const {}]) =>
+      GoRouter.of(this).goName(name, params);
 }

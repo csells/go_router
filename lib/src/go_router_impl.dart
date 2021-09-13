@@ -48,12 +48,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     required VoidCallback onLocationChanged,
     required this.debugLogDiagnostics,
   }) {
-    // check that the route paths are valid
-    for (final route in routes) {
-      if (!route.path.startsWith('/')) {
-        throw Exception('top-level path must start with "/": ${route.path}');
-      }
-    }
+    // check top-level route paths and empty/duplicate route names
+    _checkRoutes();
 
     // output known full paths for routes
     _outputFullPaths();
@@ -67,14 +63,55 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
     // when the location changes, call the callback
     // NOTE: waiting until after the initial call to _go() to hook this up
+    // to avoid the case where all of the GoRouter initialization isn't done
     // ignore: prefer_initializing_formals
     this.onLocationChanged = onLocationChanged;
+  }
+
+  // check top-level route paths are valid
+  // check for empty and duplicate names
+  void _checkRoutes() {
+    for (final route in routes) {
+      if (!route.path.startsWith('/')) {
+        throw Exception('top-level path must start with "/": ${route.path}');
+      }
+    }
+
+    _checkRouteNames(routes, {});
+  }
+
+  static void _checkRouteNames(
+    List<GoRoute> routes,
+    Map<String, String> namePaths,
+  ) {
+    for (final route in routes) {
+      if (route.name != null) {
+        if (namePaths.containsKey(route.name)) {
+          throw Exception(
+              'duplication route name: ${route.name}: ${route.path}, ${route.name}: ${namePaths[route.name]}');
+        }
+
+        namePaths[route.name!] = route.path;
+        if (route.routes.isNotEmpty) _checkRouteNames(route.routes, namePaths);
+      }
+    }
   }
 
   void go(String location) {
     _log('going to $location');
     _go(location);
     safeNotifyListeners();
+  }
+
+  void goName(String name, Map<String, String> params) {
+    _log(
+        'looking up named route "$name"${params.isEmpty ? '' : ' with $params'}');
+
+    // find route and build up the full path along the way
+    final match = getNameRouteMatch(name, params);
+    if (match == null) throw Exception('unknown route name: $name');
+
+    return go(match.fullpath);
   }
 
   void refresh() {
@@ -370,6 +407,49 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     }
   }
 
+  @visibleForTesting
+  GoRouteMatch? getNameRouteMatch(
+    String name, [
+    Map<String, String> params = const {},
+  ]) =>
+      _getNameRouteMatch(
+          name: name, params: params, routes: routes, parentFullpath: '');
+
+  static GoRouteMatch? _getNameRouteMatch({
+    required String name,
+    required Map<String, String> params,
+    required List<GoRoute> routes,
+    required String parentFullpath,
+  }) {
+    // find the set of matches at this level of the tree
+    for (final route in routes) {
+      final fullpath = _fullLocFor(parentFullpath, route.path);
+      final match = GoRouteMatch.matchName(
+        route: route,
+        name: name,
+        fullpath: fullpath,
+        params: {},
+      );
+
+      // if we have a match, then we're done
+      if (match != null) return match;
+
+      // if we have no sub-routes, bail
+      if (route.routes.isEmpty) continue;
+
+      // otherwise recurse
+      final submatch = _getNameRouteMatch(
+        name: name,
+        params: params,
+        routes: route.routes,
+        parentFullpath: fullpath,
+      );
+
+      // if we have a match, then we're done
+      if (submatch != null) return submatch;
+    }
+  }
+
   // e.g.
   // parentFullLoc: '',          path =>                  '/'
   // parentFullLoc: '/',         path => 'family/:fid' => '/family/:fid'
@@ -609,6 +689,25 @@ class GoRouteMatch {
       fullpath: fullpath,
       params: params,
       queryParams: queryParams,
+    );
+  }
+
+  static GoRouteMatch? matchName({
+    required GoRoute route,
+    required String name, // e.g. person
+    required String fullpath, // e.g. /family/:fid/person/:pid
+    required Map<String, String> params, // e.g. {'fid': 'f2', 'pid': 'p1'}
+  }) {
+    if (route.name?.toLowerCase() != name.toLowerCase()) return null;
+
+    // TODO: check that we have all the params we need
+    final subloc = _locationFor(fullpath, params);
+    return GoRouteMatch(
+      route: route,
+      subloc: subloc,
+      fullpath: fullpath,
+      params: params,
+      queryParams: {}, // TODO: calculate query params from unused params
     );
   }
 
