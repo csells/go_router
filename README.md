@@ -147,6 +147,15 @@ If the `Link` widget is given a URL with a scheme, e.g. `https://flutter.dev`,
 then it will launch the link in a browser. Otherwise, it'll navigate to the link
 inside the app using the built-in navigation system.
 
+## Current location
+If you want to know the current location, use the `GoRouter.location` property.
+If you'd like to know when the current location changes, either because of
+manual navigation or a deep link or a pop due to the user pushing the Back
+button, the `GoRouter` is a
+[ChangeNotifier](https://api.flutter.dev/flutter/foundation/ChangeNotifier-class.html),
+which means that you can call `addListener` to be notified when the location
+changes.
+
 # Initial Location
 If you'd like to set an initial location for routing, you can set the
 `initialLocation` argument of the `GoRouter` ctor:
@@ -581,6 +590,64 @@ redirecting, as we do in this case, to ensure any change to the login info
 causes the right routing to happen automatically, e.g. the user logging out will
 cause them to be routed back to the login page.
 
+# Named Routes
+When you're navigating to a route with a location, you're hardcoding the URI
+construction into your app, e.g.
+
+```dart
+void _tap(BuildContext context, String fid, String pid) =>
+  context.go('/family/$fid/person/$pid');
+```
+
+Not only is that error-prone, but the actual URI format of your app could change
+over time. Certainly redirection helps keep old URI formats working, but do you
+really want various versions of your location URIs lying willy nilly around in
+your code? The idea of named routes is to make it easy to navigate to a route
+w/o knowing or caring what the URI format is. You can add a name to your route
+like so:
+
+```dart
+final _router = GoRouter(
+  routes: [
+    GoRoute(
+      name: 'home',
+      path: '/',
+      builder: ...,
+      routes: [
+        GoRoute(
+          name: 'family',
+          path: 'family/:fid',
+          builder: ...,
+          routes: [
+            GoRoute(
+              name: 'person',
+              path: 'person/:pid',
+              builder: ...,
+            ),
+          ],
+        ),
+      ],
+    ),
+    GoRoute(
+      name: 'login',
+      path: '/login',
+      builder: ...,
+    ),
+  ],
+```
+
+You don't need to name all of your routes but the ones that you do name, you can
+navigate to using the name and whatever params are needed:
+
+```dart
+void _tap(BuildContext context, String fid, String pid) =>
+  context.goNamed('person', {'fid': fid, 'pid': pid});
+```
+
+The `goNamed` function will look up the route by name, contruct the URI for you
+and fill in the params as appropriate. If you miss a param, you'll get an error
+and if you pass any extra params, they'll be passed as query parameters.
+
 # Async Data
 Sometimes you'll want to load data asynchronously and you'll need to wait for
 the data before showing content. Flutter provides a way to do this with the
@@ -907,6 +974,8 @@ You can see the go_router in action via the following examples:
   another based on changing app state
 - [`query_params.dart`](example/lib/query_params.dart): optional query
   parameters will be passed to all page builders
+- [`named_routes.dart`](example/lib/named_routes.dart): navigate via name
+  instead of location URI
 - [`async_data.dart`](example/lib/async_data.dart): async data lookup
 - [`nested.dart`](example/lib/nested.dart): include information about children
   on a page as part of the route path

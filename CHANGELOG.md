@@ -1,3 +1,7 @@
+### 0.9.0
+- added support for named routes
+
+
 ### 0.8.8
 - FIX: made `GoRouter` notify on pop
 

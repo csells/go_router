@@ -96,7 +96,7 @@ class GoRoute {
       groupedParams.entries.where((e) => e.value.length > 1),
     );
     if (dupParams.isNotEmpty) {
-      throw Exception('duplication path params: ${dupParams.keys.join(', ')}');
+      throw Exception('duplicate path params: ${dupParams.keys.join(', ')}');
     }
 
     // check sub-routes
@@ -160,8 +160,8 @@ class GoRouter extends ChangeNotifier {
 
   /// navigate to a named route w/ optional parameters, e.g.
   /// name='person', params={'fid': 'f2', 'pid': 'p1'}
-  void goName(String name, [Map<String, String> params = const {}]) =>
-      routerDelegate.goName(name, params);
+  void goNamed(String name, [Map<String, String> params = const {}]) =>
+      routerDelegate.goNamed(name, params);
 
   /// refresh the route
   void refresh() => routerDelegate.refresh();
@@ -179,6 +179,6 @@ class GoRouter extends ChangeNotifier {
 /// context.go('/');
 extension GoRouterHelper on BuildContext {
   void go(String location) => GoRouter.of(this).go(location);
-  void goName(String name, [Map<String, String> params = const {}]) =>
-      GoRouter.of(this).goName(name, params);
+  void goNamed(String name, [Map<String, String> params = const {}]) =>
+      GoRouter.of(this).goNamed(name, params);
 }

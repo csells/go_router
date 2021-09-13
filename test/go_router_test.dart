@@ -347,7 +347,7 @@ void main() {
       expect(match!.fullpath, '/');
       expect(router.pageFor(match).runtimeType, HomePage);
 
-      router.goName('home');
+      router.goNamed('home');
     });
 
     test('match too many routes', () {
@@ -380,7 +380,7 @@ void main() {
 
       try {
         final router = _router(routes);
-        router.goName('work');
+        router.goNamed('work');
         expect(false, true);
       } on Exception catch (ex) {
         dump(ex);
@@ -431,17 +431,50 @@ void main() {
       expect(router.pageFor(match).runtimeType, LoginPage);
     });
 
-    test('too few parameters', () {
+    test('match w/ params', () {
       final routes = [
         GoRoute(
+          name: 'home',
           path: '/',
           builder: (context, state) => HomePage(),
           routes: [
             GoRoute(
+              name: 'family',
               path: 'family/:fid',
               builder: (context, state) => FamilyPage('dummy'),
               routes: [
                 GoRoute(
+                  name: 'person',
+                  path: 'person/:pid',
+                  builder: (context, state) {
+                    expect(state.params, {'fid': 'f2', 'pid': 'p1'});
+                    return PersonPage('dummy', 'dummy');
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+      ];
+
+      final router = _router(routes);
+      router.goNamed('person', {'fid': 'f2', 'pid': 'p1'});
+    });
+
+    test('too few params', () {
+      final routes = [
+        GoRoute(
+          name: 'home',
+          path: '/',
+          builder: (context, state) => HomePage(),
+          routes: [
+            GoRoute(
+              name: 'family',
+              path: 'family/:fid',
+              builder: (context, state) => FamilyPage('dummy'),
+              routes: [
+                GoRoute(
+                  name: 'person',
                   path: 'person/:pid',
                   builder: (context, state) => PersonPage('dummy', 'dummy'),
                 ),
@@ -453,7 +486,7 @@ void main() {
 
       final router = _router(routes);
       try {
-        router.routerDelegate.getNameRouteMatch('person', {'fid': 'f2'});
+        router.goNamed('person', {'fid': 'f2'});
         expect(false, true);
       } on Exception catch (ex) {
         dump(ex);
@@ -479,7 +512,7 @@ void main() {
       ];
 
       final router = _router(routes);
-      router.goName('login', {'from': '/'});
+      router.goNamed('login', {'from': '/'});
       router.routerDelegate.build(DummyBuildContext());
     });
   });

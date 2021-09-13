@@ -56,7 +56,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
     // build the list of route matches
     _log('setting initial location $initUri');
-    _go((initUri).toString());
+    _go(initUri.toString());
 
     // when the listener changes, refresh the route
     refreshListenable?.addListener(refresh);
@@ -103,7 +103,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     safeNotifyListeners();
   }
 
-  void goName(String name, Map<String, String> params) {
+  void goNamed(String name, Map<String, String> params) {
     _log(
         'looking up named route "$name"${params.isEmpty ? '' : ' with $params'}');
 
@@ -111,7 +111,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     final match = getNameRouteMatch(name, params);
     if (match == null) throw Exception('unknown route name: $name');
 
-    return go(match.fullpath);
+    final loc = _addQueryParams(match.subloc, match.queryParams);
+    return go(loc);
   }
 
   void refresh() {
@@ -432,7 +433,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         route: route,
         name: name,
         fullpath: fullpath,
-        params: {},
+        params: params,
       );
 
       // if we have a match, then we're done
@@ -704,14 +705,33 @@ class GoRouteMatch {
   }) {
     if (route.name?.toLowerCase() != name.toLowerCase()) return null;
 
-    // TODO: check that we have all the params we need
+    // check that we have all the params we need
+    final paramNames = <String>[];
+    p2re.parse(fullpath, parameters: paramNames);
+    for (final paramName in paramNames) {
+      if (!params.containsKey(paramName)) {
+        throw Exception('missing param "$paramName" for $fullpath');
+      }
+    }
+
+    // split params into posParams and queryParams
+    final posParams = <String, String>{};
+    final queryParams = <String, String>{};
+    for (final key in params.keys) {
+      if (paramNames.contains(key)) {
+        posParams[key] = params[key]!;
+      } else {
+        queryParams[key] = params[key]!;
+      }
+    }
+
     final subloc = _locationFor(fullpath, params);
     return GoRouteMatch(
       route: route,
       subloc: subloc,
       fullpath: fullpath,
-      params: params,
-      queryParams: {}, // TODO: calculate query params from unused params
+      params: posParams,
+      queryParams: queryParams,
     );
   }
 

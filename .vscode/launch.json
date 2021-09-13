@@ -37,6 +37,13 @@
       "program": "lib/query_params.dart"
     },
     {
+      "name": "Named Routes",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "example",
+      "program": "lib/named_routes.dart"
+    },
+    {
       "name": "URL Strategy",
       "type": "dart",
       "request": "launch",

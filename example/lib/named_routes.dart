@@ -6,12 +6,10 @@ import 'shared/data.dart';
 
 void main() => runApp(App());
 
-/// sample app using query parameters in the page builders
 class App extends StatelessWidget {
   final loginInfo = LoginInfo();
   App({Key? key}) : super(key: key);
 
-  // add the login info into the tree as app state that can change over time
   @override
   Widget build(BuildContext context) => ChangeNotifierProvider<LoginInfo>.value(
         value: loginInfo,
@@ -95,6 +93,8 @@ class App extends StatelessWidget {
 
     // changes on the listenable will cause the router to refresh it's route
     refreshListenable: loginInfo,
+
+    debugLogDiagnostics: true,
   );
 }
 
@@ -126,7 +126,7 @@ class HomePage extends StatelessWidget {
           for (final f in families)
             ListTile(
               title: Text(f.name),
-              onTap: () => context.goName('family', {'fid': f.id}),
+              onTap: () => context.goNamed('family', {'fid': f.id}),
             )
         ],
       ),
@@ -154,8 +154,11 @@ class FamilyPage extends StatelessWidget {
             for (final p in family.people)
               ListTile(
                 title: Text(p.name),
-                onTap: () =>
-                    context.goName('person', {'fid': family.id, 'pid': p.id}),
+                onTap: () => context.goNamed('person', {
+                  'fid': family.id,
+                  'pid': p.id,
+                  'qid': 'quid', // extra params turn into query params
+                }),
               ),
           ],
         ),
@@ -188,7 +191,7 @@ class ErrorPage extends StatelessWidget {
             children: [
               Text(error?.toString() ?? 'page not found'),
               TextButton(
-                onPressed: () => context.goName('home'),
+                onPressed: () => context.goNamed('home'),
                 child: const Text('Home'),
               ),
             ],
@@ -197,7 +200,6 @@ class ErrorPage extends StatelessWidget {
       );
 }
 
-/// sample login page
 class LoginPage extends StatelessWidget {
   final String? from;
   const LoginPage({this.from, Key? key}) : super(key: key);
