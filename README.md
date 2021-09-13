@@ -493,8 +493,6 @@ The only trouble you need worry about is getting into a loop, e.g. ```/ => /foo
 => /```. If that happens, you'll get an exception with a message like this:
 ```Exception: Redirect loop detected: / => /foo => /```.
 
-A redirect loop is something that you'll need to fix.
-
 # Query Parameters
 Sometimes you're doing [deep linking](#deep-linking) and you'd like a user to
 first login before going to the location that represents the deep link. In that
@@ -604,7 +602,7 @@ over time. Certainly redirection helps keep old URI formats working, but do you
 really want various versions of your location URIs lying willy nilly around in
 your code? The idea of named routes is to make it easy to navigate to a route
 w/o knowing or caring what the URI format is. You can add a name to your route
-like so:
+using the `GoRoute.name` parameter:
 
 ```dart
 final _router = GoRouter(
