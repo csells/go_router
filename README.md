@@ -152,7 +152,7 @@ If you want to know the current location, use the `GoRouter.location` property.
 If you'd like to know when the current location changes, either because of
 manual navigation or a deep link or a pop due to the user pushing the Back
 button, the `GoRouter` is a
-[ChangeNotifier](https://api.flutter.dev/flutter/foundation/ChangeNotifier-class.html),
+[`ChangeNotifier`](https://api.flutter.dev/flutter/foundation/ChangeNotifier-class.html),
 which means that you can call `addListener` to be notified when the location
 changes.
 
