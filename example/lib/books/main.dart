@@ -66,7 +66,7 @@ class Bookstore extends StatelessWidget {
         builder: (context, state) => FadeTransitionPage<void>(
           key: _scaffoldKey,
           child: BookstoreScaffold(
-            selectedIndex: 0,
+            selectedTab: ScaffoldTab.books,
             child: BooksScreen(state.params['kind']!),
           ),
         ),
@@ -95,7 +95,7 @@ class Bookstore extends StatelessWidget {
         builder: (context, state) => FadeTransitionPage<void>(
           key: _scaffoldKey,
           child: const BookstoreScaffold(
-            selectedIndex: 1,
+            selectedTab: ScaffoldTab.authors,
             child: AuthorsScreen(),
           ),
         ),
@@ -120,7 +120,7 @@ class Bookstore extends StatelessWidget {
         builder: (context, state) => FadeTransitionPage<void>(
           key: _scaffoldKey,
           child: const BookstoreScaffold(
-            selectedIndex: 2,
+            selectedTab: ScaffoldTab.settings,
             child: SettingsScreen(),
           ),
         ),
