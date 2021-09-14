@@ -667,9 +667,10 @@ void _tap(BuildContext context, String fid, String pid) =>
   context.goNamed('person', {'fid': fid, 'pid': pid});
 ```
 
-The `goNamed` function will look up the route by name, contruct the URI for you
-and fill in the params as appropriate. If you miss a param, you'll get an error
-and if you pass any extra params, they'll be passed as query parameters.
+The `goNamed` function will look up the route by name in a case insensitive way,
+contruct the URI for you and fill in the params as appropriate. If you miss a
+param, you'll get an error. If you pass any extra params, they'll be passed as
+query parameters.
 
 # Async Data
 Sometimes you'll want to load data asynchronously and you'll need to wait for
