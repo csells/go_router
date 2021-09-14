@@ -948,26 +948,26 @@ you have in your app. Sometimes it's handy to be able to see the full paths of
 the router you've created as a debugging tool, e.g.
 
 ```
-GoRouter: => /
-GoRouter: => /signin
-GoRouter: => /books
-GoRouter: => /books/:kind(new|all|popular)
-GoRouter: =>   /books/:kind(new|all|popular)/:bookId
-GoRouter: => /book/:bookId
-GoRouter: => /authors
-GoRouter: =>   /authors/:authorId
-GoRouter: => /author/:authorId
-GoRouter: => /settings
+GoRouter: known full paths for routes:
+GoRouter:   => /
+GoRouter:   =>   /family/:fid
+GoRouter:   =>     /family/:fid/person/:pid
+GoRouter: known full paths for route names:
+GoRouter:   home => /
+GoRouter:   family => /family/:fid
+GoRouter:   person => /family/:fid/person/:pid
 ```
 
-Likewise, there are multiple ways to navigate, e.g. `context.go()`, the `Link`
-widget, `navigator.push()`, etc., as well as redirection, so it's handy to be
-able to see how that's going under the covers, e.g.
+Likewise, there are multiple ways to navigate, e.g. `context.go()`,
+`context.goNamed()`, the `Link` widget, etc., as well as redirection, so it's
+handy to be able to see how that's going under the covers, e.g.
 
 ```
-GoRouter: going to /
-GoRouter: redirecting to /signin
-GoRouter: going to /signin
+GoRouter: setting initial location /
+GoRouter: location changed to /
+GoRouter: looking up named route "person" with {fid: f2, pid: p1}
+GoRouter: going to /family/f2/person/p1
+GoRouter: location changed to /family/f2/person/p1
 ```
 
 To enable this kind of output when your `GoRouter` is first created, you can use

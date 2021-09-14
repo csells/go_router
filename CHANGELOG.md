@@ -1,4 +1,10 @@
+### 0.9.2
+- updated named route lookup to O(1)
+- updated diagnostics output to show known named routes
+
+
 ### 0.9.1
+- updated diagnostics output to show named route lookup
 - README updates
 
 

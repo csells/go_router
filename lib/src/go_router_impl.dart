@@ -37,6 +37,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
   final _key = GlobalKey<NavigatorState>();
   final List<GoRouteMatch> _matches = [];
+  final _namedMatches = <String, GoRouteMatch>{};
 
   GoRouterDelegate({
     required this.builderWithNav,
@@ -48,11 +49,18 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     required VoidCallback onLocationChanged,
     required this.debugLogDiagnostics,
   }) {
-    // check top-level route paths and empty/duplicate route names
-    _checkRoutes();
+    // check top-level route paths are valid
+    for (final route in routes) {
+      if (!route.path.startsWith('/')) {
+        throw Exception('top-level path must start with "/": ${route.path}');
+      }
+    }
 
-    // output known full paths for routes
-    _outputFullPaths();
+    // cache the set of named routes for fast lookup
+    _cacheNamedRoutes(routes, '', _namedMatches);
+
+    // output known routes
+    _outputKnownRoutes();
 
     // build the list of route matches
     _log('setting initial location $initUri');
@@ -68,31 +76,33 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     this.onLocationChanged = onLocationChanged;
   }
 
-  // check top-level route paths are valid
-  // check for empty and duplicate names
-  void _checkRoutes() {
-    for (final route in routes) {
-      if (!route.path.startsWith('/')) {
-        throw Exception('top-level path must start with "/": ${route.path}');
-      }
-    }
-
-    _checkRouteNames(routes, {});
-  }
-
-  static void _checkRouteNames(
+  void _cacheNamedRoutes(
     List<GoRoute> routes,
-    Map<String, String> namePaths,
+    String parentFullpath,
+    Map<String, GoRouteMatch> namedFullpaths,
   ) {
     for (final route in routes) {
       if (route.name != null) {
-        if (namePaths.containsKey(route.name)) {
+        final name = route.name!.toLowerCase();
+        final fullpath = _fullLocFor(parentFullpath, route.path);
+        if (namedFullpaths.containsKey(name)) {
           throw Exception(
-              'duplication route name: ${route.name}: ${route.path}, ${route.name}: ${namePaths[route.name]}');
+              'duplication fullpaths for name "$name": ${namedFullpaths[name]!.fullpath}, $fullpath');
         }
 
-        namePaths[route.name!] = route.path;
-        if (route.routes.isNotEmpty) _checkRouteNames(route.routes, namePaths);
+        // we only have a partial match until we have a location;
+        // we're really only caching the route and fullpath at this point
+        final match = GoRouteMatch(
+          route: route,
+          subloc: '/TBD',
+          fullpath: fullpath,
+          params: {},
+          queryParams: {},
+        );
+
+        namedFullpaths[name] = match;
+        if (route.routes.isNotEmpty)
+          _cacheNamedRoutes(route.routes, fullpath, namedFullpaths);
       }
     }
   }
@@ -412,47 +422,15 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   GoRouteMatch? getNameRouteMatch(
     String name, [
     Map<String, String> params = const {},
-  ]) =>
-      _getNameRouteMatch(
-        name: name,
-        params: params,
-        routes: routes,
-        parentFullpath: '',
-      );
-
-  static GoRouteMatch? _getNameRouteMatch({
-    required String name,
-    required Map<String, String> params,
-    required List<GoRoute> routes,
-    required String parentFullpath,
-  }) {
-    // find the set of matches at this level of the tree
-    for (final route in routes) {
-      final fullpath = _fullLocFor(parentFullpath, route.path);
-      final match = GoRouteMatch.matchName(
-        route: route,
-        name: name,
-        fullpath: fullpath,
-        params: params,
-      );
-
-      // if we have a match, then we're done
-      if (match != null) return match;
-
-      // if we have no sub-routes, bail
-      if (route.routes.isEmpty) continue;
-
-      // otherwise recurse
-      final submatch = _getNameRouteMatch(
-        name: name,
-        params: params,
-        routes: route.routes,
-        parentFullpath: fullpath,
-      );
-
-      // if we have a match, then we're done
-      if (submatch != null) return submatch;
-    }
+  ]) {
+    final partialMatch = _namedMatches[name];
+    if (partialMatch == null) return null;
+    return GoRouteMatch.matchNamed(
+      name: name,
+      fullpath: partialMatch.fullpath,
+      params: params,
+      route: partialMatch.route,
+    );
   }
 
   // e.g.
@@ -567,10 +545,17 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     }
   }
 
-  void _outputFullPaths() {
+  void _outputKnownRoutes() {
     if (!debugLogDiagnostics) return;
-    _log('known full paths for routes');
+    _log('known full paths for routes:');
     _outputFullPathsFor(routes, '', 0);
+
+    if (_namedMatches.isNotEmpty) {
+      _log('known full paths for route names:');
+      for (final e in _namedMatches.entries) {
+        _log('  ${e.key} => ${e.value.fullpath}');
+      }
+    }
   }
 
   void _outputFullPathsFor(
@@ -582,7 +567,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
     for (final route in routes) {
       final fullpath = _fullLocFor(parentFullpath, route.path);
-      _log('=> ${''.padLeft(depth * 2)}$fullpath');
+      _log('  => ${''.padLeft(depth * 2)}$fullpath');
       _outputFullPathsFor(route.routes, fullpath, depth + 1);
     }
   }
@@ -697,13 +682,15 @@ class GoRouteMatch {
     );
   }
 
-  static GoRouteMatch? matchName({
+  // ignore: prefer_constructors_over_static_methods
+  static GoRouteMatch matchNamed({
     required GoRoute route,
     required String name, // e.g. person
     required String fullpath, // e.g. /family/:fid/person/:pid
     required Map<String, String> params, // e.g. {'fid': 'f2', 'pid': 'p1'}
   }) {
-    if (route.name?.toLowerCase() != name.toLowerCase()) return null;
+    assert(route.name != null);
+    assert(route.name!.toLowerCase() == name.toLowerCase());
 
     // check that we have all the params we need
     final paramNames = <String>[];

@@ -515,6 +515,36 @@ void main() {
       router.goNamed('login', {'from': '/'});
       router.routerDelegate.build(DummyBuildContext());
     });
+
+    test('match case insensitive w/ params', () {
+      final routes = [
+        GoRoute(
+          name: 'home',
+          path: '/',
+          builder: (context, state) => HomePage(),
+          routes: [
+            GoRoute(
+              name: 'family',
+              path: 'family/:fid',
+              builder: (context, state) => FamilyPage('dummy'),
+              routes: [
+                GoRoute(
+                  name: 'PeRsOn',
+                  path: 'person/:pid',
+                  builder: (context, state) {
+                    expect(state.params, {'fid': 'f2', 'pid': 'p1'});
+                    return PersonPage('dummy', 'dummy');
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+      ];
+
+      final router = _router(routes);
+      router.goNamed('person', {'fid': 'f2', 'pid': 'p1'});
+    });
   });
 
   group('redirects', () {
