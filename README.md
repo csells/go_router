@@ -172,6 +172,8 @@ If the `Link` widget is given a URL with a scheme, e.g. `https://flutter.dev`,
 then it will launch the link in a browser. Otherwise, it'll navigate to the link
 inside the app using the built-in navigation system.
 
+You can also navigate to a [named route](#named-routes), discussed below.
+
 ## Current location
 If you want to know the current location, use the `GoRouter.location` property.
 If you'd like to know when the current location changes, either because of
