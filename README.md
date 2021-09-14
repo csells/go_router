@@ -241,10 +241,10 @@ route at any level will be matched and the entire location much be matched.
 For example, the location `/family/f1/person/p2`, can be made to match multiple
 sub-routes to create a stack of pages:
 
-```
+```text
 /             => HomePage()
   family/f1   => FamilyPage('f1')
-    person/p2 => PersonPage('p2') ← showing this page, Back pops the stack ↑
+    person/p2 => PersonPage('f1', 'p2') ← showing this page, Back pops the stack ↑
 ```
 To specify a set of pages like this, you can use sub-page routing via the
 `routes` parameter to the `GoRoute` constructor:
@@ -486,7 +486,7 @@ final _router = GoRouter(
       builder: ...,
   ],
   error: ...,
-);```
+);
 ```
 
 In this case, when the user navigates to `/`, the `redirect` function will be
@@ -948,7 +948,7 @@ to match just part of a location, it's hard to be able to see just what routes
 you have in your app. Sometimes it's handy to be able to see the full paths of
 the router you've created as a debugging tool, e.g.
 
-```
+```text
 GoRouter: known full paths for routes:
 GoRouter:   => /
 GoRouter:   =>   /family/:fid
@@ -963,7 +963,7 @@ Likewise, there are multiple ways to navigate, e.g. `context.go()`,
 `context.goNamed()`, the `Link` widget, etc., as well as redirection, so it's
 handy to be able to see how that's going under the covers, e.g.
 
-```
+```text
 GoRouter: setting initial location /
 GoRouter: location changed to /
 GoRouter: looking up named route "person" with {fid: f2, pid: p1}
