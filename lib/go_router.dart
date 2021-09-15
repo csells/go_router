@@ -40,7 +40,7 @@ class GoRouterState {
   // the error associated with this sub-route
   final Exception? error;
 
-  // the unique key for this sub-route, e.g. ValueKey('/family/:fid')
+  /// the unique key for this sub-route, e.g. ValueKey('/family/:fid')
   ValueKey<String> get pageKey => ValueKey(error != null ? 'error' : fullpath!);
 
   GoRouterState({
@@ -110,11 +110,15 @@ class GoRoute {
     }
   }
 
+  /// match this route against a location
   Match? matchPatternAsPrefix(String loc) => _pathRE.matchAsPrefix(loc);
-  Map<String, String> extractPatternParams(Match match) =>
+
+  /// extract the path parameters from a match
+  Map<String, String> extractPathParams(Match match) =>
       p2re.extract(_pathParams, match);
 
   static String? _redirect(GoRouterState state) => null;
+
   static Page<dynamic> _builder(BuildContext context, GoRouterState state) =>
       throw Exception('GoRoute builder parameter not set');
 }
@@ -178,7 +182,10 @@ class GoRouter extends ChangeNotifier {
 /// Dart extension to add the go() function to a BuildContext object, e.g.
 /// context.go('/');
 extension GoRouterHelper on BuildContext {
+  /// navigate to a location
   void go(String location) => GoRouter.of(this).go(location);
+
+  /// navigate to a named route
   void goNamed(String name, [Map<String, String> params = const {}]) =>
       GoRouter.of(this).goNamed(name, params);
 }

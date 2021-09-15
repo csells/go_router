@@ -1,3 +1,7 @@
+### 0.9.3
+- updated API docs
+
+
 ### 0.9.2
 - updated named route lookup to O(1)
 - updated diagnostics output to show known named routes

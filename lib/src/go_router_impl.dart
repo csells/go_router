@@ -107,12 +107,14 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     }
   }
 
+  // navigate to the given location
   void go(String location) {
     _log('going to $location');
     _go(location);
-    safeNotifyListeners();
+    _safeNotifyListeners();
   }
 
+  // navigate to the named route
   void goNamed(String name, Map<String, String> params) {
     _log(
         'looking up named route "$name"${params.isEmpty ? '' : ' with $params'}');
@@ -125,33 +127,40 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     return go(loc);
   }
 
+  // refresh the current location, including re-evaluating redirections
   void refresh() {
     _log('refreshing $location');
     _go(location);
-    safeNotifyListeners();
+    _safeNotifyListeners();
   }
 
+  /// get the current location, e.g. /family/f2/person/p1
   String get location =>
       _addQueryParams(_matches.last.subloc, _matches.last.queryParams);
 
+  /// for internal use; visible for testing only
   @visibleForTesting
   List<GoRouteMatch> get matches => _matches;
 
+  /// dispose resources held by the router delegate
   @override
   void dispose() {
     refreshListenable?.removeListener(refresh);
     super.dispose();
   }
 
+  /// for use by the Router architecture as part of the RouterDelegate
   @override
   GlobalKey<NavigatorState> get navigatorKey => _key;
 
+  /// for use by the Router architecture as part of the RouterDelegate
   @override
   Uri get currentConfiguration {
     _log2('GoRouterDelegate.currentConfiguration: $location');
     return Uri.parse(location);
   }
 
+  /// for use by the Router architecture as part of the RouterDelegate
   @override
   Widget build(BuildContext context) {
     _log2('GoRouterDelegate.build: matches=');
@@ -159,6 +168,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     return _builder(context, _matches);
   }
 
+  /// for use by the Router architecture as part of the RouterDelegate
   @override
   Future<void> setInitialRoutePath(Uri configuration) async {
     _log2(
@@ -175,6 +185,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     }
   }
 
+  /// for use by the Router architecture as part of the RouterDelegate
   @override
   Future<void> setNewRoutePath(Uri configuration) async {
     _log2('GoRouterDelegate.setNewRoutePath: configuration= $configuration');
@@ -242,7 +253,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
         // let Router know to update the address bar
         if (redirects.length > 1) // the initial route is not a redirect
-          safeNotifyListeners();
+          _safeNotifyListeners();
 
         // no more redirects!
         break;
@@ -279,7 +290,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     _locationChanged();
   }
 
-  /// Call _getLocRouteMatchStacks and check for errors
+  /// for internal use; visible for testing only
   @visibleForTesting
   List<GoRouteMatch> getLocRouteMatches(String location) {
     final uri = Uri.parse(location);
@@ -376,7 +387,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     // find the set of matches at this level of the tree
     for (final route in routes) {
       final fullpath = _fullLocFor(parentFullpath, route.path);
-      final match = GoRouteMatch.match(
+      final match = GoRouteMatch._match(
         route: route,
         restLoc: restLoc,
         parentSubloc: parentSubloc,
@@ -418,6 +429,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     }
   }
 
+  /// for internal use; visible for testing only
   @visibleForTesting
   GoRouteMatch? getNameRouteMatch(
     String name, [
@@ -425,7 +437,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   ]) {
     final partialMatch = _namedMatches[name];
     if (partialMatch == null) return null;
-    return GoRouteMatch.matchNamed(
+    return GoRouteMatch._matchNamed(
       name: name,
       fullpath: partialMatch.fullpath,
       params: params,
@@ -591,7 +603,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   // HACK: this is a hack to fix the following error:
   // The following assertion was thrown while dispatching notifications for
   // GoRouterDelegate: setState() or markNeedsBuild() called during build.
-  void safeNotifyListeners() {
+  void _safeNotifyListeners() {
     _log2(
         'GoRouterDelegate.safeNotifyListeners: WidgetsBinding.instance= ${WidgetsBinding.instance == null ? 'null' : 'non-null'}');
 
@@ -610,6 +622,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
 /// GoRouter implementation of the RouteInformationParser base class
 class GoRouteInformationParser extends RouteInformationParser<Uri> {
+  /// for use by the Router architecture as part of the RouteInformationParser
   @override
   Future<Uri> parseRouteInformation(RouteInformation routeInformation) async {
     _log2(
@@ -617,6 +630,7 @@ class GoRouteInformationParser extends RouteInformationParser<Uri> {
     return Uri.parse(routeInformation.location!);
   }
 
+  /// for use by the Router architecture as part of the RouteInformationParser
   @override
   RouteInformation restoreRouteInformation(Uri configuration) {
     _log2(
@@ -636,6 +650,7 @@ class InheritedGoRouter extends InheritedWidget {
     Key? key,
   }) : super(child: child, key: key);
 
+  /// for use by the Router architecture as part of the InheritedWidget
   @override
   bool updateShouldNotify(covariant InheritedWidget oldWidget) => true;
 }
@@ -657,7 +672,7 @@ class GoRouteMatch {
         assert(fullpath.startsWith('/')),
         assert(Uri.parse(fullpath).queryParameters.isEmpty);
 
-  static GoRouteMatch? match({
+  static GoRouteMatch? _match({
     required GoRoute route,
     required String restLoc, // e.g. person/p1
     required String parentSubloc, // e.g. /family/f2
@@ -670,7 +685,7 @@ class GoRouteMatch {
     final match = route.matchPatternAsPrefix(restLoc);
     if (match == null) return null;
 
-    final params = route.extractPatternParams(match);
+    final params = route.extractPathParams(match);
     final pathLoc = _locationFor(path, params);
     final subloc = GoRouterDelegate._fullLocFor(parentSubloc, pathLoc);
     return GoRouteMatch(
@@ -683,7 +698,7 @@ class GoRouteMatch {
   }
 
   // ignore: prefer_constructors_over_static_methods
-  static GoRouteMatch matchNamed({
+  static GoRouteMatch _matchNamed({
     required GoRoute route,
     required String name, // e.g. person
     required String fullpath, // e.g. /family/:fid/person/:pid
@@ -722,6 +737,7 @@ class GoRouteMatch {
     );
   }
 
+  /// for use by the Router architecture as part of the GoRouteMatch
   @override
   String toString() => 'GoRouteMatch($fullpath, $params)';
 
