@@ -62,7 +62,7 @@
       "type": "dart",
       "request": "launch",
       "cwd": "example",
-      "program": "lib/nested.dart"
+      "program": "lib/nested_nav.dart"
     },
     {
       "name": "State Restoration",

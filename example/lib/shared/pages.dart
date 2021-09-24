@@ -223,8 +223,13 @@ class RouterLocationView extends StatelessWidget {
   const RouterLocationView({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) =>
-      Text(context.watch<GoRouter>().location);
+  Widget build(BuildContext context) {
+    final router = GoRouter.of(context);
+    return AnimatedBuilder(
+      animation: router,
+      builder: (context, child) => Text(router.location),
+    );
+  }
 }
 
 class FamilyView extends StatelessWidget {

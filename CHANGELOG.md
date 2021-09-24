@@ -1,3 +1,8 @@
+### 0.9.4
+- updated API docs
+- updated README for `GoRouterState`
+
+
 ### 0.9.3
 - updated API docs
 

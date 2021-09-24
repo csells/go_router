@@ -107,14 +107,14 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     }
   }
 
-  // navigate to the given location
+  /// navigate to the given location
   void go(String location) {
     _log('going to $location');
     _go(location);
     _safeNotifyListeners();
   }
 
-  // navigate to the named route
+  /// navigate to the named route
   void goNamed(String name, Map<String, String> params) {
     _log(
         'looking up named route "$name"${params.isEmpty ? '' : ' with $params'}');
@@ -127,7 +127,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     return go(loc);
   }
 
-  // refresh the current location, including re-evaluating redirections
+  /// refresh the current location, including re-evaluating redirections
   void refresh() {
     _log('refreshing $location');
     _go(location);
@@ -655,6 +655,8 @@ class InheritedGoRouter extends InheritedWidget {
   bool updateShouldNotify(covariant InheritedWidget oldWidget) => true;
 }
 
+/// Each GoRouteMatch instance represents an instance of a GoRoute for a
+/// specific portion of a location.
 class GoRouteMatch {
   final GoRoute route;
   final String subloc; // e.g. /family/f2

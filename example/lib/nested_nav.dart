@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-import 'shared/data.dart';
 
+import 'shared/data.dart';
 import 'shared/pages.dart';
 
 void main() => runApp(App());
@@ -13,14 +11,11 @@ class App extends StatelessWidget {
   App({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) => ChangeNotifierProvider<GoRouter>.value(
-        value: _router,
-        child: MaterialApp.router(
-          routeInformationParser: _router.routeInformationParser,
-          routerDelegate: _router.routerDelegate,
-          title: 'Nested Routes GoRouter Example',
-        ),
-      );
+  Widget build(BuildContext context) => MaterialApp.router(
+    routeInformationParser: _router.routeInformationParser,
+    routerDelegate: _router.routerDelegate,
+    title: 'Nested Navigation GoRouter Example',
+  );
 
   late final _router = GoRouter(
     routes: [

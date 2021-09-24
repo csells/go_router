@@ -25,6 +25,8 @@ developer experience.
 # Table of Contents
 - [Getting Started](#getting-started)
 - [Declarative Routing](#declarative-routing)
+  * [Router state](#router-state)
+  * [Error handling](#error-handling)
 - [Navigation](#navigation)
   * [Current location](#current-location)
 - [Initial Location](#initial-location)
@@ -45,6 +47,7 @@ developer experience.
 - [Debugging Your Routes](#debugging-your-routes)
 - [Examples](#examples)
 - [Issues](#issues)
+
 
 # Getting Started
 To use the go_router package, [follow these
@@ -86,17 +89,33 @@ doesn't matter in which order you list your routes). A `GoRoute` also contains a
 page `builder` function which is called to create the page when a path is
 matched.
 
-The builder function is passed a `state` object which contains some useful
-information like the current location that's being matched, parameter values for
-[parametized routes](#parameters) and the one used in this example code is the
-`pageKey` property of the state object. The `pageKey` is used to create a unique
-key for the `MaterialPage` or `CupertinoPage` based on the current path for
-that page in the [stack of pages](#sub-routes), so it will uniquely identify the
-page w/o having to hardcode a key or come up with one yourself.
+## Router state
+The builder function is passed a `state` object, which is an instance of the
+`GoRouterState` class that contains some useful information:
 
-In addition, the go_router needs an `error` handler in case no page is found,
-more than one page is found or if any of the page builder functions throws an
-exception, e.g.
+| `GoRouterState` property | description | example 1 | example 2 |
+| ------------------------ | ----------- | ------- | ------- |
+| `location` | location of the full route, including query params | `/login?from=/family/f2` | `/family/f2/person/p1`|
+| `subloc` | location of this sub-route w/o query params | `/login` | `/family/f2` |
+| `path` | the `GoRoute` path | `/login` | `family/:fid` |
+| `fullpath` | full path to this sub-route | `/login` | `/family/:fid` |
+| `params` | params extracted from the location | `{'from': '/family/f1'}` | `{'fid': 'f2'}` |
+| `error` | `Exception` associated with this sub-route, if any | `Exception('404')` | ... |
+| `pageKey` | unique key for this sub-route | `ValueKey('/login')` | `ValueKey('/family/:fid')` |
+
+You can read more about [sub-locations/sub-routes](#sub-routes) and [parametized
+routes](#parameters) below but the example code above uses the `pageKey`
+property as most of the example code does. The `pageKey` is used to create a
+unique key for the `MaterialPage` or `CupertinoPage` based on the current path
+for that page in the [stack of pages](#sub-routes), so it will uniquely identify
+the page w/o having to hardcode a key or come up with one yourself. The
+`pageKey` is especially handy when used with [nested
+navigation](#nested-navigation).
+
+## Error handling
+In addition to the list of routes, the go_router needs an `error` handler in
+case no page is found, more than one page is found or if any of the page builder
+functions throws an exception, e.g.
 
 ```dart
 class App extends StatelessWidget {
@@ -181,7 +200,24 @@ manual navigation or a deep link or a pop due to the user pushing the Back
 button, the `GoRouter` is a
 [`ChangeNotifier`](https://api.flutter.dev/flutter/foundation/ChangeNotifier-class.html),
 which means that you can call `addListener` to be notified when the location
-changes.
+changes, either manually or via Flutter's builder widget for `ChangeNotifier`
+objects, the mysteriously named
+[`AnimatedBuilder`](https://stackoverflow.com/a/67016227):
+
+```dart
+class RouterLocationView extends StatelessWidget {
+  const RouterLocationView({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final router = GoRouter.of(context);
+    return AnimatedBuilder(
+      animation: router,
+      builder: (context, child) => Text(router.location),
+    );
+  }
+}
+```
 
 # Initial Location
 If you'd like to set an initial location for routing, you can set the
@@ -661,7 +697,7 @@ final _router = GoRouter(
   ],
 ```
 
-You don't need to name all of your routes but the ones that you do name, you can
+You don't need to name any of your routes but the ones that you do name, you can
 navigate to using the name and whatever params are needed:
 
 ```dart
@@ -1003,8 +1039,8 @@ You can see the go_router in action via the following examples:
 - [`named_routes.dart`](example/lib/named_routes.dart): navigate via name
   instead of location URI
 - [`async_data.dart`](example/lib/async_data.dart): async data lookup
-- [`nested.dart`](example/lib/nested.dart): include information about children
-  on a page as part of the route path
+- [`nested_nav.dart`](example/lib/nested_nav.dart): include information about
+  children on a page as part of the route path
 - [`url_strategy.dart`](example/lib/url_strategy.dart): turn off the # in the
   Flutter web URL
 - [`state_restoration.dart`](example/lib/state_restoration.dart): test to ensure
