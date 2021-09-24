@@ -984,9 +984,9 @@ to `index.html` will do, e.g.
 
 # Debugging Your Routes
 Because go_router asks that you provide a set of paths, something as fragments
-to match just part of a location, it's hard to be able to see just what routes
-you have in your app. Sometimes it's handy to be able to see the full paths of
-the router you've created as a debugging tool, e.g.
+to match just part of a location, it's hard to know just what routes you have in
+your app. Sometimes it's handy to be able to see the full paths of the routes
+you've created as a debugging tool, e.g.
 
 ```text
 GoRouter: known full paths for routes:
