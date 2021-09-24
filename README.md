@@ -27,6 +27,7 @@ developer experience.
 - [Declarative Routing](#declarative-routing)
   * [Router state](#router-state)
   * [Error handling](#error-handling)
+  * [Initialization](#initialization)
 - [Navigation](#navigation)
   * [Current location](#current-location)
 - [Initial Location](#initial-location)
@@ -133,6 +134,7 @@ class App extends StatelessWidget {
 The `GoRouterState` object contains the location that caused the exception and
 the `Exception` that was thrown attempting to navigate to that route.
 
+## Initialization
 With just a list of routes and an error function, you can create an instance of
 a `GoRouter`, which itself provides the objects you need to call the
 `MaterialApp.router` constructor:
