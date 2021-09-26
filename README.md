@@ -1089,7 +1089,7 @@ You can see the go_router in action via the following examples:
   that go_router works with state restoration (it does)
 - [`cupertino.dart`](example/lib/cupertino.dart): test to ensure that go_router
   works with the Cupertino design language as well as Material (it does)
-- [`bools/main.dart`](example/lib/books/main.dart): update of the
+- [`books/main.dart`](example/lib/books/main.dart): update of the
   [navigation_and_routing](https://github.com/flutter/samples/tree/master/navigation_and_routing)
   sample to use go_router
 
