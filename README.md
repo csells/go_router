@@ -41,6 +41,7 @@ developer experience.
   * [Multiple redirections](#multiple-redirections)
 - [Query Parameters](#query-parameters)
 - [Named Routes](#named-routes)
+- [Custom Transitions](#custom-transitions)
 - [Async Data](#async-data)
 - [Nested Navigation](#nested-navigation)
 - [Deep Linking](#deep-linking)
@@ -712,6 +713,36 @@ contruct the URI for you and fill in the params as appropriate. If you miss a
 param, you'll get an error. If you pass any extra params, they'll be passed as
 query parameters.
 
+# Custom Transitions
+As you transition between routes, you get transitions based on whether
+you're using `MaterialPage` or `CupertinoPage`; each of them implements the
+transitions as defined by the underlying platform. However, if you'd like to
+implement a custom transition, you can do so by using the `CustomTransitionPage`
+provided with go_router:
+
+```dart
+GoRoute(
+  path: '/fade',
+  builder: (context, state) => CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: const TransitionsPage(kind: 'fade', color: Colors.red),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+        FadeTransition(opacity: animation, child: child),
+  ),
+),
+```
+
+The `transitionBuilder` argument to the `CustomTransitionPage` is called when
+you're routing to a new route and it's your chance to return a transition
+widget. The [`transitions.dart` sample](example/lib/transitions.dart) shows off
+four different kind of transitions, but really you can do whatever you want.
+
+![custom transitions example](readme/transitions.gif)
+
+The `CustomTransitionPage` constructor also takes a `transitionsDuration`
+argument in case you'd like to customize the duration of the transition as well
+(it defaults to 300ms).
+
 # Async Data
 Sometimes you'll want to load data asynchronously and you'll need to wait for
 the data before showing content. Flutter provides a way to do this with the
@@ -731,6 +762,8 @@ Now you can use the `FutureBuilder` to show a loading indicator while the data
 is loading:
 
 ```dart
+final repo = Repository();
+...
 late final _router = GoRouter(
   routes: [
     GoRoute(
@@ -768,6 +801,11 @@ late final _router = GoRouter(
 );
 ```
 
+This is a simple case that shows a circular progress indicator while the data is
+being loaded and before the page is shown. It might be even nicer to navigate to
+the page, for example to show the `AppBar`, and then show the loading indicator
+inside the page itself. Such polish is left as an exercise for the reader.
+
 # Nested Navigation
 Sometimes you want to choose a page based on a route as well as the state of
 that page, e.g. the currently selected tab. In that case, you want to choose not
@@ -776,7 +814,7 @@ called "nested navigation". The key differentiator for "nested" navigation is
 that there's no transition on the part of the page that stays the same, e.g. the
 app bar stays the same as you navigate to different tabs on this `TabView`:
 
-![Nested Navigation](readme/nested-nav.gif)
+![nested navigation example](readme/nested-nav.gif)
 
 Of course, you can easily do this using the `TabView` widget, but what makes
 this nested "navigation" is that the location of the page changes, i.e. notice
@@ -1040,6 +1078,8 @@ You can see the go_router in action via the following examples:
   parameters will be passed to all page builders
 - [`named_routes.dart`](example/lib/named_routes.dart): navigate via name
   instead of location URI
+- [`transitions.dart`](example/lib/transitions.dart): use custom transitions
+  during routing
 - [`async_data.dart`](example/lib/async_data.dart): async data lookup
 - [`nested_nav.dart`](example/lib/nested_nav.dart): include information about
   children on a page as part of the route path

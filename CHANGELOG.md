@@ -1,3 +1,7 @@
+### 0.9.5
+- added support for custom transitions between routes
+
+
 ### 0.9.4
 - updated API docs
 - updated README for `GoRouterState`

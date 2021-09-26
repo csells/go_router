@@ -44,6 +44,13 @@
       "program": "lib/named_routes.dart"
     },
     {
+      "name": "Custom Transitions",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "example",
+      "program": "lib/transitions.dart"
+    },
+    {
       "name": "URL Strategy",
       "type": "dart",
       "request": "launch",

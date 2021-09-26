@@ -17,7 +17,6 @@ import 'src/screens/error.dart';
 import 'src/screens/scaffold.dart';
 import 'src/screens/settings.dart';
 import 'src/screens/sign_in.dart';
-import 'src/widgets/fade_transition_page.dart';
 
 void main() => runApp(Bookstore());
 
@@ -35,6 +34,8 @@ class Bookstore extends StatelessWidget {
       );
 
   final _auth = BookstoreAuth();
+  final _curveTween = CurveTween(curve: Curves.easeIn);
+
   late final _router = GoRouter(
     routes: [
       GoRoute(
@@ -43,8 +44,11 @@ class Bookstore extends StatelessWidget {
       ),
       GoRoute(
         path: '/signin',
-        builder: (context, state) => FadeTransitionPage<void>(
+        builder: (context, state) => CustomTransitionPage<void>(
           key: state.pageKey,
+          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+              FadeTransition(
+                  opacity: animation.drive(_curveTween), child: child),
           child: SignInScreen(
             onSignIn: (credentials) {
               BookstoreAuthScope.of(context)
@@ -63,8 +67,11 @@ class Bookstore extends StatelessWidget {
       ),
       GoRoute(
         path: '/books/:kind(new|all|popular)',
-        builder: (context, state) => FadeTransitionPage<void>(
+        builder: (context, state) => CustomTransitionPage<void>(
           key: _scaffoldKey,
+          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+              FadeTransition(
+                  opacity: animation.drive(_curveTween), child: child),
           child: BookstoreScaffold(
             selectedTab: ScaffoldTab.books,
             child: BooksScreen(state.params['kind']!),
@@ -92,8 +99,11 @@ class Bookstore extends StatelessWidget {
       ),
       GoRoute(
         path: '/authors',
-        builder: (context, state) => FadeTransitionPage<void>(
+        builder: (context, state) => CustomTransitionPage<void>(
           key: _scaffoldKey,
+          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+              FadeTransition(
+                  opacity: animation.drive(_curveTween), child: child),
           child: const BookstoreScaffold(
             selectedTab: ScaffoldTab.authors,
             child: AuthorsScreen(),
@@ -117,8 +127,11 @@ class Bookstore extends StatelessWidget {
       ),
       GoRoute(
         path: '/settings',
-        builder: (context, state) => FadeTransitionPage<void>(
+        builder: (context, state) => CustomTransitionPage<void>(
           key: _scaffoldKey,
+          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+              FadeTransition(
+                  opacity: animation.drive(_curveTween), child: child),
           child: const BookstoreScaffold(
             selectedTab: ScaffoldTab.settings,
             child: SettingsScreen(),
@@ -132,7 +145,7 @@ class Bookstore extends StatelessWidget {
     ),
     redirect: _guard,
     refreshListenable: _auth,
-    debugLogDiagnostics: kDebugMode,
+    // debugLogDiagnostics: kDebugMode,
   );
 
   String? _guard(GoRouterState state) {
