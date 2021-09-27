@@ -65,6 +65,15 @@ class App extends StatelessWidget {
               RotationTransition(turns: animation, child: child),
         ),
       ),
+      GoRoute(
+        path: '/none',
+        builder: (context, state) => CustomTransitionPage<void>(
+          key: state.pageKey,
+          child: const TransitionsPage(kind: 'none', color: Colors.white),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+              child,
+        ),
+      ),
     ],
     error: (context, state) => MaterialPage<void>(
       key: state.pageKey,
@@ -74,7 +83,7 @@ class App extends StatelessWidget {
 }
 
 class TransitionsPage extends StatelessWidget {
-  static final kinds = ['fade', 'scale', 'slide', 'rotation'];
+  static final kinds = ['fade', 'scale', 'slide', 'rotation', 'none'];
   final Color color;
   final String kind;
   const TransitionsPage({required this.color, required this.kind, Key? key})
