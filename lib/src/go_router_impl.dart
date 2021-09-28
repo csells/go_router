@@ -29,7 +29,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         ChangeNotifier {
   final GoRouterBuilderWithNav builderWithNav;
   final List<GoRoute> routes;
-  final GoRouterPageBuilder errorBuilder;
+  final GoRouterPageBuilder errorPageBuilder;
   final GoRouterRedirect topRedirect;
   final Listenable? refreshListenable;
   VoidCallback? onLocationChanged;
@@ -43,7 +43,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   GoRouterDelegate({
     required this.builderWithNav,
     required this.routes,
-    required this.errorBuilder,
+    required this.errorPageBuilder,
     required this.topRedirect,
     required this.refreshListenable,
     required Uri initUri,
@@ -121,7 +121,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
   /// push the given location onto the page stack
   void push(String location) {
-    _log('going to $location');
+    _log('pushing $location');
     _push(location);
     _safeNotifyListeners();
   }
@@ -318,7 +318,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
           queryParams: uri.queryParameters,
           route: GoRoute(
             path: location,
-            builder: (context, state) => errorBuilder(
+            pageBuilder: (context, state) => errorPageBuilder(
               context,
               GoRouterState(
                 location: state.location,
@@ -520,7 +520,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     } on Exception catch (ex) {
       // if there's an error, show an error page
       pages = [
-        errorBuilder(
+        errorPageBuilder(
           context,
           GoRouterState(
             location: location,
@@ -590,7 +590,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       params = {...params, ...match.params};
 
       // get a page from the builder and associate it with a sub-location
-      yield match.route.builder(
+      yield match.route.pageBuilder(
         context,
         GoRouterState(
           location: location,

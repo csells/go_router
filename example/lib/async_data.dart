@@ -21,7 +21,7 @@ class App extends StatelessWidget {
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => NoTransitionPage<void>(
+        pageBuilder: (context, state) => NoTransitionPage<void>(
           key: state.pageKey,
           child: FutureBuilder<List<Family>>(
             future: repo.getFamilies(),
@@ -35,7 +35,7 @@ class App extends StatelessWidget {
         routes: [
           GoRoute(
             path: 'family/:fid',
-            builder: (context, state) => NoTransitionPage<void>(
+            pageBuilder: (context, state) => NoTransitionPage<void>(
               key: state.pageKey,
               child: FutureBuilder<Family>(
                 future: repo.getFamily(state.params['fid']!),
@@ -50,7 +50,7 @@ class App extends StatelessWidget {
             routes: [
               GoRoute(
                 path: 'person/:pid',
-                builder: (context, state) => NoTransitionPage<void>(
+                pageBuilder: (context, state) => NoTransitionPage<void>(
                   key: state.pageKey,
                   child: FutureBuilder<FamilyPerson>(
                     future: repo.getPerson(
@@ -74,7 +74,7 @@ class App extends StatelessWidget {
         ],
       ),
     ],
-    error: (context, state) => MaterialPage<void>(
+    errorPageBuilder: (context, state) => MaterialPage<void>(
       key: state.pageKey,
       child: ErrorPage(state.error),
     ),

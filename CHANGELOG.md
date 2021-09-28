@@ -1,8 +1,17 @@
+### 1.0.0
+- updated version for initial release
+- some renaming for clarify and consistency with transitions
+  - `GoRoute.builder` => `GoRoute.pageBuilder`
+  - `GoRoute.error` => `GoRoute.errorPageBuilder`
+- added diagnostic logging for `push` and `pushNamed`
+
+
 ### 0.9.6
 - added support for `push` as well as `go`
 - added 'none' to transitions example app
 - updated animation example to use no transition and added an animated gif to
   the README
+
 
 ### 0.9.5
 - added support for custom transitions between routes

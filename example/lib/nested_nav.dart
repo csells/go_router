@@ -12,10 +12,10 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp.router(
-    routeInformationParser: _router.routeInformationParser,
-    routerDelegate: _router.routerDelegate,
-    title: 'Nested Navigation GoRouter Example',
-  );
+        routeInformationParser: _router.routeInformationParser,
+        routerDelegate: _router.routerDelegate,
+        title: 'Nested Navigation GoRouter Example',
+      );
 
   late final _router = GoRouter(
     routes: [
@@ -25,7 +25,7 @@ class App extends StatelessWidget {
       ),
       GoRoute(
         path: '/family/:fid',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final family = Families.family(state.params['fid']!);
 
           return MaterialPage<void>(
@@ -36,7 +36,7 @@ class App extends StatelessWidget {
         routes: [
           GoRoute(
             path: 'person/:pid',
-            builder: (context, state) {
+            pageBuilder: (context, state) {
               final family = Families.family(state.params['fid']!);
               final person = family.person(state.params['pid']!);
 
@@ -49,7 +49,7 @@ class App extends StatelessWidget {
         ],
       ),
     ],
-    error: (context, state) => MaterialPage<void>(
+    errorPageBuilder: (context, state) => MaterialPage<void>(
       key: state.pageKey,
       child: ErrorPage(state.error),
     ),

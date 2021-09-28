@@ -44,7 +44,7 @@ class Bookstore extends StatelessWidget {
       ),
       GoRoute(
         path: '/signin',
-        builder: (context, state) => CustomTransitionPage<void>(
+        pageBuilder: (context, state) => CustomTransitionPage<void>(
           key: state.pageKey,
           transitionsBuilder: (context, animation, secondaryAnimation, child) =>
               FadeTransition(
@@ -67,7 +67,7 @@ class Bookstore extends StatelessWidget {
       ),
       GoRoute(
         path: '/books/:kind(new|all|popular)',
-        builder: (context, state) => CustomTransitionPage<void>(
+        pageBuilder: (context, state) => CustomTransitionPage<void>(
           key: _scaffoldKey,
           transitionsBuilder: (context, animation, secondaryAnimation, child) =>
               FadeTransition(
@@ -80,7 +80,7 @@ class Bookstore extends StatelessWidget {
         routes: [
           GoRoute(
             path: ':bookId',
-            builder: (context, state) {
+            pageBuilder: (context, state) {
               final bookId = state.params['bookId']!;
               final selectedBook = libraryInstance.allBooks
                   .firstWhereOrNull((b) => b.id.toString() == bookId);
@@ -99,7 +99,7 @@ class Bookstore extends StatelessWidget {
       ),
       GoRoute(
         path: '/authors',
-        builder: (context, state) => CustomTransitionPage<void>(
+        pageBuilder: (context, state) => CustomTransitionPage<void>(
           key: _scaffoldKey,
           transitionsBuilder: (context, animation, secondaryAnimation, child) =>
               FadeTransition(
@@ -112,7 +112,7 @@ class Bookstore extends StatelessWidget {
         routes: [
           GoRoute(
             path: ':authorId',
-            builder: (context, state) {
+            pageBuilder: (context, state) {
               final authorId = state.params['authorId']!;
               final selectedAuthor = libraryInstance.allAuthors
                   .firstWhereOrNull((a) => a.id.toString() == authorId);
@@ -127,7 +127,7 @@ class Bookstore extends StatelessWidget {
       ),
       GoRoute(
         path: '/settings',
-        builder: (context, state) => CustomTransitionPage<void>(
+        pageBuilder: (context, state) => CustomTransitionPage<void>(
           key: _scaffoldKey,
           transitionsBuilder: (context, animation, secondaryAnimation, child) =>
               FadeTransition(
@@ -139,7 +139,7 @@ class Bookstore extends StatelessWidget {
         ),
       ),
     ],
-    error: (context, state) => MaterialPage<void>(
+    errorPageBuilder: (context, state) => MaterialPage<void>(
       key: state.pageKey,
       child: ErrorScreen(state.error),
     ),

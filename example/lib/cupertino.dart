@@ -17,20 +17,20 @@ class App extends StatelessWidget {
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => CupertinoPage<void>(
+        pageBuilder: (context, state) => CupertinoPage<void>(
           key: state.pageKey,
           child: const Page1Page(),
         ),
       ),
       GoRoute(
         path: '/page2',
-        builder: (context, state) => CupertinoPage<void>(
+        pageBuilder: (context, state) => CupertinoPage<void>(
           key: state.pageKey,
           child: const Page2Page(),
         ),
       ),
     ],
-    error: (context, state) => CupertinoPage<void>(
+    errorPageBuilder: (context, state) => CupertinoPage<void>(
       key: state.pageKey,
       child: ErrorPage(state.error),
     ),

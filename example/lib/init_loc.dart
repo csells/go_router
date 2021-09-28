@@ -18,32 +18,30 @@ class App extends StatelessWidget {
 
   final _router = GoRouter(
     initialLocation: '/page3',
-
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => MaterialPage<void>(
+        pageBuilder: (context, state) => MaterialPage<void>(
           key: state.pageKey,
           child: const Page1Page(),
         ),
       ),
       GoRoute(
         path: '/page2',
-        builder: (context, state) => MaterialPage<void>(
+        pageBuilder: (context, state) => MaterialPage<void>(
           key: state.pageKey,
           child: const Page2Page(),
         ),
       ),
       GoRoute(
         path: '/page3',
-        builder: (context, state) => MaterialPage<void>(
+        pageBuilder: (context, state) => MaterialPage<void>(
           key: state.pageKey,
           child: const Page3Page(),
         ),
       ),
     ],
-
-    error: (context, state) => MaterialPage<void>(
+    errorPageBuilder: (context, state) => MaterialPage<void>(
       key: state.pageKey,
       child: ErrorPage(state.error),
     ),

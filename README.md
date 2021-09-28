@@ -66,14 +66,14 @@ class App extends StatelessWidget {
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => MaterialPage<void>(
+        pageBuilder: (context, state) => MaterialPage<void>(
           key: state.pageKey,
           child: const Page1Page(),
         ),
       ),
       GoRoute(
         path: '/page2',
-        builder: (context, state) => MaterialPage<void>(
+        pageBuilder: (context, state) => MaterialPage<void>(
           key: state.pageKey,
           child: const Page2Page(),
         ),
@@ -88,7 +88,7 @@ In this case, we've defined two routes. Each route `path` will be matched
 against the location to which the user is navigating. Only a single path will be
 matched, specifically the one that matches the entire location (and so it
 doesn't matter in which order you list your routes). A `GoRoute` also contains a
-page `builder` function which is called to create the page when a path is
+`pageBuilder` function which is called to create the page when a path is
 matched.
 
 ## Router state
@@ -110,21 +110,19 @@ routes](#parameters) below but the example code above uses the `pageKey`
 property as most of the example code does. The `pageKey` is used to create a
 unique key for the `MaterialPage` or `CupertinoPage` based on the current path
 for that page in the [stack of pages](#sub-routes), so it will uniquely identify
-the page w/o having to hardcode a key or come up with one yourself. The
-`pageKey` is especially handy when used with [nested
-navigation](#nested-navigation).
+the page w/o having to hardcode a key or come up with one yourself.
 
 ## Error handling
-In addition to the list of routes, the go_router needs an `error` handler in
-case no page is found, more than one page is found or if any of the page builder
-functions throws an exception, e.g.
+In addition to the list of routes, the go_router needs an `errorPageBuilder`
+function in case no page is found, more than one page is found or if any of the
+page builder functions throws an exception, e.g.
 
 ```dart
 class App extends StatelessWidget {
   ...
   final _router = GoRouter(
     ...
-    error: (context, state) => MaterialPage<void>(
+    errorPageBuilder: (context, state) => MaterialPage<void>(
       key: state.pageKey,
       child: ErrorPage(state.error),
     ),
@@ -136,8 +134,8 @@ The `GoRouterState` object contains the location that caused the exception and
 the `Exception` that was thrown attempting to navigate to that route.
 
 ## Initialization
-With just a list of routes and an error function, you can create an instance of
-a `GoRouter`, which itself provides the objects you need to call the
+With just a list of routes and an error page builder function, you can create an
+instance of a `GoRouter`, which itself provides the objects you need to call the
 `MaterialApp.router` constructor:
 
 ```dart
@@ -150,7 +148,7 @@ class App extends StatelessWidget {
         routerDelegate: _router.routerDelegate,
       );
 
-  final _router = GoRouter(routes: ..., error: ...);
+  final _router = GoRouter(routes: ..., errorPageBuilder: ...);
 }
 ```
 
@@ -204,7 +202,7 @@ button, the `GoRouter` is a
 [`ChangeNotifier`](https://api.flutter.dev/flutter/foundation/ChangeNotifier-class.html),
 which means that you can call `addListener` to be notified when the location
 changes, either manually or via Flutter's builder widget for `ChangeNotifier`
-objects, the mysteriously named
+objects, the non-intuitively named
 [`AnimatedBuilder`](https://stackoverflow.com/a/67016227):
 
 ```dart
@@ -222,6 +220,11 @@ class RouterLocationView extends StatelessWidget {
 }
 ```
 
+Or, if you're using [the provider package](https://pub.dev/packages/provider),
+it comes with built in support for re-building a `Widget` when a
+`ChangeNotifier` changes with a type that is much more clearly suited for the
+purpose.
+
 # Initial Location
 If you'd like to set an initial location for routing, you can set the
 `initialLocation` argument of the `GoRouter` ctor:
@@ -229,7 +232,7 @@ If you'd like to set an initial location for routing, you can set the
 ```dart
 final _router = GoRouter(
   routes: ...,
-  error: ...,
+  errorPageBuilder: ...,
   initialLocation: '/page2',
 );
 ```
@@ -239,16 +242,16 @@ If your app is started using [deep linking](#deep-linking), the initial location
 will be ignored.
 
 # Parameters
-The route paths are defined and implemented in the
-[`path_to_regexp`](https://pub.dev/packages/path_to_regexp) package, which gives
-you the ability to include parameters in your route's `path`: 
+The route paths are defined and implemented in [the path_to_regexp
+package](https://pub.dev/packages/path_to_regexp), which gives you the ability
+to include parameters in your route's `path`: 
 
 ```dart
 final _router = GoRouter(
   routes: [
     GoRoute(
       path: '/family/:fid',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         // use state.params to get router parameter values
         final family = Families.family(state.params['fid']!);
 
@@ -259,7 +262,7 @@ final _router = GoRouter(
       },
     ),
   ],
-  error: ...,
+  errorPageBuilder: ...,
 ]);
 ```
 
@@ -269,8 +272,8 @@ property.
 ## Dynamic linking
 The idea of "dynamic linking" is that as the user adds objects to your app, each
 of them gets a link of their own, e.g. a new family gets a new link. This is
-exactly what route paramters enables, e.g. a new family has it's own ID when can
-be a variable in your family route, e.g. path: `/family/:fid`.
+exactly what route paramters enables, e.g. a new family has it's own identifier
+when can be a variable in your family route, e.g. path: `/family/:fid`.
 
 # Sub-routes
 Every top-level route will create a navigation stack of one page. To produce an
@@ -295,14 +298,14 @@ final _router = GoRouter(
   routes: [
     GoRoute(
       path: '/',
-      builder: (context, state) => MaterialPage<void>(
+      pageBuilder: (context, state) => MaterialPage<void>(
         key: state.pageKey,
         child: HomePage(families: Families.data),
       ),
       routes: [
         GoRoute(
           path: 'family/:fid',
-          builder: (context, state) {
+          pageBuilder: (context, state) {
             final family = Families.family(state.params['fid']!);
 
             return MaterialPage<void>(
@@ -313,7 +316,7 @@ final _router = GoRouter(
           routes: [
             GoRoute(
               path: 'person/:pid',
-              builder: (context, state) {
+              pageBuilder: (context, state) {
                 final family = Families.family(state.params['fid']!);
                 final person = family.person(state.params['pid']!);
 
@@ -328,7 +331,7 @@ final _router = GoRouter(
       ],
     ),
   ],
-  error: ...
+  errorPageBuilder: ...
 );
 ```
 
@@ -393,7 +396,7 @@ class App extends StatelessWidget {
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => MaterialPage<void>(
+        pageBuilder: (context, state) => MaterialPage<void>(
           key: state.pageKey,
           child: HomePage(families: Families.data),
         ),
@@ -401,14 +404,14 @@ class App extends StatelessWidget {
       ...,
       GoRoute(
         path: '/login',
-        builder: (context, state) => MaterialPage<void>(
+        pageBuilder: (context, state) => MaterialPage<void>(
           key: state.pageKey,
           child: const LoginPage(),
         ),
       ),
     ],
 
-    error: ...,
+    errorPageBuilder: ...,
 
     // redirect to the login page if the user is not logged in
     redirect: (state) {
@@ -434,7 +437,7 @@ path, we redirect to `/login`. Likewise, if the user *is* logged in but going to
 
 To make it easy to access this info wherever it's need in the app, consider
 using a state management option like
-[`provider`](https://pub.dev/packages/provider) to put the login info into the
+[provider](https://pub.dev/packages/provider) to put the login info into the
 widget tree:
 
 ```dart
@@ -492,7 +495,7 @@ class App extends StatelessWidget {
   ...
   late final _router = GoRouter(
     routes: ...,
-    error: ...,
+    errorPageBuilder: ...,
     redirect: ...
 
     // changes on the listenable will cause the router to refresh it's route
@@ -537,9 +540,9 @@ final _router = GoRouter(
     ),
     GoRoute(
       path: '/family/:fid',
-      builder: ...,
+      pageBuilder: ...,
   ],
-  error: ...,
+  errorPageBuilder: ...,
 );
 ```
 
@@ -583,7 +586,7 @@ class App extends StatelessWidget {
   ...
   late final _router = GoRouter(
     routes: ...,
-    error: ...,
+    errorPageBuilder: ...,
 
     // redirect to the login page if the user is not logged in
     redirect: (state) {
@@ -622,7 +625,7 @@ out of the `state` object to pass along to the `LoginPage`:
 ```dart
 GoRoute(
   path: '/login',
-  builder: (context, state) => MaterialPage<void>(
+  pageBuilder: (context, state) => MaterialPage<void>(
     key: state.pageKey,
     // pass the original location to the LoginPage (if there is one)
     child: LoginPage(from: state.params['from']),
@@ -680,8 +683,8 @@ Not only is that error-prone, but the actual URI format of your app could change
 over time. Certainly redirection helps keep old URI formats working, but do you
 really want various versions of your location URIs lying willy nilly around in
 your code? The idea of named routes is to make it easy to navigate to a route
-w/o knowing or caring what the URI format is. You can add a name to your route
-using the `GoRoute.name` parameter:
+w/o knowing or caring what the URI format is. You can add a unique name to your
+route using the `GoRoute.name` parameter:
 
 ```dart
 final _router = GoRouter(
@@ -689,17 +692,17 @@ final _router = GoRouter(
     GoRoute(
       name: 'home',
       path: '/',
-      builder: ...,
+      pageBuilder: ...,
       routes: [
         GoRoute(
           name: 'family',
           path: 'family/:fid',
-          builder: ...,
+          pageBuilder: ...,
           routes: [
             GoRoute(
               name: 'person',
               path: 'person/:pid',
-              builder: ...,
+              pageBuilder: ...,
             ),
           ],
         ),
@@ -708,7 +711,7 @@ final _router = GoRouter(
     GoRoute(
       name: 'login',
       path: '/login',
-      builder: ...,
+      pageBuilder: ...,
     ),
   ],
 ```
@@ -739,7 +742,7 @@ provided with go_router:
 ```dart
 GoRoute(
   path: '/fade',
-  builder: (context, state) => CustomTransitionPage<void>(
+  pageBuilder: (context, state) => CustomTransitionPage<void>(
     key: state.pageKey,
     child: const TransitionsPage(kind: 'fade', color: Colors.red),
     transitionsBuilder: (context, animation, secondaryAnimation, child) =>
@@ -785,11 +788,11 @@ class App extends StatelessWidget {
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => NoTransitionPage<void>(
+        pageBuilder: (context, state) => NoTransitionPage<void>(
           key: state.pageKey,
           child: FutureBuilder<List<Family>>(
             future: repo.getFamilies(),
-            builder: (context, snapshot) {
+            pageBuilder: (context, snapshot) {
               if (snapshot.hasError) return Text(snapshot.error.toString());
               if (snapshot.hasData) return HomePage(families: snapshot.data!);
               return const Center(child: CircularProgressIndicator());
@@ -799,11 +802,11 @@ class App extends StatelessWidget {
         routes: [
           GoRoute(
             path: 'family/:fid',
-            builder: (context, state) => NoTransitionPage<void>(
+            pageBuilder: (context, state) => NoTransitionPage<void>(
               key: state.pageKey,
               child: FutureBuilder<Family>(
                 future: repo.getFamily(state.params['fid']!),
-                builder: (context, snapshot) {
+                pageBuilder: (context, snapshot) {
                   if (snapshot.hasError) return Text(snapshot.error.toString());
                   if (snapshot.hasData)
                     return FamilyPage(family: snapshot.data!);
@@ -814,14 +817,14 @@ class App extends StatelessWidget {
             routes: [
               GoRoute(
                 path: 'person/:pid',
-                builder: (context, state) => NoTransitionPage<void>(
+                pageBuilder: (context, state) => NoTransitionPage<void>(
                   key: state.pageKey,
                   child: FutureBuilder<FamilyPerson>(
                     future: repo.getPerson(
                       state.params['fid']!,
                       state.params['pid']!,
                     ),
-                    builder: (context, snapshot) {
+                    pageBuilder: (context, snapshot) {
                       if (snapshot.hasError)
                         return Text(snapshot.error.toString());
                       if (snapshot.hasData)
@@ -838,7 +841,7 @@ class App extends StatelessWidget {
         ],
       ),
     ],
-    error: (context, state) => MaterialPage<void>(
+    errorPageBuilder: (context, state) => MaterialPage<void>(
       key: state.pageKey,
       child: ErrorPage(state.error),
     ),
@@ -864,10 +867,10 @@ being loaded and before the page is shown.
 ![async data example](readme/async.gif)
 
 The way transitions work, the outgoing page is shown for a little while before
-the incoming page is shown, which looks pretty funny when your page is doing
+the incoming page is shown, which looks pretty terrible when your page is doing
 nothing but showing a circular progress indicator. I admit that I took the
 coward's way out and turned off the transitions so that things wouldn't look
-terrible in the animated screenshot. However, it would be nicer to keep the
+so bad in the animated screenshot. However, it would be nicer to keep the
 transition, navigate to the page showing as much as possible, e.g. the `AppBar`,
 and then show the loading indicator inside the page itself. In that case, you'll
 be on your own to show an error in the case that the data can't be loaded. Such
@@ -982,7 +985,7 @@ final _router = GoRouter(
     ),
     GoRoute(
       path: '/family/:fid',
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final fid = state.params['fid']!;
         final family = Families.data.firstWhere((f) => f.id == fid,
             orElse: () => throw Exception('family not found: $fid'));
@@ -995,7 +998,7 @@ final _router = GoRouter(
     ),
   ],
   
-  error: ...,
+  errorPageBuilder: ...,
 );
 ```
 
@@ -1003,9 +1006,9 @@ The `/` route is a redirect to the first family. The `/family/:fid` route is the
 one that sets up nested navigation. It does this by first by creating an
 instance of `FamilyTabsPage` with the family that matches the `fid` parameter.
 And second, it uses `state.pageKey` to signal to Flutter that this is the same
-page as before, just with different state. This combination is what causes the
-router to leave the unchanged part of the page alone and to only transition the
-new content based on the selected tab.
+page as before. This combination is what causes the router to leave the the page
+alone, to update the browser's address bar and to let the `TabView` navigate to
+the new selection.
 
 This example shows off the selected tab on a `TabView` but you can use it for
 any nested content of a page your app navigates to.
@@ -1058,7 +1061,7 @@ class App extends StatelessWidget {
   ...
   final _router = GoRouter(
     routes: ...,
-    error: ...,
+    errorPageBuilder: ...,
 
     // turn off the # in the URLs on the web
     urlPathStrategy: UrlPathStrategy.path,
@@ -1090,8 +1093,8 @@ to `index.html` will do, e.g.
 # Debugging Your Routes
 Because go_router asks that you provide a set of paths, something as fragments
 to match just part of a location, it's hard to know just what routes you have in
-your app. Sometimes it's handy to be able to see the full paths of the routes
-you've created as a debugging tool, e.g.
+your app. In those cases, it's handy to be able to see the full paths of the
+routes you've created as a debugging tool, e.g.
 
 ```text
 GoRouter: known full paths for routes:
@@ -1105,8 +1108,9 @@ GoRouter:   person => /family/:fid/person/:pid
 ```
 
 Likewise, there are multiple ways to navigate, e.g. `context.go()`,
-`context.goNamed()`, the `Link` widget, etc., as well as redirection, so it's
-handy to be able to see how that's going under the covers, e.g.
+`context.goNamed()`, `context.push()`, `context.pushNamed()`, the `Link` widget,
+etc., as well as redirection, so it's handy to be able to see how that's going
+under the covers, e.g.
 
 ```text
 GoRouter: setting initial location /
@@ -1122,7 +1126,7 @@ the `debugLogDiagnostics` argument:
 ```dart
 final _router = GoRouter(
   routes: ...,
-  error: ...,
+  errorPageBuilder: ...,
 
   // log diagnostic info for your routes
   debugLogDiagnostics: true,

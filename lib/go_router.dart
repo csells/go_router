@@ -67,7 +67,7 @@ class GoRoute {
 
   final String? name;
   final String path;
-  final GoRouterPageBuilder builder;
+  final GoRouterPageBuilder pageBuilder;
   final List<GoRoute> routes;
   final GoRouterRedirect redirect;
 
@@ -75,7 +75,7 @@ class GoRoute {
   GoRoute({
     required this.path,
     this.name,
-    this.builder = _builder,
+    this.pageBuilder = _builder,
     this.routes = const [],
     this.redirect = _redirect,
   }) {
@@ -139,7 +139,7 @@ class GoRouter extends ChangeNotifier {
   /// configure a GoRouter with a routes builder and an error page builder
   GoRouter({
     required List<GoRoute> routes,
-    required GoRouterPageBuilder error,
+    required GoRouterPageBuilder errorPageBuilder,
     GoRouterRedirect? redirect,
     Listenable? refreshListenable,
     String initialLocation = '/',
@@ -150,7 +150,7 @@ class GoRouter extends ChangeNotifier {
 
     routerDelegate = GoRouterDelegate(
       routes: routes,
-      errorBuilder: error,
+      errorPageBuilder: errorPageBuilder,
       topRedirect: redirect ?? (_) => null,
       refreshListenable: refreshListenable,
       initUri: Uri.parse(initialLocation),

@@ -9,7 +9,7 @@ void main() {
     test('match home route', () {
       const loc = '/';
       final routes = [
-        GoRoute(path: '/', builder: (builder, state) => HomePage()),
+        GoRoute(path: '/', pageBuilder: (builder, state) => HomePage()),
       ];
 
       final router = _router(routes);
@@ -22,8 +22,8 @@ void main() {
     test('match too many routes', () {
       const loc = '/';
       final routes = [
-        GoRoute(path: '/', builder: _dummy),
-        GoRoute(path: '/', builder: _dummy),
+        GoRoute(path: '/', pageBuilder: _dummy),
+        GoRoute(path: '/', pageBuilder: _dummy),
       ];
 
       try {
@@ -50,11 +50,11 @@ void main() {
         final routes = [
           GoRoute(
             path: '/',
-            builder: _dummy,
+            pageBuilder: _dummy,
             routes: [
               GoRoute(
                 path: '/foo',
-                builder: _dummy,
+                pageBuilder: _dummy,
               ),
             ],
           ),
@@ -71,11 +71,11 @@ void main() {
         final routes = [
           GoRoute(
             path: '/',
-            builder: _dummy,
+            pageBuilder: _dummy,
             routes: [
               GoRoute(
                 path: 'foo/',
-                builder: _dummy,
+                pageBuilder: _dummy,
               ),
             ],
           ),
@@ -89,7 +89,7 @@ void main() {
     test('lack of leading / on top-level route', () {
       try {
         final routes = [
-          GoRoute(path: 'foo', builder: _dummy),
+          GoRoute(path: 'foo', pageBuilder: _dummy),
         ];
         _router(routes);
         expect(false, true);
@@ -101,7 +101,7 @@ void main() {
     test('match no routes', () {
       const loc = '/foo';
       final routes = [
-        GoRoute(path: '/', builder: _dummy),
+        GoRoute(path: '/', pageBuilder: _dummy),
       ];
 
       try {
@@ -116,8 +116,8 @@ void main() {
     test('match 2nd top level route', () {
       const loc = '/login';
       final routes = [
-        GoRoute(path: '/', builder: (builder, state) => HomePage()),
-        GoRoute(path: '/login', builder: (builder, state) => LoginPage()),
+        GoRoute(path: '/', pageBuilder: (builder, state) => HomePage()),
+        GoRoute(path: '/login', pageBuilder: (builder, state) => LoginPage()),
       ];
 
       final router = _router(routes);
@@ -132,11 +132,11 @@ void main() {
       final routes = [
         GoRoute(
           path: '/',
-          builder: (builder, state) => HomePage(),
+          pageBuilder: (builder, state) => HomePage(),
           routes: [
             GoRoute(
               path: 'login',
-              builder: (builder, state) => LoginPage(),
+              pageBuilder: (builder, state) => LoginPage(),
             ),
           ],
         ),
@@ -155,21 +155,21 @@ void main() {
       final routes = [
         GoRoute(
           path: '/',
-          builder: (context, state) => HomePage(),
+          pageBuilder: (context, state) => HomePage(),
           routes: [
             GoRoute(
               path: 'family/:fid',
-              builder: (context, state) => FamilyPage('dummy'),
+              pageBuilder: (context, state) => FamilyPage('dummy'),
               routes: [
                 GoRoute(
                   path: 'person/:pid',
-                  builder: (context, state) => PersonPage('dummy', 'dummy'),
+                  pageBuilder: (context, state) => PersonPage('dummy', 'dummy'),
                 ),
               ],
             ),
             GoRoute(
               path: 'login',
-              builder: (context, state) => LoginPage(),
+              pageBuilder: (context, state) => LoginPage(),
             ),
           ],
         ),
@@ -216,19 +216,19 @@ void main() {
       final routes = [
         GoRoute(
           path: '/',
-          builder: _dummy,
+          pageBuilder: _dummy,
           routes: [
             GoRoute(
               path: 'foo/bar',
-              builder: _dummy,
+              pageBuilder: _dummy,
             ),
             GoRoute(
               path: 'foo',
-              builder: _dummy,
+              pageBuilder: _dummy,
               routes: [
                 GoRoute(
                   path: 'bar',
-                  builder: _dummy,
+                  pageBuilder: _dummy,
                 ),
               ],
             ),
@@ -249,7 +249,7 @@ void main() {
       final routes = [
         GoRoute(
           path: '/',
-          builder: (builder, state) {
+          pageBuilder: (builder, state) {
             expect(
               state.location,
               anyOf(['/', '/login', '/family/f2', '/family/f2/person/p1']),
@@ -264,7 +264,7 @@ void main() {
           routes: [
             GoRoute(
               path: 'login',
-              builder: (builder, state) {
+              pageBuilder: (builder, state) {
                 expect(state.location, '/login');
                 expect(state.subloc, '/login');
                 expect(state.path, 'login');
@@ -276,7 +276,7 @@ void main() {
             ),
             GoRoute(
               path: 'family/:fid',
-              builder: (builder, state) {
+              pageBuilder: (builder, state) {
                 expect(
                   state.location,
                   anyOf(['/family/f2', '/family/f2/person/p1']),
@@ -291,7 +291,7 @@ void main() {
               routes: [
                 GoRoute(
                   path: 'person/:pid',
-                  builder: (context, state) {
+                  pageBuilder: (context, state) {
                     expect(state.location, '/family/f2/person/p1');
                     expect(state.subloc, '/family/f2/person/p1');
                     expect(state.path, 'person/:pid');
@@ -319,7 +319,7 @@ void main() {
     });
 
     test('listen to the router', () {
-      final routes = [GoRoute(path: '/', builder: _dummy)];
+      final routes = [GoRoute(path: '/', pageBuilder: _dummy)];
       final router = _router(routes);
 
       var count = 0;
@@ -337,7 +337,9 @@ void main() {
     test('match home route', () {
       final routes = [
         GoRoute(
-            name: 'home', path: '/', builder: (builder, state) => HomePage()),
+            name: 'home',
+            path: '/',
+            pageBuilder: (builder, state) => HomePage()),
       ];
 
       final router = _router(routes);
@@ -352,8 +354,8 @@ void main() {
 
     test('match too many routes', () {
       final routes = [
-        GoRoute(name: 'home', path: '/', builder: _dummy),
-        GoRoute(name: 'home', path: '/', builder: _dummy),
+        GoRoute(name: 'home', path: '/', pageBuilder: _dummy),
+        GoRoute(name: 'home', path: '/', pageBuilder: _dummy),
       ];
 
       try {
@@ -375,7 +377,7 @@ void main() {
 
     test('match no routes', () {
       final routes = [
-        GoRoute(name: 'home', path: '/', builder: _dummy),
+        GoRoute(name: 'home', path: '/', pageBuilder: _dummy),
       ];
 
       try {
@@ -392,12 +394,12 @@ void main() {
         GoRoute(
           name: 'home',
           path: '/',
-          builder: (builder, state) => HomePage(),
+          pageBuilder: (builder, state) => HomePage(),
         ),
         GoRoute(
           name: 'login',
           path: '/login',
-          builder: (builder, state) => LoginPage(),
+          pageBuilder: (builder, state) => LoginPage(),
         ),
       ];
 
@@ -413,12 +415,12 @@ void main() {
         GoRoute(
           name: 'home',
           path: '/',
-          builder: (builder, state) => HomePage(),
+          pageBuilder: (builder, state) => HomePage(),
           routes: [
             GoRoute(
               name: 'login',
               path: 'login',
-              builder: (builder, state) => LoginPage(),
+              pageBuilder: (builder, state) => LoginPage(),
             ),
           ],
         ),
@@ -436,17 +438,17 @@ void main() {
         GoRoute(
           name: 'home',
           path: '/',
-          builder: (context, state) => HomePage(),
+          pageBuilder: (context, state) => HomePage(),
           routes: [
             GoRoute(
               name: 'family',
               path: 'family/:fid',
-              builder: (context, state) => FamilyPage('dummy'),
+              pageBuilder: (context, state) => FamilyPage('dummy'),
               routes: [
                 GoRoute(
                   name: 'person',
                   path: 'person/:pid',
-                  builder: (context, state) {
+                  pageBuilder: (context, state) {
                     expect(state.params, {'fid': 'f2', 'pid': 'p1'});
                     return PersonPage('dummy', 'dummy');
                   },
@@ -466,17 +468,17 @@ void main() {
         GoRoute(
           name: 'home',
           path: '/',
-          builder: (context, state) => HomePage(),
+          pageBuilder: (context, state) => HomePage(),
           routes: [
             GoRoute(
               name: 'family',
               path: 'family/:fid',
-              builder: (context, state) => FamilyPage('dummy'),
+              pageBuilder: (context, state) => FamilyPage('dummy'),
               routes: [
                 GoRoute(
                   name: 'person',
                   path: 'person/:pid',
-                  builder: (context, state) => PersonPage('dummy', 'dummy'),
+                  pageBuilder: (context, state) => PersonPage('dummy', 'dummy'),
                 ),
               ],
             ),
@@ -498,12 +500,12 @@ void main() {
         GoRoute(
           name: 'home',
           path: '/',
-          builder: (builder, state) => HomePage(),
+          pageBuilder: (builder, state) => HomePage(),
         ),
         GoRoute(
           name: 'login',
           path: '/login',
-          builder: (builder, state) {
+          pageBuilder: (builder, state) {
             expect(state.location, '/login?from=/');
             expect(state.params, {'from': '/'});
             return LoginPage();
@@ -521,17 +523,17 @@ void main() {
         GoRoute(
           name: 'home',
           path: '/',
-          builder: (context, state) => HomePage(),
+          pageBuilder: (context, state) => HomePage(),
           routes: [
             GoRoute(
               name: 'family',
               path: 'family/:fid',
-              builder: (context, state) => FamilyPage('dummy'),
+              pageBuilder: (context, state) => FamilyPage('dummy'),
               routes: [
                 GoRoute(
                   name: 'PeRsOn',
                   path: 'person/:pid',
-                  builder: (context, state) {
+                  pageBuilder: (context, state) {
                     expect(state.params, {'fid': 'f2', 'pid': 'p1'});
                     return PersonPage('dummy', 'dummy');
                   },
@@ -552,17 +554,19 @@ void main() {
       final routes = [
         GoRoute(
           path: '/',
-          builder: (builder, state) => HomePage(),
+          pageBuilder: (builder, state) => HomePage(),
           routes: [
-            GoRoute(path: 'dummy', builder: (builder, state) => DummyPage()),
-            GoRoute(path: 'login', builder: (builder, state) => LoginPage()),
+            GoRoute(
+                path: 'dummy', pageBuilder: (builder, state) => DummyPage()),
+            GoRoute(
+                path: 'login', pageBuilder: (builder, state) => LoginPage()),
           ],
         ),
       ];
 
       final router = GoRouter(
         routes: routes,
-        error: _dummy,
+        errorPageBuilder: _dummy,
         redirect: (state) => state.subloc == '/login' ? null : '/login',
       );
       expect(router.location, '/login');
@@ -572,16 +576,16 @@ void main() {
       final routes = [
         GoRoute(
           path: '/',
-          builder: (builder, state) => HomePage(),
+          pageBuilder: (builder, state) => HomePage(),
           routes: [
             GoRoute(
               path: 'dummy',
-              builder: (builder, state) => DummyPage(),
+              pageBuilder: (builder, state) => DummyPage(),
               redirect: (state) => '/login',
             ),
             GoRoute(
               path: 'login',
-              builder: (builder, state) => LoginPage(),
+              pageBuilder: (builder, state) => LoginPage(),
             ),
           ],
         ),
@@ -589,7 +593,7 @@ void main() {
 
       final router = GoRouter(
         routes: routes,
-        error: _dummy,
+        errorPageBuilder: _dummy,
       );
       router.go('/dummy');
       expect(router.location, '/login');
@@ -599,15 +603,15 @@ void main() {
       final routes = [
         GoRoute(
           path: '/',
-          builder: (builder, state) => HomePage(),
+          pageBuilder: (builder, state) => HomePage(),
           routes: [
             GoRoute(
               path: 'dummy1',
-              builder: (builder, state) => DummyPage(),
+              pageBuilder: (builder, state) => DummyPage(),
             ),
             GoRoute(
               path: 'dummy2',
-              builder: (builder, state) => DummyPage(),
+              pageBuilder: (builder, state) => DummyPage(),
               redirect: (state) => '/',
             ),
           ],
@@ -616,7 +620,7 @@ void main() {
 
       final router = GoRouter(
         routes: routes,
-        error: _dummy,
+        errorPageBuilder: _dummy,
         redirect: (state) => state.subloc == '/dummy1' ? '/dummy2' : null,
       );
       router.go('/dummy1');
@@ -626,7 +630,7 @@ void main() {
     test('top-level redirect loop', () {
       final router = GoRouter(
         routes: [],
-        error: (context, state) => ErrorPage(state.error!),
+        errorPageBuilder: (context, state) => ErrorPage(state.error!),
         redirect: (state) => state.subloc == '/'
             ? '/login'
             : state.subloc == '/login'
@@ -653,7 +657,7 @@ void main() {
             redirect: (state) => '/',
           ),
         ],
-        error: (context, state) => ErrorPage(state.error!),
+        errorPageBuilder: (context, state) => ErrorPage(state.error!),
       );
 
       final matches = router.routerDelegate.matches;
@@ -671,7 +675,7 @@ void main() {
             redirect: (state) => '/',
           ),
         ],
-        error: (context, state) => ErrorPage(state.error!),
+        errorPageBuilder: (context, state) => ErrorPage(state.error!),
         redirect: (state) => state.subloc == '/' ? '/login' : null,
       );
 
@@ -685,7 +689,7 @@ void main() {
     test('top-level redirect loop w/ query params', () {
       final router = GoRouter(
         routes: [],
-        error: (context, state) => ErrorPage(state.error!),
+        errorPageBuilder: (context, state) => ErrorPage(state.error!),
         redirect: (state) => state.subloc == '/'
             ? '/login?from=${state.location}'
             : state.subloc == '/login'
@@ -704,7 +708,7 @@ void main() {
       final routes = [
         GoRoute(
           path: '/',
-          builder: (builder, state) => HomePage(),
+          pageBuilder: (builder, state) => HomePage(),
         ),
         GoRoute(
           path: '/dummy',
@@ -714,7 +718,7 @@ void main() {
 
       final router = GoRouter(
         routes: routes,
-        error: _dummy,
+        errorPageBuilder: _dummy,
         initialLocation: '/dummy',
       );
       expect(router.location, '/');
@@ -724,17 +728,17 @@ void main() {
       final routes = [
         GoRoute(
           path: '/',
-          builder: (builder, state) => HomePage(),
+          pageBuilder: (builder, state) => HomePage(),
         ),
         GoRoute(
           path: '/login',
-          builder: (builder, state) => LoginPage(),
+          pageBuilder: (builder, state) => LoginPage(),
         ),
       ];
 
       GoRouter(
         routes: routes,
-        error: _dummy,
+        errorPageBuilder: _dummy,
         initialLocation: '/login?from=/',
         debugLogDiagnostics: true,
         redirect: (state) {
@@ -763,7 +767,7 @@ void main() {
         ),
         GoRoute(
           path: '/book/:bookId',
-          builder: (builder, state) {
+          pageBuilder: (builder, state) {
             expect(state.params, {'bookId': '0'});
             return DummyPage();
           },
@@ -772,7 +776,7 @@ void main() {
 
       GoRouter(
         routes: routes,
-        error: _dummy,
+        errorPageBuilder: _dummy,
         initialLocation: loc,
         debugLogDiagnostics: true,
       );
@@ -784,11 +788,11 @@ void main() {
       final routes = [
         GoRoute(
           path: '/',
-          builder: (builder, state) => HomePage(),
+          pageBuilder: (builder, state) => HomePage(),
           routes: [
             GoRoute(
               path: 'dummy',
-              builder: (builder, state) => DummyPage(),
+              pageBuilder: (builder, state) => DummyPage(),
             ),
           ],
         ),
@@ -796,7 +800,7 @@ void main() {
 
       final router = GoRouter(
         routes: routes,
-        error: _dummy,
+        errorPageBuilder: _dummy,
         initialLocation: '/dummy',
       );
       expect(router.location, '/dummy');
@@ -806,7 +810,7 @@ void main() {
       final routes = [
         GoRoute(
           path: '/',
-          builder: (builder, state) => HomePage(),
+          pageBuilder: (builder, state) => HomePage(),
         ),
         GoRoute(
           path: '/dummy',
@@ -816,7 +820,7 @@ void main() {
 
       final router = GoRouter(
         routes: routes,
-        error: _dummy,
+        errorPageBuilder: _dummy,
         initialLocation: '/dummy',
       );
       expect(router.location, '/');
@@ -830,10 +834,10 @@ void main() {
           routes: [
             GoRoute(
               path: '/:id/:blah/:bam/:id/:blah',
-              builder: _dummy,
+              pageBuilder: _dummy,
             ),
           ],
-          error: (context, state) => ErrorPage(state.error!),
+          errorPageBuilder: (context, state) => ErrorPage(state.error!),
           initialLocation: '/0/1/2/0/1',
         );
         expect(false, true);
@@ -847,13 +851,13 @@ void main() {
         routes: [
           GoRoute(
             path: '/',
-            builder: (_dummy, state) {
+            pageBuilder: (_dummy, state) {
               expect(state.params, {'id': '0'});
               return DummyPage();
             },
           ),
         ],
-        error: _dummy,
+        errorPageBuilder: _dummy,
         initialLocation: '/?id=0&id=1',
       );
     });
@@ -863,13 +867,13 @@ void main() {
         routes: [
           GoRoute(
             path: '/:id',
-            builder: (_dummy, state) {
+            pageBuilder: (_dummy, state) {
               expect(state.params, {'id': '0'});
               return DummyPage();
             },
           ),
         ],
-        error: _dummy,
+        errorPageBuilder: _dummy,
         initialLocation: '/0?id=1',
       );
     });
@@ -878,7 +882,7 @@ void main() {
 
 GoRouter _router(List<GoRoute> routes) => GoRouter(
       routes: routes,
-      error: _dummy,
+      errorPageBuilder: _dummy,
       debugLogDiagnostics: true,
     );
 
@@ -915,7 +919,7 @@ class DummyPage extends Page<dynamic> {
 Page<dynamic> _dummy(BuildContext context, GoRouterState state) => DummyPage();
 
 extension on GoRouter {
-  Page<dynamic> pageFor(GoRouteMatch match) => match.route.builder(
+  Page<dynamic> pageFor(GoRouteMatch match) => match.route.pageBuilder(
         DummyBuildContext(),
         GoRouterState(
           location: 'DO NOT TEST',

@@ -24,7 +24,7 @@ class App extends StatelessWidget {
       ),
       GoRoute(
         path: '/fade',
-        builder: (context, state) => CustomTransitionPage<void>(
+        pageBuilder: (context, state) => CustomTransitionPage<void>(
           key: state.pageKey,
           child: const TransitionsPage(kind: 'fade', color: Colors.red),
           transitionsBuilder: (context, animation, secondaryAnimation, child) =>
@@ -33,7 +33,7 @@ class App extends StatelessWidget {
       ),
       GoRoute(
         path: '/scale',
-        builder: (context, state) => CustomTransitionPage<void>(
+        pageBuilder: (context, state) => CustomTransitionPage<void>(
           key: state.pageKey,
           child: const TransitionsPage(kind: 'scale', color: Colors.green),
           transitionsBuilder: (context, animation, secondaryAnimation, child) =>
@@ -42,7 +42,7 @@ class App extends StatelessWidget {
       ),
       GoRoute(
         path: '/slide',
-        builder: (context, state) => CustomTransitionPage<void>(
+        pageBuilder: (context, state) => CustomTransitionPage<void>(
           key: state.pageKey,
           child: const TransitionsPage(kind: 'slide', color: Colors.yellow),
           transitionsBuilder: (context, animation, secondaryAnimation, child) =>
@@ -58,7 +58,7 @@ class App extends StatelessWidget {
       ),
       GoRoute(
         path: '/rotation',
-        builder: (context, state) => CustomTransitionPage<void>(
+        pageBuilder: (context, state) => CustomTransitionPage<void>(
           key: state.pageKey,
           child: const TransitionsPage(kind: 'rotation', color: Colors.purple),
           transitionsBuilder: (context, animation, secondaryAnimation, child) =>
@@ -67,7 +67,7 @@ class App extends StatelessWidget {
       ),
       GoRoute(
         path: '/none',
-        builder: (context, state) => CustomTransitionPage<void>(
+        pageBuilder: (context, state) => CustomTransitionPage<void>(
           key: state.pageKey,
           child: const TransitionsPage(kind: 'none', color: Colors.white),
           transitionsBuilder: (context, animation, secondaryAnimation, child) =>
@@ -75,7 +75,7 @@ class App extends StatelessWidget {
         ),
       ),
     ],
-    error: (context, state) => MaterialPage<void>(
+    errorPageBuilder: (context, state) => MaterialPage<void>(
       key: state.pageKey,
       child: ErrorPage(state.error),
     ),
