@@ -917,7 +917,11 @@ Page<dynamic> _dummy(BuildContext context, GoRouterState state) => DummyPage();
 extension on GoRouter {
   Page<dynamic> pageFor(GoRouteMatch match) => match.route.builder(
         DummyBuildContext(),
-        GoRouterState(location: 'DO NOT TEST', subloc: match.subloc),
+        GoRouterState(
+          location: 'DO NOT TEST',
+          subloc: match.subloc,
+          pageKey: const ValueKey('DO NOT TEST'),
+        ),
       );
 }
 

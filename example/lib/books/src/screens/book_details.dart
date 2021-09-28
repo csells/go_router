@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:url_launcher/link.dart';
 
 import '../data.dart';
@@ -49,7 +50,7 @@ class BookDetailsScreen extends StatelessWidget {
                   ),
                 );
               },
-              child: const Text('View author (Push)'),
+              child: const Text('View author (navigator.push)'),
             ),
             Link(
               uri: Uri.parse('/author/${book!.author.id}'),
@@ -57,6 +58,12 @@ class BookDetailsScreen extends StatelessWidget {
                 onPressed: followLink,
                 child: const Text('View author (Link)'),
               ),
+            ),
+            TextButton(
+              onPressed: () {
+                context.push('/author/${book!.author.id}');
+              },
+              child: const Text('View author (GoRouter.push)'),
             ),
           ],
         ),

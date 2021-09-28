@@ -41,7 +41,7 @@ class GoRouterState {
   final Exception? error;
 
   /// the unique key for this sub-route, e.g. ValueKey('/family/:fid')
-  ValueKey<String> get pageKey => ValueKey(error != null ? 'error' : fullpath!);
+  final ValueKey<String> pageKey;
 
   GoRouterState({
     required this.location,
@@ -50,7 +50,14 @@ class GoRouterState {
     this.fullpath,
     this.params = const <String, String>{},
     this.error,
-  }) : assert((path ?? '').isEmpty == (fullpath ?? '').isEmpty);
+    ValueKey<String>? pageKey,
+  })  : pageKey = pageKey ??
+            ValueKey(error != null
+                ? 'error'
+                : fullpath != null && fullpath.isNotEmpty
+                    ? fullpath
+                    : subloc),
+        assert((path ?? '').isEmpty == (fullpath ?? '').isEmpty);
 }
 
 /// a declarative mapping between a route path and a page builder
@@ -167,6 +174,15 @@ class GoRouter extends ChangeNotifier {
   void goNamed(String name, [Map<String, String> params = const {}]) =>
       routerDelegate.goNamed(name, params);
 
+  /// push a URI location onto the page stack w/ optional query parameters, e.g.
+  /// /family/f2/person/p1?color=blue
+  void push(String location) => routerDelegate.push(location);
+
+  /// push a named route onto the page stack w/ optional parameters, e.g.
+  /// name='person', params={'fid': 'f2', 'pid': 'p1'}
+  void pushNamed(String name, [Map<String, String> params = const {}]) =>
+      routerDelegate.pushNamed(name, params);
+
   /// refresh the route
   void refresh() => routerDelegate.refresh();
 
@@ -179,7 +195,7 @@ class GoRouter extends ChangeNotifier {
       context.dependOnInheritedWidgetOfExactType<InheritedGoRouter>()!.goRouter;
 }
 
-/// Dart extension to add the go() function to a BuildContext object, e.g.
+/// Dart extension to add navigation function to a BuildContext object, e.g.
 /// context.go('/');
 extension GoRouterHelper on BuildContext {
   /// navigate to a location
@@ -188,6 +204,13 @@ extension GoRouterHelper on BuildContext {
   /// navigate to a named route
   void goNamed(String name, [Map<String, String> params = const {}]) =>
       GoRouter.of(this).goNamed(name, params);
+
+  /// push a location onto the page stack
+  void push(String location) => GoRouter.of(this).push(location);
+
+  /// navigate to a named route onto the page stack
+  void pushNamed(String name, [Map<String, String> params = const {}]) =>
+      GoRouter.of(this).pushNamed(name, params);
 }
 
 /// Page with custom transition functionality; to be used instead of

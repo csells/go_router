@@ -38,6 +38,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   final _key = GlobalKey<NavigatorState>();
   final List<GoRouteMatch> _matches = [];
   final _namedMatches = <String, GoRouteMatch>{};
+  final _pushCounts = <String, int>{};
 
   GoRouterDelegate({
     required this.builderWithNav,
@@ -115,17 +116,19 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   }
 
   /// navigate to the named route
-  void goNamed(String name, Map<String, String> params) {
-    _log(
-        'looking up named route "$name"${params.isEmpty ? '' : ' with $params'}');
+  void goNamed(String name, Map<String, String> params) =>
+      go(_lookupNamedRoute(name, params));
 
-    // find route and build up the full path along the way
-    final match = getNameRouteMatch(name, params);
-    if (match == null) throw Exception('unknown route name: $name');
-
-    final loc = _addQueryParams(match.subloc, match.queryParams);
-    return go(loc);
+  /// push the given location onto the page stack
+  void push(String location) {
+    _log('going to $location');
+    _push(location);
+    _safeNotifyListeners();
   }
+
+  /// push the named route onto the page stack
+  void pushNamed(String name, Map<String, String> params) =>
+      push(_lookupNamedRoute(name, params));
 
   /// refresh the current location, including re-evaluating redirections
   void refresh() {
@@ -198,7 +201,53 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     if (debugLogDiagnostics) debugPrint('GoRouter: $o');
   }
 
+  String _lookupNamedRoute(String name, Map<String, String> params) {
+    _log(
+        'looking up named route "$name"${params.isEmpty ? '' : ' with $params'}');
+
+    // find route and build up the full path along the way
+    final match = getNameRouteMatch(name, params);
+    if (match == null) throw Exception('unknown route name: $name');
+
+    return _addQueryParams(match.subloc, match.queryParams);
+  }
+
   void _go(String location) {
+    final matches = _getLocRouteMatchesWithRedirects(location);
+    assert(matches.isNotEmpty);
+
+    // replace the stack of matches w/ the new ones
+    _matches.clear();
+    _matches.addAll(matches);
+    _locationChanged();
+  }
+
+  void _push(String location) {
+    final matches = _getLocRouteMatchesWithRedirects(location);
+    assert(matches.isNotEmpty);
+    final top = matches.last;
+
+    // remap the pageKey so allow any number of the same page on the stack
+    final fullpath = top.fullpath;
+    final count = (_pushCounts[fullpath] ?? 0) + 1;
+    _pushCounts[fullpath] = count;
+    final pageKey = ValueKey('$fullpath-p$count');
+    final match = GoRouteMatch(
+      route: top.route,
+      subloc: top.subloc,
+      fullpath: top.fullpath,
+      params: top.params,
+      queryParams: top.queryParams,
+      pageKey: pageKey,
+    );
+
+    // add a new match onto the stack of matches
+    assert(matches.isNotEmpty);
+    _matches.add(match);
+    _locationChanged();
+  }
+
+  List<GoRouteMatch> _getLocRouteMatchesWithRedirects(String location) {
     // start redirecting from the initial location
     List<GoRouteMatch> matches;
 
@@ -283,11 +332,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       ];
     }
 
-    // update the matches
     assert(matches.isNotEmpty);
-    _matches.clear();
-    _matches.addAll(matches);
-    _locationChanged();
+    return matches;
   }
 
   /// for internal use; visible for testing only
@@ -552,6 +598,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
           path: match.route.path,
           fullpath: match.fullpath,
           params: params,
+          pageKey: match.pageKey, // push() remaps the page key for uniqueness
         ),
       );
     }
@@ -663,12 +710,15 @@ class GoRouteMatch {
   final String fullpath; // e.g. /family/:fid
   final Map<String, String> params;
   final Map<String, String> queryParams;
+  final ValueKey<String>? pageKey;
+
   GoRouteMatch({
     required this.route,
     required this.subloc,
     required this.fullpath,
     required this.params,
     required this.queryParams,
+    this.pageKey,
   })  : assert(subloc.startsWith('/')),
         assert(Uri.parse(subloc).queryParameters.isEmpty),
         assert(fullpath.startsWith('/')),

@@ -1,7 +1,8 @@
 ### 0.9.6
+- added support for `push` as well as `go`
 - added 'none' to transitions example app
-- TODO: added support for `push` as well as `go`
-
+- updated animation example to use no transition and added an animated gif to
+  the README
 
 ### 0.9.5
 - added support for custom transitions between routes

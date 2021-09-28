@@ -1,7 +1,7 @@
 name: go_router
 description: A declarative router for Flutter based on Navigation 2 supporting
   deep linking, data-driven routes and more
-version: 0.9.5
+version: 0.9.6
 repository: https://github.com/csells/go_router
 
 environment:

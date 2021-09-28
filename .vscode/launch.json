@@ -86,6 +86,13 @@
       "program": "lib/cupertino.dart"
     },
     {
+      "name": "Push",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "example",
+      "program": "lib/push.dart"
+    },
+    {
       "name": "Books",
       "type": "dart",
       "request": "launch",

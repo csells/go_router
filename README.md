@@ -34,6 +34,7 @@ developer experience.
 - [Parameters](#parameters)
   * [Dynamic linking](#dynamic-linking)
 - [Sub-routes](#sub-routes)
+- [Pushing pages](#pushing-pages)
 - [Redirection](#redirection)
   * [Top-level redirection](#top-level-redirection)
   * [Route-level redirection](#route-level-redirection)
@@ -49,7 +50,6 @@ developer experience.
 - [Debugging Your Routes](#debugging-your-routes)
 - [Examples](#examples)
 - [Issues](#issues)
-
 
 # Getting Started
 To use the go_router package, [follow these
@@ -340,6 +340,19 @@ Also, the go_router will pass parameters from higher level sub-routes so that
 they can be used in lower level routes, e.g. `fid` is matched as part of the
 `family/:fid` route, but it's passed along to the `person/:pid` route because
 it's a sub-route of the `family/:fid` route.
+
+# Pushing pages
+In addition to the `go` method, the go_router also provides a `push` method.
+Both `go` and `push` can be used to build up a stack of pages, but in different
+ways. The `go` method does this by turning a single location into any number of
+pages in a stack using [Sub-routes](#sub-routes).
+
+The `push` method is used to push a single page onto the stack of existing
+pages, which means that you can build up the stack programatically instead of
+declaratively. When the `push` method matches an entire stack via sub-routes, it
+will take the top-most page from the stack and push that page onto the stack.
+
+You can also push a [named route](#named-routes), discussed below.
 
 # Redirection
 Sometimes you want your app to redirect to a different location. The go_router
@@ -708,10 +721,13 @@ void _tap(BuildContext context, String fid, String pid) =>
   context.goNamed('person', {'fid': fid, 'pid': pid});
 ```
 
-The `goNamed` function will look up the route by name in a case insensitive way,
+The `goNamed` method will look up the route by name in a case insensitive way,
 contruct the URI for you and fill in the params as appropriate. If you miss a
 param, you'll get an error. If you pass any extra params, they'll be passed as
 query parameters.
+
+There is also a `pushNamed` method that will look up the route by name, pull
+the top page off of the stack and push that onto the existing stack of pages.
 
 # Custom Transitions
 As you transition between routes, you get transitions based on whether
@@ -762,49 +778,100 @@ Now you can use the `FutureBuilder` to show a loading indicator while the data
 is loading:
 
 ```dart
-final repo = Repository();
-...
-late final _router = GoRouter(
-  routes: [
-    GoRoute(
-      path: '/',
-      builder: (context, state) => MaterialPage<void>(
-        key: state.pageKey,
-        child: FutureBuilder<List<Family>>(
-          future: repo.getFamilies(),
-          builder: (context, snapshot) {
-            if (snapshot.hasError) return Text(snapshot.error.toString());
-            if (snapshot.hasData) return HomePage(families: snapshot.data!);
-            return const Center(child: CircularProgressIndicator());
-          },
-        ),
-      ),
-      routes: [
-        GoRoute(
-          path: 'family/:fid',
-          builder: (context, state) => MaterialPage<void>(
-            key: state.pageKey,
-            child: FutureBuilder<Family>(
-              future: repo.getFamily(state.params['fid']!),
-              builder: (context, snapshot) {
-                if (snapshot.hasError) return Text(snapshot.error.toString());
-                if (snapshot.hasData)
-                  return FamilyPage(family: snapshot.data!);
-                return const Center(child: CircularProgressIndicator());
-              },
-            ),
+class App extends StatelessWidget {
+  final repo = Repository();
+  ...
+  late final _router = GoRouter(
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) => NoTransitionPage<void>(
+          key: state.pageKey,
+          child: FutureBuilder<List<Family>>(
+            future: repo.getFamilies(),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) return Text(snapshot.error.toString());
+              if (snapshot.hasData) return HomePage(families: snapshot.data!);
+              return const Center(child: CircularProgressIndicator());
+            },
           ),
         ),
-      ],
+        routes: [
+          GoRoute(
+            path: 'family/:fid',
+            builder: (context, state) => NoTransitionPage<void>(
+              key: state.pageKey,
+              child: FutureBuilder<Family>(
+                future: repo.getFamily(state.params['fid']!),
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) return Text(snapshot.error.toString());
+                  if (snapshot.hasData)
+                    return FamilyPage(family: snapshot.data!);
+                  return const Center(child: CircularProgressIndicator());
+                },
+              ),
+            ),
+            routes: [
+              GoRoute(
+                path: 'person/:pid',
+                builder: (context, state) => NoTransitionPage<void>(
+                  key: state.pageKey,
+                  child: FutureBuilder<FamilyPerson>(
+                    future: repo.getPerson(
+                      state.params['fid']!,
+                      state.params['pid']!,
+                    ),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasError)
+                        return Text(snapshot.error.toString());
+                      if (snapshot.hasData)
+                        return PersonPage(
+                            family: snapshot.data!.family,
+                            person: snapshot.data!.person);
+                      return const Center(child: CircularProgressIndicator());
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ],
+    error: (context, state) => MaterialPage<void>(
+      key: state.pageKey,
+      child: ErrorPage(state.error),
     ),
-  ],
-);
+  );
+}
+
+class NoTransitionPage<T> extends CustomTransitionPage<T> {
+  const NoTransitionPage({required Widget child, LocalKey? key})
+      : super(transitionsBuilder: _transitionsBuilder, child: child, key: key);
+
+  static Widget _transitionsBuilder(
+          BuildContext context,
+          Animation<double> animation,
+          Animation<double> secondaryAnimation,
+          Widget child) =>
+      child;
+}
 ```
 
 This is a simple case that shows a circular progress indicator while the data is
-being loaded and before the page is shown. It might be even nicer to navigate to
-the page, for example to show the `AppBar`, and then show the loading indicator
-inside the page itself. Such polish is left as an exercise for the reader.
+being loaded and before the page is shown.
+
+![async data example](readme/async.gif)
+
+The way transitions work, the outgoing page is shown for a little while before
+the incoming page is shown, which looks pretty funny when your page is doing
+nothing but showing a circular progress indicator. I admit that I took the
+coward's way out and turned off the transitions so that things wouldn't look
+terrible in the animated screenshot. However, it would be nicer to keep the
+transition, navigate to the page showing as much as possible, e.g. the `AppBar`,
+and then show the loading indicator inside the page itself. In that case, you'll
+be on your own to show an error in the case that the data can't be loaded. Such
+polish is left as an exercise for the reader.
 
 # Nested Navigation
 Sometimes you want to choose a page based on a route as well as the state of
@@ -1072,6 +1139,8 @@ You can see the go_router in action via the following examples:
   instead of home (`/`), which is the default
 - [`sub_routes.dart`](example/lib/sub_routes.dart): provide a stack of pages
   based on a set of sub routes
+- [`push.dart`](example/lib/push.dart): provide a stack of pages
+  based on a series of calles to `context.push()`
 - [`redirection.dart`](example/lib/redirection.dart): redirect one route to
   another based on changing app state
 - [`query_params.dart`](example/lib/query_params.dart): optional query

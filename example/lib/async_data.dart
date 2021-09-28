@@ -6,7 +6,6 @@ import 'shared/pages.dart';
 
 void main() => runApp(App());
 
-/// sample app using the path URL strategy, i.e. no # in the URL path
 class App extends StatelessWidget {
   final repo = Repository();
   App({Key? key}) : super(key: key);
@@ -22,7 +21,7 @@ class App extends StatelessWidget {
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => MaterialPage<void>(
+        builder: (context, state) => NoTransitionPage<void>(
           key: state.pageKey,
           child: FutureBuilder<List<Family>>(
             future: repo.getFamilies(),
@@ -36,7 +35,7 @@ class App extends StatelessWidget {
         routes: [
           GoRoute(
             path: 'family/:fid',
-            builder: (context, state) => MaterialPage<void>(
+            builder: (context, state) => NoTransitionPage<void>(
               key: state.pageKey,
               child: FutureBuilder<Family>(
                 future: repo.getFamily(state.params['fid']!),
@@ -51,7 +50,7 @@ class App extends StatelessWidget {
             routes: [
               GoRoute(
                 path: 'person/:pid',
-                builder: (context, state) => MaterialPage<void>(
+                builder: (context, state) => NoTransitionPage<void>(
                   key: state.pageKey,
                   child: FutureBuilder<FamilyPerson>(
                     future: repo.getPerson(
@@ -80,4 +79,16 @@ class App extends StatelessWidget {
       child: ErrorPage(state.error),
     ),
   );
+}
+
+class NoTransitionPage<T> extends CustomTransitionPage<T> {
+  const NoTransitionPage({required Widget child, LocalKey? key})
+      : super(transitionsBuilder: _transitionsBuilder, child: child, key: key);
+
+  static Widget _transitionsBuilder(
+          BuildContext context,
+          Animation<double> animation,
+          Animation<double> secondaryAnimation,
+          Widget child) =>
+      child;
 }

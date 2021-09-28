@@ -93,8 +93,6 @@ class App extends StatelessWidget {
 
     // changes on the listenable will cause the router to refresh it's route
     refreshListenable: loginInfo,
-
-    debugLogDiagnostics: true,
   );
 }
 
