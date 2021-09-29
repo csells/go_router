@@ -1010,6 +1010,23 @@ page as before. This combination is what causes the router to leave the the page
 alone, to update the browser's address bar and to let the `TabView` navigate to
 the new selection.
 
+This may seem like a lot, but in summary, you need to do three things with the
+page you create in your page builder to support nested navigation:
+
+1. Use a `StatefulWidget` as the base class of the thing you pass to
+`MaterialPage` (or whatever).
+
+1. Pass the same key value to the `MaterialPage` so that Flutter knows that
+you're keeping the same state for your `StatefulWidget`-derived page;
+`state.pageKey` is handy for this.
+
+1. As the user navigates, you'll create the same `StatefulWidget`-derived type,
+passing in new data, e.g. which tab is currently selected. Because you're
+using a widget with the same key, Flutter will keep the state but swap out the
+widget wrapping w/ the new data as ctor args. When that new widget wrapper is
+in place, Flutter will call `didChangeDependencies` so that you can use the new
+data to update the existing widgets, e.g. the selected tab.
+
 This example shows off the selected tab on a `TabView` but you can use it for
 any nested content of a page your app navigates to.
 
