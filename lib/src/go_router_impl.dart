@@ -545,8 +545,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
           _matches.remove(_matches.last);
           _locationChanged();
 
-           // HACK: fixes the push disable AppBar Back button, but it shouldn't
-           // be necessary...
+          // HACK: fixes the push disable AppBar Back button, but it shouldn't
+          // be necessary...
           _safeNotifyListeners();
 
           return true;
