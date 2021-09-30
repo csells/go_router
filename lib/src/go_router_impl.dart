@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:path_to_regexp/path_to_regexp.dart' as p2re;
@@ -543,6 +545,10 @@ class GoRouterDelegate extends RouterDelegate<Uri>
           _matches.remove(_matches.last);
           _locationChanged();
 
+           // HACK: fixes the push disable AppBar Back button, but it shouldn't
+           // be necessary...
+          _safeNotifyListeners();
+
           return true;
         },
       ),
@@ -654,11 +660,9 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     _log2(
         'GoRouterDelegate.safeNotifyListeners: WidgetsBinding.instance= ${WidgetsBinding.instance == null ? 'null' : 'non-null'}');
 
-    final instance = WidgetsBinding.instance;
-    if (instance != null)
-      instance.addPostFrameCallback((_) => notifyListeners());
-    else
-      notifyListeners();
+    WidgetsBinding.instance == null
+        ? notifyListeners()
+        : scheduleMicrotask(notifyListeners);
   }
 
   void _locationChanged() {

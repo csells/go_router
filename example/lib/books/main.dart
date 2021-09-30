@@ -37,6 +37,7 @@ class Bookstore extends StatelessWidget {
   final _curveTween = CurveTween(curve: Curves.easeIn);
 
   late final _router = GoRouter(
+    debugLogDiagnostics: true,
     routes: [
       GoRoute(
         path: '/',

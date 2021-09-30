@@ -1,3 +1,9 @@
+### 1.0.1
+- README updates based on user feedback for clarity
+- FIX: setting URL path strategy in `main()`
+- FIX: `push()` disables `AppBar` Back button
+
+
 ### 1.0.0
 - updated version for initial release
 - some renaming for clarify and consistency with transitions

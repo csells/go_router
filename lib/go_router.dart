@@ -143,7 +143,7 @@ class GoRouter extends ChangeNotifier {
     GoRouterRedirect? redirect,
     Listenable? refreshListenable,
     String initialLocation = '/',
-    UrlPathStrategy? urlPathStrategy = UrlPathStrategy.hash,
+    UrlPathStrategy? urlPathStrategy,
     bool debugLogDiagnostics = false,
   }) {
     if (urlPathStrategy != null) setUrlPathStrategy(urlPathStrategy);
