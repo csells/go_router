@@ -57,7 +57,7 @@ instructions](https://pub.dev/packages/go_router/install).
 
 # Declarative Routing
 The go_router is governed by a set of routes which you specify as part of the
-`GoRouter` ctor:
+`GoRouter` constructor:
 
 ```dart
 class App extends StatelessWidget {
@@ -227,7 +227,7 @@ purpose.
 
 # Initial Location
 If you'd like to set an initial location for routing, you can set the
-`initialLocation` argument of the `GoRouter` ctor:
+`initialLocation` argument of the `GoRouter` constructor:
 
 ```dart
 final _router = GoRouter(
@@ -386,7 +386,7 @@ class LoginInfo extends ChangeNotifier {
 ```
 
 You can use this info in the implementation of a `redirect` function that you
-pass as to the `GoRouter` ctor:
+pass as to the `GoRouter` constructor:
 
 ```dart
 class App extends StatelessWidget {
@@ -487,7 +487,7 @@ In this case, we've logged the user in and manually redirected them to the home
 page. That's because the go_router doesn't know that the app's state has
 changed in a way that affects the route. If you'd like to have the app's state
 cause go_router to automatically redirect, you can use the `refreshListener`
-argument of the `GoRouter` ctor:
+argument of the `GoRouter` constructor:
 
 ```dart
 class App extends StatelessWidget {
@@ -505,7 +505,7 @@ class App extends StatelessWidget {
 ```
 
 Since the `loginInfo` is a `ChangeNotifier`, it will notify listeners when it
-changes. By passing it to the `GoRouter` ctor, the go_router will
+changes. By passing it to the `GoRouter` constructor, the go_router will
 automatically refresh the route when the login info changes. This allows you to
 simplify the login logic in your app:
 
@@ -524,12 +524,12 @@ recommended because it will handle the routing automatically for you when the
 app's data changes.
 
 ## Route-level redirection
-The top-level redirect handled passed to the `GoRouter` ctor is handy when you
+The top-level redirect handled passed to the `GoRouter` constructor is handy when you
 want a single function to be called whenever there's a new navigation event and
 to make some decisions based on the app's current state. However, in the case
 that you'd like to make a redirection decision for a specific route (or
 sub-route), you can do so by passing a `redirect` function to the `GoRoute`
-ctor:
+constructor:
 
 ```dart
 final _router = GoRouter(
@@ -1023,7 +1023,7 @@ you're keeping the same state for your `StatefulWidget`-derived page;
 1. As the user navigates, you'll create the same `StatefulWidget`-derived type,
 passing in new data, e.g. which tab is currently selected. Because you're
 using a widget with the same key, Flutter will keep the state but swap out the
-widget wrapping w/ the new data as ctor args. When that new widget wrapper is
+widget wrapping w/ the new data as constructor args. When that new widget wrapper is
 in place, Flutter will call `didChangeDependencies` so that you can use the new
 data to update the existing widgets, e.g. the selected tab.
 
@@ -1067,7 +1067,7 @@ Setting the path instead of the hash strategy turns off the # in the URLs:
 
 If your router is created as part of the construction of the widget passed to
 the `runApp` method, you can use a shortcut to set the URL path strategy by
-using the `urlPathStrategy` parameter of the `GoRouter` ctor:
+using the `urlPathStrategy` parameter of the `GoRouter` constructor:
 
 ```dart
  // no need to call GoRouter.setUrlPathStrategy() here
