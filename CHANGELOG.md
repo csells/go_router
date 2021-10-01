@@ -1,6 +1,7 @@
-### TBD
+### 1.1.1
 - now showing routing exceptions in the debug log
-
+- updated the README to make it clear that it will be called until it returns
+  `null`
 
 ### 1.1.0
 - added support `NavigatorObserver` objects to receive change notifications
