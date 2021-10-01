@@ -132,7 +132,8 @@ class GoRoute {
 
 /// top-level go_router class; create one of these to initialize your app's
 /// routing policy
-class GoRouter extends ChangeNotifier {
+// ignore: prefer_mixin
+class GoRouter extends ChangeNotifier with NavigatorObserver {
   final routeInformationParser = GoRouteInformationParser();
   late final GoRouterDelegate routerDelegate;
 
@@ -144,6 +145,7 @@ class GoRouter extends ChangeNotifier {
     Listenable? refreshListenable,
     String initialLocation = '/',
     UrlPathStrategy? urlPathStrategy,
+    List<NavigatorObserver>? observers,
     bool debugLogDiagnostics = false,
   }) {
     if (urlPathStrategy != null) setUrlPathStrategy(urlPathStrategy);
@@ -154,7 +156,7 @@ class GoRouter extends ChangeNotifier {
       topRedirect: redirect ?? (_) => null,
       refreshListenable: refreshListenable,
       initUri: Uri.parse(initialLocation),
-      onLocationChanged: notifyListeners,
+      observers: [...observers ?? [], this],
       debugLogDiagnostics: debugLogDiagnostics,
       // wrap the returned Navigator to enable GoRouter.of(context).go() et al
       builderWithNav: (context, nav) =>
@@ -193,6 +195,26 @@ class GoRouter extends ChangeNotifier {
   /// find the current GoRouter in the widget tree
   static GoRouter of(BuildContext context) =>
       context.dependOnInheritedWidgetOfExactType<InheritedGoRouter>()!.goRouter;
+
+  /// The [Navigator] pushed `route`.
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) =>
+      notifyListeners();
+
+  /// The [Navigator] popped `route`.
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) =>
+      notifyListeners();
+
+  /// The [Navigator] removed `route`.
+  @override
+  void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) =>
+      notifyListeners();
+
+  /// The [Navigator] replaced `oldRoute` with `newRoute`.
+  @override
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) =>
+      notifyListeners();
 }
 
 /// Dart extension to add navigation function to a BuildContext object, e.g.

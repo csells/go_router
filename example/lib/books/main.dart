@@ -37,7 +37,6 @@ class Bookstore extends StatelessWidget {
   final _curveTween = CurveTween(curve: Curves.easeIn);
 
   late final _router = GoRouter(
-    debugLogDiagnostics: true,
     routes: [
       GoRoute(
         path: '/',
@@ -146,7 +145,7 @@ class Bookstore extends StatelessWidget {
     ),
     redirect: _guard,
     refreshListenable: _auth,
-    // debugLogDiagnostics: kDebugMode,
+    debugLogDiagnostics: true,
   );
 
   String? _guard(GoRouterState state) {

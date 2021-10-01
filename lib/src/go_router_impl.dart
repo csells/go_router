@@ -34,7 +34,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   final GoRouterPageBuilder errorPageBuilder;
   final GoRouterRedirect topRedirect;
   final Listenable? refreshListenable;
-  VoidCallback? onLocationChanged;
+  final List<NavigatorObserver> observers;
   final bool debugLogDiagnostics;
 
   final _key = GlobalKey<NavigatorState>();
@@ -49,7 +49,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     required this.topRedirect,
     required this.refreshListenable,
     required Uri initUri,
-    required VoidCallback onLocationChanged,
+    required this.observers,
     required this.debugLogDiagnostics,
   }) {
     // check top-level route paths are valid
@@ -71,12 +71,6 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
     // when the listener changes, refresh the route
     refreshListenable?.addListener(refresh);
-
-    // when the location changes, call the callback
-    // NOTE: waiting until after the initial call to _go() to hook this up
-    // to avoid the case where all of the GoRouter initialization isn't done
-    // ignore: prefer_initializing_formals
-    this.onLocationChanged = onLocationChanged;
   }
 
   void _cacheNamedRoutes(
@@ -221,7 +215,6 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     // replace the stack of matches w/ the new ones
     _matches.clear();
     _matches.addAll(matches);
-    _locationChanged();
   }
 
   void _push(String location) {
@@ -246,7 +239,6 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     // add a new match onto the stack of matches
     assert(matches.isNotEmpty);
     _matches.add(match);
-    _locationChanged();
   }
 
   List<GoRouteMatch> _getLocRouteMatchesWithRedirects(String location) {
@@ -538,12 +530,12 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       context,
       Navigator(
         pages: pages,
+        observers: observers,
         onPopPage: (route, dynamic result) {
           if (!route.didPop(result)) return false;
 
           _log2('GoRouterDelegate.onPopPage: matches.last= ${_matches.last}');
           _matches.remove(_matches.last);
-          _locationChanged();
 
           // HACK: fixes the push disable AppBar Back button, but it shouldn't
           // be necessary...
@@ -663,11 +655,6 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     WidgetsBinding.instance == null
         ? notifyListeners()
         : scheduleMicrotask(notifyListeners);
-  }
-
-  void _locationChanged() {
-    _log('location changed to $location');
-    onLocationChanged?.call();
   }
 }
 

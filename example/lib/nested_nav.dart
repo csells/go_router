@@ -53,6 +53,5 @@ class App extends StatelessWidget {
       key: state.pageKey,
       child: ErrorPage(state.error),
     ),
-    debugLogDiagnostics: true,
   );
 }

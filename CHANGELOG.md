@@ -1,3 +1,7 @@
+### 1.1.0
+- added support `NavigatorObserver` objects to receive change notifications
+
+
 ### 1.0.1
 - README updates based on user feedback for clarity
 - FIX: setting URL path strategy in `main()`
