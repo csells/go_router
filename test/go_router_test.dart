@@ -317,20 +317,6 @@ void main() {
       router.go('/family/f2');
       router.go('/family/f2/person/p1');
     });
-
-    test('listen to the router', () {
-      final routes = [GoRoute(path: '/', pageBuilder: _dummy)];
-      final router = _router(routes);
-
-      var count = 0;
-      void counter() => ++count;
-      router.addListener(counter);
-      router.go('/');
-      expect(count, 1);
-      router.removeListener(counter);
-      router.go('/');
-      expect(count, 1);
-    });
   });
 
   group('named routes', () {
