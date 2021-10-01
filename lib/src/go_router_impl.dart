@@ -302,6 +302,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         break;
       }
     } on Exception catch (ex) {
+      _log(ex.toString());
+
       // create a match that routes to the error page
       final uri = Uri.parse(location);
       matches = [
@@ -512,6 +514,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       // build the stack of pages
       pages = getPages(context, matches.toList()).toList();
     } on Exception catch (ex) {
+      _log(ex.toString());
+
       // if there's an error, show an error page
       pages = [
         errorPageBuilder(

@@ -1137,6 +1137,13 @@ GoRouter: going to /family/f2/person/p1
 GoRouter: location changed to /family/f2/person/p1
 ```
 
+Finally, if there's an exception in your routing, you'll see that in the debug
+output, too, e.g.
+
+```text
+GoRouter: Exception: no routes for location: /books/none
+```
+
 To enable this kind of output when your `GoRouter` is first created, you can use
 the `debugLogDiagnostics` argument:
 
