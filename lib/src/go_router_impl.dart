@@ -101,8 +101,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         final name = route.name!.toLowerCase();
         final fullpath = _fullLocFor(parentFullpath, route.path);
         if (namedFullpaths.containsKey(name)) {
-          throw Exception(
-              'duplication fullpaths for name "$name": ${namedFullpaths[name]!.fullpath}, $fullpath');
+          throw Exception('duplication fullpaths for name "$name":'
+              '${namedFullpaths[name]!.fullpath}, $fullpath');
         }
 
         // we only have a partial match until we have a location;
@@ -216,8 +216,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   }
 
   String _lookupNamedRoute(String name, Map<String, String> params) {
-    _log(
-        'looking up named route "$name"${params.isEmpty ? '' : ' with $params'}');
+    _log('looking up named route '
+        '"$name"${params.isEmpty ? '' : ' with $params'}');
 
     // find route and build up the full path along the way
     final match = getNameRouteMatch(name, params);
@@ -671,8 +671,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   // The following assertion was thrown while dispatching notifications for
   // GoRouterDelegate: setState() or markNeedsBuild() called during build.
   void _safeNotifyListeners() {
-    _log2(
-        'GoRouterDelegate.safeNotifyListeners: WidgetsBinding.instance= ${WidgetsBinding.instance == null ? 'null' : 'non-null'}');
+    _log2('GoRouterDelegate.safeNotifyListeners: WidgetsBinding.instance= '
+        '${WidgetsBinding.instance == null ? 'null' : 'non-null'}');
 
     WidgetsBinding.instance == null
         ? notifyListeners()
@@ -685,16 +685,16 @@ class GoRouteInformationParser extends RouteInformationParser<Uri> {
   /// for use by the Router architecture as part of the RouteInformationParser
   @override
   Future<Uri> parseRouteInformation(RouteInformation routeInformation) async {
-    _log2(
-        'GoRouteInformationParser.parseRouteInformation: routeInformation.location= ${routeInformation.location}');
+    _log2('GoRouteInformationParser.parseRouteInformation: '
+        'routeInformation.location= ${routeInformation.location}');
     return Uri.parse(routeInformation.location!);
   }
 
   /// for use by the Router architecture as part of the RouteInformationParser
   @override
   RouteInformation restoreRouteInformation(Uri configuration) {
-    _log2(
-        'GoRouteInformationParser.parseRouteInformation: configuration= $configuration');
+    _log2('GoRouteInformationParser.parseRouteInformation: '
+        'configuration= $configuration');
     return RouteInformation(location: configuration.toString());
   }
 }
