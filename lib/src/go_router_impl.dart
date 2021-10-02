@@ -558,6 +558,9 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
           _log2('GoRouterDelegate.onPopPage: matches.last= ${_matches.last}');
           _matches.remove(_matches.last);
+          if (_matches.isEmpty)
+            throw Exception('have popped the last page off of the stack; '
+                'there are no pages left to show');
 
           // HACK: fixes the push disable AppBar Back button, but it shouldn't
           // be necessary...
