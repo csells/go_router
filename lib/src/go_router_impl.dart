@@ -13,28 +13,44 @@ void _log2(String s) {
   if (_debugLog2Diagnostics) debugPrint('  $s');
 }
 
+/// Signature of a go router builder function with matchers.
 typedef GoRouterBuilderWithMatches = Widget Function(
   BuildContext context,
   Iterable<GoRouteMatch> matches,
 );
 
+/// Signature of a go router builder function with navigator.
 typedef GoRouterBuilderWithNav = Widget Function(
   BuildContext context,
   Navigator navigator,
 );
 
-/// GoRouter implementation of the RouterDelegate base class
+/// GoRouter implementation of the RouterDelegate base class.
 class GoRouterDelegate extends RouterDelegate<Uri>
     with
         PopNavigatorRouterDelegateMixin<Uri>,
         // ignore: prefer_mixin
         ChangeNotifier {
+  /// Builder function for a go router with Navigator.
   final GoRouterBuilderWithNav builderWithNav;
+
+  /// List of top level routes used by the go router delegate.
   final List<GoRoute> routes;
+
+  /// Error page builder for the go router delegate.
   final GoRouterPageBuilder errorPageBuilder;
+
+  /// Top level page redirect.
   final GoRouterRedirect topRedirect;
+
+  /// Listenable used to cause the router to refresh it's route.
   final Listenable? refreshListenable;
+
+  /// NavigatorObserver used to receive change notifications when
+  /// navigation changes.
   final List<NavigatorObserver> observers;
+
+  /// Set to true to log diagnostic info for your routes.
   final bool debugLogDiagnostics;
 
   final _key = GlobalKey<NavigatorState>();
@@ -42,6 +58,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   final _namedMatches = <String, GoRouteMatch>{};
   final _pushCounts = <String, int>{};
 
+  /// Constructor for GoRouter's implementation of the
+  /// RouterDelegate base class.
   GoRouterDelegate({
     required this.builderWithNav,
     required this.routes,
@@ -104,14 +122,14 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     }
   }
 
-  /// navigate to the given location
+  /// Navigate to the given location.
   void go(String location) {
     _log('going to $location');
     _go(location);
     _safeNotifyListeners();
   }
 
-  /// navigate to the named route
+  /// Navigate to the named route.
   void goNamed(String name, Map<String, String> params) =>
       go(_lookupNamedRoute(name, params));
 
@@ -122,44 +140,44 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     _safeNotifyListeners();
   }
 
-  /// push the named route onto the page stack
+  /// Push the named route onto the page stack.
   void pushNamed(String name, Map<String, String> params) =>
       push(_lookupNamedRoute(name, params));
 
-  /// refresh the current location, including re-evaluating redirections
+  /// Refresh the current location, including re-evaluating redirections.
   void refresh() {
     _log('refreshing $location');
     _go(location);
     _safeNotifyListeners();
   }
 
-  /// get the current location, e.g. /family/f2/person/p1
+  /// Get the current location, e.g. /family/f2/person/p1
   String get location =>
       _addQueryParams(_matches.last.subloc, _matches.last.queryParams);
 
-  /// for internal use; visible for testing only
+  /// For internal use; visible for testing only.
   @visibleForTesting
   List<GoRouteMatch> get matches => _matches;
 
-  /// dispose resources held by the router delegate
+  /// Dispose resources held by the router delegate.
   @override
   void dispose() {
     refreshListenable?.removeListener(refresh);
     super.dispose();
   }
 
-  /// for use by the Router architecture as part of the RouterDelegate
+  /// For use by the Router architecture as part of the RouterDelegate.
   @override
   GlobalKey<NavigatorState> get navigatorKey => _key;
 
-  /// for use by the Router architecture as part of the RouterDelegate
+  /// For use by the Router architecture as part of the RouterDelegate.
   @override
   Uri get currentConfiguration {
     _log2('GoRouterDelegate.currentConfiguration: $location');
     return Uri.parse(location);
   }
 
-  /// for use by the Router architecture as part of the RouterDelegate
+  /// For use by the Router architecture as part of the RouterDelegate.
   @override
   Widget build(BuildContext context) {
     _log2('GoRouterDelegate.build: matches=');
@@ -167,7 +185,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     return _builder(context, _matches);
   }
 
-  /// for use by the Router architecture as part of the RouterDelegate
+  /// For use by the Router architecture as part of the RouterDelegate.
   @override
   Future<void> setInitialRoutePath(Uri configuration) async {
     _log2(
@@ -184,7 +202,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     }
   }
 
-  /// for use by the Router architecture as part of the RouterDelegate
+  /// For use by the Router architecture as part of the RouterDelegate.
   @override
   Future<void> setNewRoutePath(Uri configuration) async {
     _log2('GoRouterDelegate.setNewRoutePath: configuration= $configuration');
@@ -332,7 +350,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     return matches;
   }
 
-  /// for internal use; visible for testing only
+  /// For internal use; visible for testing only.
   @visibleForTesting
   List<GoRouteMatch> getLocRouteMatches(String location) {
     final uri = Uri.parse(location);
@@ -471,7 +489,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     }
   }
 
-  /// for internal use; visible for testing only
+  /// For internal use; visible for testing only.
   @visibleForTesting
   GoRouteMatch? getNameRouteMatch(
     String name, [
@@ -551,7 +569,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     );
   }
 
-  /// get the stack of sub-routes that matches the location and turn it into a
+  /// Get the stack of sub-routes that matches the location and turn it into a
   /// stack of pages, e.g.
   /// routes: [
   ///   /
@@ -681,18 +699,22 @@ class GoRouteInformationParser extends RouteInformationParser<Uri> {
   }
 }
 
-/// GoRouter implementation of InheritedWidget for purposes of finding the
-/// current GoRouter in the widget tree. This is useful when routing from
-/// anywhere in your app.
+/// GoRouter implementation of InheritedWidget.
+///
+/// Used for to find the current GoRouter in the widget tree. This is useful
+/// when routing from anywhere in your app.
 class InheritedGoRouter extends InheritedWidget {
+  /// The [GoRouter] that is made available to the widget tree.
   final GoRouter goRouter;
+
+  /// Default constructor for the inherited go router.
   const InheritedGoRouter({
     required Widget child,
     required this.goRouter,
     Key? key,
   }) : super(child: child, key: key);
 
-  /// for use by the Router architecture as part of the InheritedWidget
+  /// Used by the Router architecture as part of the InheritedWidget.
   @override
   bool updateShouldNotify(covariant InheritedWidget oldWidget) => true;
 }
@@ -700,13 +722,26 @@ class InheritedGoRouter extends InheritedWidget {
 /// Each GoRouteMatch instance represents an instance of a GoRoute for a
 /// specific portion of a location.
 class GoRouteMatch {
+  /// The matched route.
   final GoRoute route;
+
+  /// Matched sub-location.
   final String subloc; // e.g. /family/f2
+
+  /// Matched full path.
   final String fullpath; // e.g. /family/:fid
+
+  /// Parameters for the matched route.
   final Map<String, String> params;
+
+  /// Query parameters for the matched route.
   final Map<String, String> queryParams;
+
+  /// Optional value key of type string, to hold a unique reference to a page.
   final ValueKey<String>? pageKey;
 
+  /// Constructor for GoRouteMatch, each instance represents an instance of a
+  /// GoRoute for a specific portion of a location.
   GoRouteMatch({
     required this.route,
     required this.subloc,

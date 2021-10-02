@@ -140,7 +140,7 @@ linter:
     - prefer_typing_uninitialized_variables
     - prefer_void_to_null
     - provide_deprecation_message
-    # - public_member_api_docs # good practice; I'm too lazy...
+    - public_member_api_docs
     - recursive_getters
     # - require_trailing_commas # unrecognized
     - sized_box_for_whitespace
