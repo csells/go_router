@@ -6,19 +6,19 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class Credentials {
+  Credentials(this.username, this.password);
+
   final String username;
   final String password;
-
-  Credentials(this.username, this.password);
 }
 
 class SignInScreen extends StatefulWidget {
-  final ValueChanged<Credentials> onSignIn;
-
   const SignInScreen({
     required this.onSignIn,
     Key? key,
   }) : super(key: key);
+
+  final ValueChanged<Credentials> onSignIn;
 
   @override
   _SignInScreenState createState() => _SignInScreenState();

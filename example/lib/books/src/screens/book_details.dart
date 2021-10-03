@@ -10,12 +10,12 @@ import '../data.dart';
 import 'author_details.dart';
 
 class BookDetailsScreen extends StatelessWidget {
-  final Book? book;
-
   const BookDetailsScreen({
     Key? key,
     this.book,
   }) : super(key: key);
+
+  final Book? book;
 
   @override
   Widget build(BuildContext context) {

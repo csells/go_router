@@ -5,12 +5,12 @@
 import 'book.dart';
 
 class Author {
-  final int id;
-  final String name;
-  final List<Book> books = <Book>[];
-
   Author({
     required this.id,
     required this.name,
   });
+
+  final int id;
+  final String name;
+  final List<Book> books = <Book>[];
 }

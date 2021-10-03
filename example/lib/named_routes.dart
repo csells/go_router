@@ -7,8 +7,9 @@ import 'shared/data.dart';
 void main() => runApp(App());
 
 class App extends StatelessWidget {
-  final loginInfo = LoginInfo();
   App({Key? key}) : super(key: key);
+
+  final loginInfo = LoginInfo();
 
   @override
   Widget build(BuildContext context) => ChangeNotifierProvider<LoginInfo>.value(
