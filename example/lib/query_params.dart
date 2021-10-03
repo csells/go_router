@@ -9,8 +9,9 @@ void main() => runApp(App());
 
 /// sample app using query parameters in the page builders
 class App extends StatelessWidget {
-  final loginInfo = LoginInfo();
   App({Key? key}) : super(key: key);
+
+  final loginInfo = LoginInfo();
 
   // add the login info into the tree as app state that can change over time
   @override

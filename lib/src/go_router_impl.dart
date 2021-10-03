@@ -31,33 +31,6 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         PopNavigatorRouterDelegateMixin<Uri>,
         // ignore: prefer_mixin
         ChangeNotifier {
-  /// Builder function for a go router with Navigator.
-  final GoRouterBuilderWithNav builderWithNav;
-
-  /// List of top level routes used by the go router delegate.
-  final List<GoRoute> routes;
-
-  /// Error page builder for the go router delegate.
-  final GoRouterPageBuilder errorPageBuilder;
-
-  /// Top level page redirect.
-  final GoRouterRedirect topRedirect;
-
-  /// Listenable used to cause the router to refresh it's route.
-  final Listenable? refreshListenable;
-
-  /// NavigatorObserver used to receive change notifications when
-  /// navigation changes.
-  final List<NavigatorObserver> observers;
-
-  /// Set to true to log diagnostic info for your routes.
-  final bool debugLogDiagnostics;
-
-  final _key = GlobalKey<NavigatorState>();
-  final List<GoRouteMatch> _matches = [];
-  final _namedMatches = <String, GoRouteMatch>{};
-  final _pushCounts = <String, int>{};
-
   /// Constructor for GoRouter's implementation of the
   /// RouterDelegate base class.
   GoRouterDelegate({
@@ -90,6 +63,33 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     // when the listener changes, refresh the route
     refreshListenable?.addListener(refresh);
   }
+
+  /// Builder function for a go router with Navigator.
+  final GoRouterBuilderWithNav builderWithNav;
+
+  /// List of top level routes used by the go router delegate.
+  final List<GoRoute> routes;
+
+  /// Error page builder for the go router delegate.
+  final GoRouterPageBuilder errorPageBuilder;
+
+  /// Top level page redirect.
+  final GoRouterRedirect topRedirect;
+
+  /// Listenable used to cause the router to refresh it's route.
+  final Listenable? refreshListenable;
+
+  /// NavigatorObserver used to receive change notifications when
+  /// navigation changes.
+  final List<NavigatorObserver> observers;
+
+  /// Set to true to log diagnostic info for your routes.
+  final bool debugLogDiagnostics;
+
+  final _key = GlobalKey<NavigatorState>();
+  final List<GoRouteMatch> _matches = [];
+  final _namedMatches = <String, GoRouteMatch>{};
+  final _pushCounts = <String, int>{};
 
   void _cacheNamedRoutes(
     List<GoRoute> routes,
@@ -709,15 +709,15 @@ class GoRouteInformationParser extends RouteInformationParser<Uri> {
 /// Used for to find the current GoRouter in the widget tree. This is useful
 /// when routing from anywhere in your app.
 class InheritedGoRouter extends InheritedWidget {
-  /// The [GoRouter] that is made available to the widget tree.
-  final GoRouter goRouter;
-
   /// Default constructor for the inherited go router.
   const InheritedGoRouter({
     required Widget child,
     required this.goRouter,
     Key? key,
   }) : super(child: child, key: key);
+
+  /// The [GoRouter] that is made available to the widget tree.
+  final GoRouter goRouter;
 
   /// Used by the Router architecture as part of the InheritedWidget.
   @override
@@ -727,6 +727,20 @@ class InheritedGoRouter extends InheritedWidget {
 /// Each GoRouteMatch instance represents an instance of a GoRoute for a
 /// specific portion of a location.
 class GoRouteMatch {
+  /// Constructor for GoRouteMatch, each instance represents an instance of a
+  /// GoRoute for a specific portion of a location.
+  GoRouteMatch({
+    required this.route,
+    required this.subloc,
+    required this.fullpath,
+    required this.params,
+    required this.queryParams,
+    this.pageKey,
+  })  : assert(subloc.startsWith('/')),
+        assert(Uri.parse(subloc).queryParameters.isEmpty),
+        assert(fullpath.startsWith('/')),
+        assert(Uri.parse(fullpath).queryParameters.isEmpty);
+
   /// The matched route.
   final GoRoute route;
 
@@ -744,20 +758,6 @@ class GoRouteMatch {
 
   /// Optional value key of type string, to hold a unique reference to a page.
   final ValueKey<String>? pageKey;
-
-  /// Constructor for GoRouteMatch, each instance represents an instance of a
-  /// GoRoute for a specific portion of a location.
-  GoRouteMatch({
-    required this.route,
-    required this.subloc,
-    required this.fullpath,
-    required this.params,
-    required this.queryParams,
-    this.pageKey,
-  })  : assert(subloc.startsWith('/')),
-        assert(Uri.parse(subloc).queryParameters.isEmpty),
-        assert(fullpath.startsWith('/')),
-        assert(Uri.parse(fullpath).queryParameters.isEmpty);
 
   static GoRouteMatch? _match({
     required GoRoute route,

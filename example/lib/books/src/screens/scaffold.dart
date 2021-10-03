@@ -10,14 +10,14 @@ import 'package:go_router/go_router.dart';
 enum ScaffoldTab { books, authors, settings }
 
 class BookstoreScaffold extends StatelessWidget {
-  final ScaffoldTab selectedTab;
-  final Widget child;
-
   const BookstoreScaffold({
     required this.selectedTab,
     required this.child,
     Key? key,
   }) : super(key: key);
+
+  final ScaffoldTab selectedTab;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) => Scaffold(

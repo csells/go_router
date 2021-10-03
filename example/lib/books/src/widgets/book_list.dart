@@ -7,14 +7,14 @@ import 'package:flutter/material.dart';
 import '../data.dart';
 
 class BookList extends StatelessWidget {
-  final List<Book> books;
-  final ValueChanged<Book>? onTap;
-
   const BookList({
     required this.books,
     this.onTap,
     Key? key,
   }) : super(key: key);
+
+  final List<Book> books;
+  final ValueChanged<Book>? onTap;
 
   @override
   Widget build(BuildContext context) => ListView.builder(

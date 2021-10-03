@@ -21,8 +21,9 @@ import 'src/screens/sign_in.dart';
 void main() => runApp(Bookstore());
 
 class Bookstore extends StatelessWidget {
-  final _scaffoldKey = const ValueKey<String>('App scaffold');
   Bookstore({Key? key}) : super(key: key);
+
+  final _scaffoldKey = const ValueKey<String>('App scaffold');
 
   @override
   Widget build(BuildContext context) => BookstoreAuthScope(
