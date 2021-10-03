@@ -7,14 +7,14 @@ import 'package:flutter/material.dart';
 import '../data.dart';
 
 class AuthorList extends StatelessWidget {
-  final List<Author> authors;
-  final ValueChanged<Author>? onTap;
-
   const AuthorList({
     required this.authors,
     this.onTap,
     Key? key,
   }) : super(key: key);
+
+  final List<Author> authors;
+  final ValueChanged<Author>? onTap;
 
   @override
   Widget build(BuildContext context) => ListView.builder(

@@ -7,8 +7,9 @@ import 'shared/pages.dart';
 void main() => runApp(App());
 
 class App extends StatelessWidget {
-  final repo = Repository();
   App({Key? key}) : super(key: key);
+
+  final repo = Repository();
 
   @override
   Widget build(BuildContext context) => MaterialApp.router(

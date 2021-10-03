@@ -5,12 +5,6 @@
 import 'author.dart';
 
 class Book {
-  final int id;
-  final String title;
-  final Author author;
-  final bool isPopular;
-  final bool isNew;
-
   Book({
     required this.id,
     required this.title,
@@ -18,4 +12,10 @@ class Book {
     required this.isNew,
     required this.author,
   });
+
+  final int id;
+  final String title;
+  final Author author;
+  final bool isPopular;
+  final bool isNew;
 }

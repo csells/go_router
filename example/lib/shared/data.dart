@@ -2,18 +2,20 @@ import 'package:flutter/foundation.dart';
 
 /// sample Person class
 class Person {
+  Person({required this.id, required this.name, required this.age});
+
   final String id;
   final String name;
   final int age;
-  Person({required this.id, required this.name, required this.age});
 }
 
 /// sample Family class
 class Family {
+  Family({required this.id, required this.name, required this.people});
+
   final String id;
   final String name;
   final List<Person> people;
-  Family({required this.id, required this.name, required this.people});
 
   Person person(String pid) => people.singleWhere(
         (p) => p.id == pid,
@@ -84,9 +86,10 @@ class LoginInfo extends ChangeNotifier {
 }
 
 class FamilyPerson {
+  FamilyPerson({required this.family, required this.person});
+
   final Family family;
   final Person person;
-  FamilyPerson({required this.family, required this.person});
 }
 
 class Repository {
