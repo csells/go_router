@@ -101,8 +101,8 @@ String _title(BuildContext context) =>
     (context as Element).findAncestorWidgetOfExactType<MaterialApp>()!.title;
 
 class HomePage extends StatelessWidget {
-  final List<Family> families;
   const HomePage({required this.families, Key? key}) : super(key: key);
+  final List<Family> families;
 
   @override
   Widget build(BuildContext context) {
@@ -142,8 +142,8 @@ class HomePage extends StatelessWidget {
 }
 
 class FamilyPage extends StatelessWidget {
-  final Family family;
   const FamilyPage({required this.family, Key? key}) : super(key: key);
+  final Family family;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -165,10 +165,11 @@ class FamilyPage extends StatelessWidget {
 }
 
 class PersonPage extends StatelessWidget {
-  final Family family;
-  final Person person;
   const PersonPage({required this.family, required this.person, Key? key})
       : super(key: key);
+
+  final Family family;
+  final Person person;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -178,8 +179,8 @@ class PersonPage extends StatelessWidget {
 }
 
 class ErrorPage extends StatelessWidget {
-  final Exception? error;
   const ErrorPage(this.error, {Key? key}) : super(key: key);
+  final Exception? error;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -200,8 +201,8 @@ class ErrorPage extends StatelessWidget {
 }
 
 class LoginPage extends StatelessWidget {
-  final String? from;
   const LoginPage({this.from, Key? key}) : super(key: key);
+  final String? from;
 
   @override
   Widget build(BuildContext context) => Scaffold(

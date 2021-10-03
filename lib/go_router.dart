@@ -71,9 +71,6 @@ class GoRouterState {
 
 /// A declarative mapping between a route path and a page builder.
 class GoRoute {
-  final _pathParams = <String>[];
-  late final RegExp _pathRE;
-
   /// Default constructor used to create mapping between a
   /// route path and a page builder.
   GoRoute({
@@ -120,6 +117,9 @@ class GoRoute {
       }
     }
   }
+
+  final _pathParams = <String>[];
+  late final RegExp _pathRE;
 
   /// Optional name of the route.
   ///

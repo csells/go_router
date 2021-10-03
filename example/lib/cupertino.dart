@@ -81,8 +81,8 @@ class Page2Page extends StatelessWidget {
 }
 
 class ErrorPage extends StatelessWidget {
-  final Exception? error;
   const ErrorPage(this.error, {Key? key}) : super(key: key);
+  final Exception? error;
 
   @override
   Widget build(BuildContext context) => CupertinoPageScaffold(

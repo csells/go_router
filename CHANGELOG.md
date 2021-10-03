@@ -1,3 +1,14 @@
+### 1.1.3
+- enable case-insensitive path matching while still preserving inline and query
+  parameter cases
+- change a lifetime of habit to sort constructors first as per
+  [sort_constructors_first](https://dart-lang.github.io/linter/lints/sort_constructors_first.html).
+  Thanks for the PR, [Abhishek01039](https://github.com/Abhishek01039)!
+- set the initial transition example route to `/none` to make pushing the 'fade
+  transition' button on the first run through more fun
+- fixed an error in the async data example
+
+
 ### 1.1.2
 - Thanks, Mikes!
   - updated dartdocs from [rydmike](https://github.com/rydmike)

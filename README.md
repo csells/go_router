@@ -87,13 +87,15 @@ class App extends StatelessWidget {
 In this case, we've defined two routes. Each route `path` will be matched
 against the location to which the user is navigating. Only a single path will be
 matched, specifically the one that matches the entire location (and so it
-doesn't matter in which order you list your routes). A `GoRoute` also contains a
-`pageBuilder` function which is called to create the page when a path is
-matched.
+doesn't matter in which order you list your routes). The `path` will be matched
+in a case-insensitive way, although the case for [parameters](#parameters) will
+be preserved.
 
 ## Router state
-The builder function is passed a `state` object, which is an instance of the
-`GoRouterState` class that contains some useful information:
+A `GoRoute` also contains a `pageBuilder` function which is called to create the
+page when a path is matched. The builder function is passed a `state` object,
+which is an instance of the `GoRouterState` class that contains some useful
+information:
 
 | `GoRouterState` property | description | example 1 | example 2 |
 | ------------------------ | ----------- | ------- | ------- |
@@ -795,7 +797,8 @@ class App extends StatelessWidget {
           child: FutureBuilder<List<Family>>(
             future: repo.getFamilies(),
             pageBuilder: (context, snapshot) {
-              if (snapshot.hasError) return Text(snapshot.error.toString());
+              if (snapshot.hasError)
+                return ErrorPage(snapshot.error as Exception?);
               if (snapshot.hasData) return HomePage(families: snapshot.data!);
               return const Center(child: CircularProgressIndicator());
             },
@@ -809,7 +812,8 @@ class App extends StatelessWidget {
               child: FutureBuilder<Family>(
                 future: repo.getFamily(state.params['fid']!),
                 pageBuilder: (context, snapshot) {
-                  if (snapshot.hasError) return Text(snapshot.error.toString());
+                  if (snapshot.hasError)
+                    return ErrorPage(snapshot.error as Exception?);
                   if (snapshot.hasData)
                     return FamilyPage(family: snapshot.data!);
                   return const Center(child: CircularProgressIndicator());
@@ -828,7 +832,7 @@ class App extends StatelessWidget {
                     ),
                     pageBuilder: (context, snapshot) {
                       if (snapshot.hasError)
-                        return Text(snapshot.error.toString());
+                        return ErrorPage(snapshot.error as Exception?);
                       if (snapshot.hasData)
                         return PersonPage(
                             family: snapshot.data!.family,
@@ -1143,7 +1147,7 @@ Finally, if there's an exception in your routing, you'll see that in the debug
 output, too, e.g.
 
 ```text
-GoRouter: Exception: no routes for location: /books/none
+GoRouter: Exception: no routes for location: /foobarquux
 ```
 
 To enable this kind of output when your `GoRouter` is first created, you can use

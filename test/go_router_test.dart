@@ -344,6 +344,22 @@ void main() {
       expect(router.pageFor(matches[0]).runtimeType, FamilyPage);
     });
 
+    test('match too many routes, ignoring case', () {
+      const loc = '/PAGE1';
+      final routes = [
+        GoRoute(path: '/page1', pageBuilder: _dummy),
+        GoRoute(path: '/PaGe1', pageBuilder: _dummy),
+      ];
+
+      try {
+        final router = _router(routes);
+        router.routerDelegate.getLocRouteMatches(loc);
+        expect(false, true);
+      } on Exception catch (ex) {
+        dump(ex);
+      }
+    });
+
     test('preserve inline param case', () {
       final routes = [
         GoRoute(
@@ -949,8 +965,8 @@ GoRouter _router(List<GoRoute> routes) => GoRouter(
     );
 
 class ErrorPage extends DummyPage {
-  final Exception ex;
   ErrorPage(this.ex);
+  final Exception ex;
 }
 
 class HomePage extends DummyPage {}
@@ -958,19 +974,19 @@ class HomePage extends DummyPage {}
 class LoginPage extends DummyPage {}
 
 class FamilyPage extends DummyPage {
-  final String fid;
   FamilyPage(this.fid);
+  final String fid;
 }
 
 class FamiliesPage extends DummyPage {
-  final String selectedFid;
   FamiliesPage({required this.selectedFid});
+  final String selectedFid;
 }
 
 class PersonPage extends DummyPage {
+  PersonPage(this.fid, this.pid);
   final String fid;
   final String pid;
-  PersonPage(this.fid, this.pid);
 }
 
 class DummyPage extends Page<dynamic> {
