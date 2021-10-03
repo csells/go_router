@@ -317,6 +317,82 @@ void main() {
       router.go('/family/f2');
       router.go('/family/f2/person/p1');
     });
+
+    test('match path case insensitively', () {
+      final routes = [
+        GoRoute(
+          path: '/',
+          pageBuilder: (builder, state) => HomePage(),
+        ),
+        GoRoute(
+          path: '/family/:fid',
+          pageBuilder: (builder, state) => FamilyPage(state.params['fid']!),
+        ),
+      ];
+
+      final router = _router(routes);
+      const loc = '/FaMiLy/f2';
+      router.go(loc);
+      final matches = router.routerDelegate.matches;
+
+      // NOTE: match the lower case, since subloc is canonicalized to match the
+      // path case whereas the location can be any case; so long as the path
+      // produces a match regardless of the location case, we win!
+      expect(router.location.toLowerCase(), loc.toLowerCase());
+
+      expect(matches.length, 1);
+      expect(router.pageFor(matches[0]).runtimeType, FamilyPage);
+    });
+
+    test('preserve inline param case', () {
+      final routes = [
+        GoRoute(
+          path: '/',
+          pageBuilder: (builder, state) => HomePage(),
+        ),
+        GoRoute(
+          path: '/family/:fid',
+          pageBuilder: (builder, state) => FamilyPage(state.params['fid']!),
+        ),
+      ];
+
+      final router = _router(routes);
+      for (final fid in ['f2', 'F2']) {
+        final loc = '/family/$fid';
+        router.go(loc);
+        final matches = router.routerDelegate.matches;
+
+        expect(router.location, loc);
+        expect(matches.length, 1);
+        expect(router.pageFor(matches[0]).runtimeType, FamilyPage);
+        expect(matches[0].params['fid'], fid);
+      }
+    });
+
+    test('preserve query param case', () {
+      final routes = [
+        GoRoute(
+          path: '/',
+          pageBuilder: (builder, state) => HomePage(),
+        ),
+        GoRoute(
+          path: '/family',
+          pageBuilder: (builder, state) => FamilyPage(state.params['fid']!),
+        ),
+      ];
+
+      final router = _router(routes);
+      for (final fid in ['f2', 'F2']) {
+        final loc = '/family?fid=$fid';
+        router.go(loc);
+        final matches = router.routerDelegate.matches;
+
+        expect(router.location, loc);
+        expect(matches.length, 1);
+        expect(router.pageFor(matches[0]).runtimeType, FamilyPage);
+        expect(matches[0].queryParams['fid'], fid);
+      }
+    });
   });
 
   group('named routes', () {
@@ -868,7 +944,7 @@ void main() {
 
 GoRouter _router(List<GoRoute> routes) => GoRouter(
       routes: routes,
-      errorPageBuilder: _dummy,
+      errorPageBuilder: (context, state) => ErrorPage(state.error!),
       debugLogDiagnostics: true,
     );
 
@@ -911,6 +987,8 @@ extension on GoRouter {
           location: 'DO NOT TEST',
           subloc: match.subloc,
           pageKey: const ValueKey('DO NOT TEST'),
+          params: Map<String, String>.from(match.queryParams)
+            ..addAll(match.params),
         ),
       );
 }

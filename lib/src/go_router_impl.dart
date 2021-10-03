@@ -381,12 +381,12 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     if (kDebugMode) {
       assert(matchStacks.length == 1);
       final match = matchStacks.first.last;
-      final loc1 = _addQueryParams(
-        match.subloc.toLowerCase(),
-        match.queryParams,
-      );
-      final loc2 = _canonicalUri(location.toLowerCase());
-      assert(loc1 == loc2);
+      final loc1 = _addQueryParams(match.subloc, match.queryParams);
+      final loc2 = _canonicalUri(location);
+
+      // NOTE: match the lower case, since subloc is canonicalized to match the
+      // path case whereas the location can be any case
+      assert(loc1.toLowerCase() == loc2.toLowerCase(), '$loc1 != $loc2');
     }
 
     return matchStacks.first;
@@ -458,7 +458,9 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       if (match == null) continue;
 
       // if we have a complete match, then return the matched route
-      if (match.subloc == loc) {
+      // NOTE: need a lower case match because subloc is canonicallized to match
+      // the path case whereas the location can be of any case and still match
+      if (match.subloc.toLowerCase() == loc.toLowerCase()) {
         yield [match];
         continue;
       }
