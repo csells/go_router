@@ -45,6 +45,7 @@ developer experience.
 - [Custom Transitions](#custom-transitions)
 - [Async Data](#async-data)
 - [Nested Navigation](#nested-navigation)
+- [Keeping State](#keeping-state)
 - [Deep Linking](#deep-linking)
 - [URL Path Strategy](#url-path-strategy)
 - [Debugging Your Routes](#debugging-your-routes)
@@ -223,7 +224,7 @@ class RouterLocationView extends StatelessWidget {
 ```
 
 Or, if you're using [the provider package](https://pub.dev/packages/provider),
-it comes with built in support for re-building a `Widget` when a
+it comes with built-in support for re-building a `Widget` when a
 `ChangeNotifier` changes with a type that is much more clearly suited for the
 purpose.
 
@@ -274,7 +275,7 @@ property.
 ## Dynamic linking
 The idea of "dynamic linking" is that as the user adds objects to your app, each
 of them gets a link of their own, e.g. a new family gets a new link. This is
-exactly what route paramters enables, e.g. a new family has it's own identifier
+exactly what route parameters enables, e.g. a new family has its own identifier
 when can be a variable in your family route, e.g. path: `/family/:fid`.
 
 # Sub-routes
@@ -353,7 +354,7 @@ ways. The `go` method does this by turning a single location into any number of
 pages in a stack using [Sub-routes](#sub-routes).
 
 The `push` method is used to push a single page onto the stack of existing
-pages, which means that you can build up the stack programatically instead of
+pages, which means that you can build up the stack programmatically instead of
 declaratively. When the `push` method matches an entire stack via sub-routes, it
 will take the top-most page from the stack and push that page onto the stack.
 
@@ -437,7 +438,7 @@ In this code, if the user is not logged in and not going to the `/login`
 path, we redirect to `/login`. Likewise, if the user *is* logged in but going to
 `/login`, we redirect to `/`. If there is no redirect, then we just return
 `null`. The `redirect` function will be called again until `null` is returned to
-enable [multiple redirects](#multiple-redirects).
+enable [multiple redirects](#multiple-redirections).
 
 To make it easy to access this info wherever it's need in the app, consider
 using a state management option like
@@ -557,7 +558,7 @@ middle of a location being parsed when you're already on your way to another
 page anyway.
 
 ## Parameterized redirection
-In some cases, a path is parameterized and you'd like to redirect with those
+In some cases, a path is parameterized, and you'd like to redirect with those
 parameters in mind. You can do that with the `params` argument to the `state`
 object passed to the `redirect` function:
 
@@ -571,7 +572,7 @@ GoRoute(
 ## Multiple redirections
 It's possible to redirect multiple times w/ a single navigation, e.g. ```/ =>
 /foo => /bar```. This is handy because it allows you to build up a list of
-routes over time and not to worry so much about attemping to trim each of them
+routes over time and not to worry so much about attempting to trim each of them
 to their direct route. Furthermore, it's possible to redirect at the top level
 and at the route level in any number of combinations.
 
@@ -685,7 +686,7 @@ void _tap(BuildContext context, String fid, String pid) =>
 
 Not only is that error-prone, but the actual URI format of your app could change
 over time. Certainly redirection helps keep old URI formats working, but do you
-really want various versions of your location URIs lying willy nilly around in
+really want various versions of your location URIs lying willy-nilly around in
 your code? The idea of named routes is to make it easy to navigate to a route
 w/o knowing or caring what the URI format is. You can add a unique name to your
 route using the `GoRoute.name` parameter:
@@ -728,8 +729,8 @@ void _tap(BuildContext context, String fid, String pid) =>
   context.goNamed('person', {'fid': fid, 'pid': pid});
 ```
 
-The `goNamed` method will look up the route by name in a case insensitive way,
-contruct the URI for you and fill in the params as appropriate. If you miss a
+The `goNamed` method will look up the route by name in a case-insensitive way,
+construct the URI for you and fill in the params as appropriate. If you miss a
 param, you'll get an error. If you pass any extra params, they'll be passed as
 query parameters.
 
@@ -756,7 +757,7 @@ GoRoute(
 ```
 
 The `transitionBuilder` argument to the `CustomTransitionPage` is called when
-you're routing to a new route and it's your chance to return a transition
+you're routing to a new route, and it's your chance to return a transition
 widget. The [`transitions.dart` sample](example/lib/transitions.dart) shows off
 four different kind of transitions, but really you can do whatever you want.
 
@@ -767,7 +768,7 @@ argument in case you'd like to customize the duration of the transition as well
 (it defaults to 300ms).
 
 # Async Data
-Sometimes you'll want to load data asynchronously and you'll need to wait for
+Sometimes you'll want to load data asynchronously, and you'll need to wait for
 the data before showing content. Flutter provides a way to do this with the
 `FutureBuilder` widget that works just the same with the go_router as it always
 does in Flutter. For example, imagine you've got a `Repository` class that does
@@ -969,7 +970,7 @@ class _FamilyTabsPageState extends State<FamilyTabsPage>
 
 The `FamilyTabsPage` is a stateful widget that takes the currently selected
 family as a parameter. It uses the index of that family in the list of families
-to set the currenly selected tab. However, instead of switching the currently
+to set the currently selected tab. However, instead of switching the currently
 selected tab to whatever the user clicks on, it uses navigation to get to that
 index instead. It's the use of navigation that changes the address in the
 address bar. And, the way that the tab index is switched is via the call to
@@ -1012,7 +1013,7 @@ The `/` route is a redirect to the first family. The `/family/:fid` route is the
 one that sets up nested navigation. It does this by first by creating an
 instance of `FamilyTabsPage` with the family that matches the `fid` parameter.
 And second, it uses `state.pageKey` to signal to Flutter that this is the same
-page as before. This combination is what causes the router to leave the the page
+page as before. This combination is what causes the router to leave the page
 alone, to update the browser's address bar and to let the `TabView` navigate to
 the new selection.
 
@@ -1035,6 +1036,63 @@ data to update the existing widgets, e.g. the selected tab.
 
 This example shows off the selected tab on a `TabView` but you can use it for
 any nested content of a page your app navigates to.
+
+# Keeping State
+A common use case for keeping state of scroll positions and text fields, is
+when using nested navigation as shown in the tab view example. It is also 
+frequently used on bottom navigation destinations and when opening a full screen
+details view on top of a long scrolling list of items.
+
+In those cases users expect to find the tab views, bottom destinations and 
+scrolling list, in the same state and position when they return to it.
+
+You can enable support for this by using `AutomaticKeepAliveClientMixin` on
+a stateful widget. You also have to override `wantKeepAlive` and call 
+`super.build` in its build method.
+
+This is demonstrated in the `FamiliyView` used in the `nested_nav.dart` example:
+
+```dart
+class FamilyView extends StatefulWidget {
+  const FamilyView({required this.family, Key? key}) : super(key: key);
+  final Family family;
+
+  @override
+  State<FamilyView> createState() => _FamilyViewState();
+}
+
+/// Use the [AutomaticKeepAliveClientMixin] to keep the state.
+class _FamilyViewState extends State<FamilyView>
+    with AutomaticKeepAliveClientMixin {
+  // Override `wantKeepAlive` when using `AutomaticKeepAliveClientMixin`.
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    // Call `super.build` when using `AutomaticKeepAliveClientMixin`.
+    super.build(context);
+    return ListView(
+      children: [
+        for (final p in widget.family.people)
+          ListTile(
+            title: Text(p.name),
+            onTap: () =>
+                context.go('/family/${widget.family.id}/person/${p.id}'),
+          ),
+      ],
+    );
+  }
+}
+```
+
+Using this example, if you make a web build and make the browser window so low
+that you have to scroll to see the last person on each family tab. You can
+scroll to the last person in each family and see that state is kept when you 
+switch tabs, as well as when you open a person page and pop back to the family
+tab view.
+
+![keeping state example](readme/keeping-state.gif)
 
 # Deep Linking
 Flutter defines "deep linking" as "opening a URL displays that screen in your
@@ -1174,7 +1232,7 @@ You can see the go_router in action via the following examples:
 - [`sub_routes.dart`](example/lib/sub_routes.dart): provide a stack of pages
   based on a set of sub routes
 - [`push.dart`](example/lib/push.dart): provide a stack of pages
-  based on a series of calles to `context.push()`
+  based on a series of calls to `context.push()`
 - [`redirection.dart`](example/lib/redirection.dart): redirect one route to
   another based on changing app state
 - [`query_params.dart`](example/lib/query_params.dart): optional query
