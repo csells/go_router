@@ -682,9 +682,9 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     _log2('GoRouterDelegate.safeNotifyListeners: WidgetsBinding.instance= '
         '${WidgetsBinding.instance == null ? 'null' : 'non-null'}');
 
-  // this is a hack to fix the following error:
-  // The following assertion was thrown while dispatching notifications for
-  // GoRouterDelegate: setState() or markNeedsBuild() called during build.
+    // this is a hack to fix the following error:
+    // The following assertion was thrown while dispatching notifications for
+    // GoRouterDelegate: setState() or markNeedsBuild() called during build.
     WidgetsBinding.instance == null
         ? notifyListeners()
         : scheduleMicrotask(notifyListeners);
