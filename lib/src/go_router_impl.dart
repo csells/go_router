@@ -553,6 +553,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     return builderWithNav(
       context,
       Navigator(
+        key: _key,
         pages: pages,
         observers: observers,
         onPopPage: (route, dynamic result) {
