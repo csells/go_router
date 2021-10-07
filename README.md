@@ -245,9 +245,8 @@ final _router = GoRouter(
 );
 ```
 
-This location will only be used if the initial location would otherwise be `/`.
-If your app is started using [deep linking](#deep-linking), the initial location
-will be ignored.
+The value you provide to `initialLocation` will be ignored if your app is started
+using [deep linking](#deep-linking).
 
 # Parameters
 The route paths are defined and implemented in [the path_to_regexp
@@ -496,7 +495,7 @@ class LoginPage extends StatelessWidget {
 In this case, we've logged the user in and manually redirected them to the home
 page. That's because the go_router doesn't know that the app's state has
 changed in a way that affects the route. If you'd like to have the app's state
-cause go_router to automatically redirect, you can use the `refreshListener`
+cause go_router to automatically redirect, you can use the `refreshListenable`
 argument of the `GoRouter` constructor:
 
 ```dart
@@ -529,12 +528,12 @@ onPressed: () {
 },
 ```
 
-The use of the top-level `redirect` and `refreshListener` together is
+The use of the top-level `redirect` and `refreshListenable` together is
 recommended because it will handle the routing automatically for you when the
 app's data changes.
 
 ## Route-level redirection
-The top-level redirect handled passed to the `GoRouter` constructor is handy when you
+The top-level redirect handler passed to the `GoRouter` constructor is handy when you
 want a single function to be called whenever there's a new navigation event and
 to make some decisions based on the app's current state. However, in the case
 that you'd like to make a redirection decision for a specific route (or
@@ -675,7 +674,7 @@ class LoginPage extends StatelessWidget {
 }
 ```
 
-It's still good practice to pass in the `refreshListener` when manually
+It's still good practice to pass in the `refreshListenable` when manually
 redirecting, as we do in this case, to ensure any change to the login info
 causes the right routing to happen automatically, e.g. the user logging out will
 cause them to be routed back to the login page.
@@ -905,7 +904,7 @@ the user to capture a [dynamic link](#deep-linking) for any object in the app,
 enabling [deep linking](#deep-linking).
 
 To use nested navigation using go_router, you can simply navigate to the same
-page via different paths or to the same path with different parameters, which
+page via different paths or to the same path with different parameters, with
 the differences dictating the different state of the page. For example, to
 implement that page with the `TabView` above, you need a widget that changes the
 selected tab via a parameter:
@@ -1015,7 +1014,7 @@ final _router = GoRouter(
 ```
 
 The `/` route is a redirect to the first family. The `/family/:fid` route is the
-one that sets up nested navigation. It does this by first by creating an
+one that sets up nested navigation. It does this by first creating an
 instance of `FamilyTabsPage` with the family that matches the `fid` parameter.
 And second, it uses `state.pageKey` to signal to Flutter that this is the same
 page as before. This combination is what causes the router to leave the page
@@ -1173,7 +1172,7 @@ to `index.html` will do, e.g.
 [live-server](https://www.npmjs.com/package/live-server).
 
 # Debugging Your Routes
-Because go_router asks that you provide a set of paths, something as fragments
+Because go_router asks that you provide a set of paths, sometimes as fragments
 to match just part of a location, it's hard to know just what routes you have in
 your app. In those cases, it's handy to be able to see the full paths of the
 routes you've created as a debugging tool, e.g.
