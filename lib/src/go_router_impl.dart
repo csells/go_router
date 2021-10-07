@@ -285,12 +285,17 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         final loc = redirects.last;
 
         // check for top-level redirect
+        final uri = Uri.parse(loc);
+        final subloc = uri.path;
+        final queryParams = uri.queryParameters;
         if (redirected(
           topRedirect(
             GoRouterState(
               location: loc,
               // trim the query params off the subloc to match route.redirect
-              subloc: Uri.parse(loc).path,
+              subloc: subloc,
+              // pass along the query params 'cuz that's all we have right now
+              params: queryParams,
             ),
           ),
         )) continue;

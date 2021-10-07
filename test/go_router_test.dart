@@ -824,6 +824,8 @@ void main() {
           expect(Uri.parse(state.subloc).queryParameters, isEmpty);
           expect(state.path, isNull);
           expect(state.fullpath, isNull);
+          expect(state.params.length, 1);
+          expect(state.params['from'], '/');
           return null;
         },
       );
