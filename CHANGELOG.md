@@ -1,12 +1,21 @@
-### 1.1.4
-- TODO: override the default behavior of the Android system Back button to
-  behave exactly like the `AppBar` Back button
-- add query params to top-level redirect
-- show how to use the `AutomaticKeepAliveClientMixin` with nested navigation
-  to keep widget state between navigations; thanks to
-  [rydmike](https://github.com/rydmike) for this update
-- hopefully fixing issues with relative file references on pub.dev/documentation
-  (can't really tell till I publish this version...)
+### 2.0.0
+- BREAKING CHANGE and [Fix #50](https://github.com/csells/go_router/issues/50):
+  split `params` into `params` and `queryParams`; see the [Migrating to 2.0
+  section of the README](https://pub.dev/packages/go_router#migrating-to-2-0)
+  for instructions on how to migrate your code from 1.x to 2.0
+- [Fix 57](https://github.com/csells/go_router/issues/57): enable the Android
+  system Back button to behave exactly like the `AppBar` Back button; thanks to
+  [SunlightBro](https://github.com/SunlightBro) for the one-line fix that I had
+  no idea about until he pointed it out
+- [Fix 59](https://github.com/csells/go_router/issues/59): add query params to
+  top-level redirect
+- [Fix 44](https://github.com/csells/go_router/issues/44): show how to use the
+  `AutomaticKeepAliveClientMixin` with nested navigation to keep widget state
+  between navigations; thanks to [rydmike](https://github.com/rydmike) for this
+  update
+- [Fix 61](https://github.com/csells/go_router/issues/61): hopefully fixing
+  issues with relative file references on pub.dev/documentation (can't really
+  know till I publish this version...)
 
 
 ### 1.1.3

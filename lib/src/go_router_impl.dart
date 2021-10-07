@@ -558,7 +558,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     return builderWithNav(
       context,
       Navigator(
-        key: _key,
+        key: _key, // needed to enable Android system Back button
         pages: pages,
         observers: observers,
         onPopPage: (route, dynamic result) {

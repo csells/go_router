@@ -28,6 +28,9 @@ deep linking from Android, iOS and the web while still allowing an easy-to-use
 developer experience.
 
 # Table of Contents
+- [Contributors](#contributors)
+- [Changelog](#changelog)
+- [Migrating to 2.0](#migrating-to-2-0)
 - [Getting Started](#getting-started)
 - [Declarative Routing](#declarative-routing)
   * [Router state](#router-state)
@@ -56,6 +59,15 @@ developer experience.
 - [Debugging Your Routes](#debugging-your-routes)
 - [Examples](#examples)
 - [Issues](#issues)
+
+# Contributors
+TODO
+
+# Changelong
+TODO: https://pub.dev/packages/go_router/changelog
+
+# Migrating to 2.0
+TODO
 
 # Getting Started
 To use the go_router package, [follow these
