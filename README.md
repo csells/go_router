@@ -240,7 +240,8 @@ final _router = GoRouter(
 );
 ```
 
-This value you provide to `initialLocation` will be ignored if your app is started using [deep linking](#deep-linking).
+The value you provide to `initialLocation` will be ignored if your app is started
+using [deep linking](#deep-linking).
 
 # Parameters
 The route paths are defined and implemented in [the path_to_regexp
