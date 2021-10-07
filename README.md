@@ -101,12 +101,12 @@ information:
 | `GoRouterState` property | description | example 1 | example 2 |
 | ------------------------ | ----------- | ------- | ------- |
 | `location` | location of the full route, including query params | `/login?from=/family/f2` | `/family/f2/person/p1`|
-| `subloc` | location of this sub-route w/o query params | `/login` | `/family/f2` |
-| `path` | the `GoRoute` path | `/login` | `family/:fid` |
-| `fullpath` | full path to this sub-route | `/login` | `/family/:fid` |
-| `params` | params extracted from the location | `{'from': '/family/f1'}` | `{'fid': 'f2'}` |
+| `subloc` | location of this sub-route w/o query params | `/login` | `/family/f2/person/p1` |
+| `path` | the `GoRoute` path | `/login` | `family/:fid/person/:pid` |
+| `fullpath` | full path to this sub-route | `/login` | `/family/:fid/person/:pid` |
+| `params` | params extracted from the location | `{'from': '/family/f1'}` | `{'fid': 'f2', 'pid': 'p1'}` |
 | `error` | `Exception` associated with this sub-route, if any | `Exception('404')` | ... |
-| `pageKey` | unique key for this sub-route | `ValueKey('/login')` | `ValueKey('/family/:fid')` |
+| `pageKey` | unique key for this sub-route | `ValueKey('/login')` | `ValueKey('/family/:fid/person/:pid')` |
 
 You can read more about [sub-locations/sub-routes](#sub-routes) and [parametized
 routes](#parameters) below but the example code above uses the `pageKey`
