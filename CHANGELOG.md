@@ -1,5 +1,16 @@
+### 1.1.4
+- TODO: override the default behavior of the Android system Back button to
+  behave exactly like the `AppBar` Back button
+- TODO: adding query params to top-level redirect
+- showing how to use the `AutomaticKeepAliveClientMixin` with nested navigation
+  to keep widget state between navigations; thanks to
+  [rydmike](https://github.com/rydmike) for this update
+- hopefully fixing issues with relative file references on pub.dev/documentation
+  (can't really tell till I publish this version...)
+
+
 ### 1.1.3
-- enable case-insensitive path matching while still preserving inline and query
+- enable case-insensitive path matching while still preserving path and query
   parameter cases
 - change a lifetime of habit to sort constructors first as per
   [sort_constructors_first](https://dart-lang.github.io/linter/lints/sort_constructors_first.html).

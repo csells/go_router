@@ -564,8 +564,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
             throw Exception('have popped the last page off of the stack; '
                 'there are no pages left to show');
 
-          // HACK: fixes the push disable AppBar Back button, but it shouldn't
-          // be necessary...
+          // this hack fixes the push disable AppBar Back button, but it
+          // shouldn't be necessary...
           _safeNotifyListeners();
 
           return true;
@@ -672,13 +672,13 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         Uri(path: uri.path, queryParameters: queryParams).toString());
   }
 
-  // HACK: this is a hack to fix the following error:
-  // The following assertion was thrown while dispatching notifications for
-  // GoRouterDelegate: setState() or markNeedsBuild() called during build.
   void _safeNotifyListeners() {
     _log2('GoRouterDelegate.safeNotifyListeners: WidgetsBinding.instance= '
         '${WidgetsBinding.instance == null ? 'null' : 'non-null'}');
 
+  // this is a hack to fix the following error:
+  // The following assertion was thrown while dispatching notifications for
+  // GoRouterDelegate: setState() or markNeedsBuild() called during build.
     WidgetsBinding.instance == null
         ? notifyListeners()
         : scheduleMicrotask(notifyListeners);

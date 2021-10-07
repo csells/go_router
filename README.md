@@ -1,3 +1,8 @@
+<!-- hopefully a fix for https://github.com/csells/go_router/issues/61 -->
+<head>
+<base href="https://github.com/csells/go_router/" />
+</head>
+
 # go_router
 The goal of the [go_router package](https://pub.dev/packages/go_router) is to
 simplify use of [the `Router` in
@@ -45,7 +50,7 @@ developer experience.
 - [Custom Transitions](#custom-transitions)
 - [Async Data](#async-data)
 - [Nested Navigation](#nested-navigation)
-- [Keeping State](#keeping-state)
+  * [Keeping State](#keeping-state)
 - [Deep Linking](#deep-linking)
 - [URL Path Strategy](#url-path-strategy)
 - [Debugging Your Routes](#debugging-your-routes)
@@ -758,7 +763,7 @@ GoRoute(
 
 The `transitionBuilder` argument to the `CustomTransitionPage` is called when
 you're routing to a new route, and it's your chance to return a transition
-widget. The [`transitions.dart` sample](example/lib/transitions.dart) shows off
+widget. The [transitions sample](example/lib/transitions.dart) shows off
 four different kind of transitions, but really you can do whatever you want.
 
 ![custom transitions example](readme/transitions.gif)
@@ -1037,20 +1042,13 @@ data to update the existing widgets, e.g. the selected tab.
 This example shows off the selected tab on a `TabView` but you can use it for
 any nested content of a page your app navigates to.
 
-# Keeping State
-A common use case for keeping state of scroll positions and text fields, is
-when using nested navigation as shown in the tab view example. It is also 
-frequently used on bottom navigation destinations and when opening a full screen
-details view on top of a long scrolling list of items.
-
-In those cases users expect to find the tab views, bottom destinations and 
-scrolling list, in the same state and position when they return to it.
-
-You can enable support for this by using `AutomaticKeepAliveClientMixin` on
-a stateful widget. You also have to override `wantKeepAlive` and call 
-`super.build` in its build method.
-
-This is demonstrated in the `FamiliyView` used in the `nested_nav.dart` example:
+## Keeping State
+When doing nested navigation, the user expects that widgets will be in the same
+state that they left them in when they navigated to a new page and return, e.g.
+scroll position, text input values, etc. You can enable support for this by
+using `AutomaticKeepAliveClientMixin` on a stateful widget. You can see this in
+action in the `FamiliyView` of the
+[`nested_nav.dart`](example/lib/nested_nav.dart) example:
 
 ```dart
 class FamilyView extends StatefulWidget {
@@ -1064,6 +1062,7 @@ class FamilyView extends StatefulWidget {
 /// Use the [AutomaticKeepAliveClientMixin] to keep the state.
 class _FamilyViewState extends State<FamilyView>
     with AutomaticKeepAliveClientMixin {
+      
   // Override `wantKeepAlive` when using `AutomaticKeepAliveClientMixin`.
   @override
   bool get wantKeepAlive => true;
@@ -1086,13 +1085,15 @@ class _FamilyViewState extends State<FamilyView>
 }
 ```
 
-Using this example, if you make a web build and make the browser window so low
-that you have to scroll to see the last person on each family tab. You can
-scroll to the last person in each family and see that state is kept when you 
-switch tabs, as well as when you open a person page and pop back to the family
-tab view.
+To instruct the `AutomaticKeepAliveClientMixin` to keep the state, you need to
+override `wantKeepAlive` to return `true` and call `super.build` in the `State`
+class's `build` method, as show above.
 
 ![keeping state example](readme/keeping-state.gif)
+
+Notice that after scrolling to the bottom of the long list of children in the
+Hunting family, then going to another tab and then going to another page, when
+you return to the list of Huntings that the scroll position is maintained.
 
 # Deep Linking
 Flutter defines "deep linking" as "opening a URL displays that screen in your
