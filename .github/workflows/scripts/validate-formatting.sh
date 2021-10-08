@@ -1,9 +1,9 @@
 #!/bin/bash
-if [[ $(git ls-files --modified) ]]; then
+if [[ $(git ls-files '*.dart' --modified) ]]; then
   echo ""
   echo ""
   echo "These files are not formatted correctly:"
-  for f in $(git ls-files --modified); do
+  for f in $(git ls-files '*.dart' --modified); do
     echo ""
     echo ""
     echo "-----------------------------------------------------------------"
