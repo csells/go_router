@@ -84,7 +84,7 @@ shout out to the go_router contributors!
 
 # Changelog
 If you'd like to see what's changed in detail over time, you can read [the
-go_router changelog](https://pub.dev/packages/go_router/changelog).
+go_router Changelog](https://pub.dev/packages/go_router/changelog).
 
 # Migrating to 2.0
 There is a breaking change in the go_router 2.0 release: by [popular
