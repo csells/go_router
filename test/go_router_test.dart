@@ -604,6 +604,42 @@ void main() {
       final router = _router(routes);
       router.goNamed('person', params: {'fid': 'f2', 'pid': 'p1'});
     });
+
+    test('too few params', () {
+      final routes = [
+        GoRoute(
+          name: 'family',
+          path: '/family/:fid',
+          pageBuilder: (context, state) => FamilyPage('dummy'),
+        ),
+      ];
+
+      try {
+        final router = _router(routes);
+        router.goNamed('family');
+        expect(true, false);
+      } on Exception catch (ex) {
+        dump(ex);
+      }
+    });
+
+    test('too many params', () {
+      final routes = [
+        GoRoute(
+          name: 'family',
+          path: '/family/:fid',
+          pageBuilder: (context, state) => FamilyPage('dummy'),
+        ),
+      ];
+
+      try {
+        final router = _router(routes);
+        router.goNamed('family', params: {'fid': 'f2', 'pid': 'p1'});
+        expect(true, false);
+      } on Exception catch (ex) {
+        dump(ex);
+      }
+    });
   });
 
   group('redirects', () {

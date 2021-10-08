@@ -379,7 +379,16 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
 /// Dart extension to add navigation function to a BuildContext object, e.g.
 /// context.go('/');
 extension GoRouterHelper on BuildContext {
-  /// navigate to a location
+  /// Get a location from route name and parameters.
+  String namedLocation(
+    String name, {
+    Map<String, String> params = const {},
+    Map<String, String> queryParams = const {},
+  }) =>
+      GoRouter.of(this)
+          .namedLocation(name, params: params, queryParams: queryParams);
+
+  /// Navigate to a location.
   void go(String location) => GoRouter.of(this).go(location);
 
   /// Navigate to a named route.
@@ -394,10 +403,10 @@ extension GoRouterHelper on BuildContext {
         queryParams: queryParams,
       );
 
-  /// push a location onto the page stack
+  /// Push a location onto the page stack.
   void push(String location) => GoRouter.of(this).push(location);
 
-  /// navigate to a named route onto the page stack
+  /// Navigate to a named route onto the page stack.
   void pushNamed(
     String name, {
     Map<String, String> params = const {},

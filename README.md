@@ -30,7 +30,7 @@ developer experience.
 # Table of Contents
 - [Contributors](#contributors)
 - [Changelog](#changelog)
-- [Migrating to 2.0](#migrating-to-2-0)
+- [Migrating to 2.0](#migrating-to-20)
 - [Getting Started](#getting-started)
 - [Declarative Routing](#declarative-routing)
   * [Router state](#router-state)
@@ -50,8 +50,8 @@ developer experience.
   * [Multiple redirections](#multiple-redirections)
 - [Query Parameters](#query-parameters)
 - [Named Routes](#named-routes)
-  * [Redirecting to Named Routes](#redirecting-to-named-routes)
   * [Navigating to Named Routes](#navigating-to-named-routes)
+  * [Redirecting to Named Routes](#redirecting-to-named-routes)
 - [Custom Transitions](#custom-transitions)
 - [Async Data](#async-data)
 - [Nested Navigation](#nested-navigation)
@@ -63,13 +63,96 @@ developer experience.
 - [Issues](#issues)
 
 # Contributors
-TODO
+It's amazing to me how many folks have already contributed to this project. Huge
+shout out to the go_router contributors!
+- [https://github.com/Salakar](https://github.com/Salakar) for the CI action on
+  GitHub that is always helping me track down stuff I forget
+- [rydmike](https://github.com/rydmike) for a bunch of README and dartdoc fixes
+  as well as a great example for keeping state during nested navigation
+- [Abhishek01039](https://github.com/Abhishek01039) for helping me change a
+  life-long habit of sorting constructors after fields, which goes against Dart
+  best practices
+- [SunlightBro](https://github.com/SunlightBro) for the Android system Back
+  button fix
+- [craiglabenz](https://github.com/craiglabenz) for a bunch of README fixes;
+  also, Craig has been talking about adding build_runner support to
+  produce typesafe go and push code for named routes, so thumbs up on [this
+  issues](https://github.com/csells/go_router/issues/66) if that's a feature
+  you'd like to see in go_router
+- [https://github.com/kevmoo](https://github.com/kevmoo) for helping me track
+  down spelling issues in my README and unused imports; keep it coming, Kev!
 
-# Changelong
-TODO: https://pub.dev/packages/go_router/changelog
+# Changelog
+If you'd like to see what's changed in detail over time, you can read [the
+go_router changelog](https://pub.dev/packages/go_router/changelog).
 
 # Migrating to 2.0
-TODO
+There is a breaking change in the go_router 2.0 release: by [popular
+demand](https://twitter.com/csells/status/1445520767190388738), the `params`
+property of the `GoRouterState` object has been split into two properties:
+- `params` for parameters that are part of the path and, e.g. `/family/:fid`
+- `queryParams` for parameters that added optionally at the end of the location,
+  e.g. `/login?from=/family/f2`
+
+In the 1.x releases, the `params` property was a single object that contained
+both the path and query parameters in a single map. For example, if you had been
+using the `params` property to access query parameters like this in 1.x:
+
+```dart
+GoRoute(
+  path: '/login',
+  pageBuilder: (context, state) => MaterialPage<void>(
+    key: state.pageKey,
+    // 1.x: accessing query parameters
+    child: LoginPage(from: state.params['from']),
+  ),
+),
+```
+
+in 2.0, you would access the query parameters like this:
+
+```dart
+GoRoute(
+  path: '/login',
+  pageBuilder: (context, state) => MaterialPage<void>(
+    key: state.pageKey,
+    // 2.0: accessing query parameters
+    child: LoginPage(from: state.queryParams['from']),
+  ),
+),
+```
+
+Likewise, if you were using named routes in 1.x, you may have been passing both
+path and query parameters like so:
+
+```dart
+ListTile(
+  title: Text(p.name),
+  // 1.x: passing both path and query parameters
+  onTap: () => context.goNamed(
+    'person',
+    // "extra" path params were query params
+    {'fid': family.id, 'pid': p.id, 'qid': 'quid'},
+  ),
+),
+```
+
+Now you'll need to change your code to do the following in 2.0:
+
+```dart
+ListTile(
+  title: Text(p.name),
+  // 2.0: passing both path and query parameters
+  onTap: () => context.goNamed(
+    'person',
+    params: {'fid': family.id, 'pid': p.id},
+    queryParams: {'qid': 'quid'},
+  ),
+),
+```
+
+I got a little clever merging the two kinds of parameters into a single scope
+and hopefully this change makes things a little more clear.
 
 # Getting Started
 To use the go_router package, [follow these
@@ -123,16 +206,18 @@ information:
 | `subloc` | location of this sub-route w/o query params | `/login` | `/family/f2` |
 | `path` | the `GoRoute` path | `/login` | `family/:fid` |
 | `fullpath` | full path to this sub-route | `/login` | `/family/:fid` |
-| `params` | params extracted from the location | `{'from': '/family/f1'}` | `{'fid': 'f2'}` |
+| `params` | params extracted from the location | `{}` | `{'fid': 'f2'}` |
+| `queryParams` | optional params from the end of the location | `{'from': '/family/f1'}` | `{}` |
 | `error` | `Exception` associated with this sub-route, if any | `Exception('404')` | ... |
 | `pageKey` | unique key for this sub-route | `ValueKey('/login')` | `ValueKey('/family/:fid')` |
 
-You can read more about [sub-locations/sub-routes](#sub-routes) and [parametized
-routes](#parameters) below but the example code above uses the `pageKey`
-property as most of the example code does. The `pageKey` is used to create a
-unique key for the `MaterialPage` or `CupertinoPage` based on the current path
-for that page in the [stack of pages](#sub-routes), so it will uniquely identify
-the page w/o having to hardcode a key or come up with one yourself.
+You can read more about [sub-locations/sub-routes](#sub-routes) and
+[parameterized routes](#parameters) below but the example code above uses the
+`pageKey` property as most of the example code does. The `pageKey` is used to
+create a unique key for the `MaterialPage` or `CupertinoPage` based on the
+current path for that page in the [stack of pages](#sub-routes), so it will
+uniquely identify the page w/o having to hardcode a key or come up with one
+yourself.
 
 ## Error handling
 In addition to the list of routes, the go_router needs an `errorPageBuilder`
@@ -615,11 +700,11 @@ class App extends StatelessWidget {
     redirect: (state) {
       final loggedIn = loginInfo.loggedIn;
 
-      // check just the path in case there are query parameters
+      // check just the subloc in case there are query parameters
       final goingToLogin = state.subloc == '/login';
 
       // the user is not logged in and not headed to /login, they need to login
-      if (!loggedIn && !goingToLogin) return '/login?from=${state.location}';
+      if (!loggedIn && !goingToLogin) return '/login?from=${state.subloc}';
 
       // the user is logged in and headed to /login, no need to login again
       if (loggedIn && goingToLogin) return '/';
@@ -651,7 +736,7 @@ GoRoute(
   pageBuilder: (context, state) => MaterialPage<void>(
     key: state.pageKey,
     // pass the original location to the LoginPage (if there is one)
-    child: LoginPage(from: state.params['from']),
+    child: LoginPage(from: state.queryParams['from']),
   ),
 ),
 ```
@@ -747,19 +832,57 @@ navigate to using the name and whatever params are needed:
 
 ```dart
 void _tap(BuildContext context, String fid, String pid) =>
-  context.goNamed('person', {'fid': fid, 'pid': pid});
+  context.go(context.namedLocation('person', params: {'fid': fid, 'pid': pid}));
 ```
 
-The `goNamed` method will look up the route by name in a case-insensitive way,
-construct the URI for you and fill in the params as appropriate. If you miss a
-param, you'll get an error. If you pass any extra params, they'll be passed as
-query parameters.
+The `namedLocation` method will look up the route by name in a case-insensitive
+way, construct the URI for you and fill in the params as appropriate. If you
+miss a param or pass in params that aren't path of the path, you'll get an
+error. Since it's somewhat inconvenient to have to dereference the `context`
+object twice, go_router provides a `goNamed` method that does the lookup and
+navigation in one step:
 
-There is also a `pushNamed` method that will look up the route by name, pull
-the top page off of the stack and push that onto the existing stack of pages.
+```dart
+void _tap(BuildContext context, String fid, String pid) =>
+  context.goNamed('person', params: {'fid': fid, 'pid': pid});
+```
+
+There is also a `pushNamed` method that will look up the route by name, pull the
+top page off of the generated match stack and push that onto the existing stack
+of pages.
 
 ## Redirecting to Named Routes
-TODO
+In addition to navigation, you may also want to be able to redirect to a named
+route, which you can also do using the `namedLocation` method of either
+`GoRouter` or `GoRouterState`:
+
+```dart
+// redirect to the login page if the user is not logged in
+redirect: (state) {
+  final loggedIn = loginInfo.loggedIn;
+
+  // check just the subloc in case there are query parameters
+  final loginLoc = state.namedLocation('login');
+  final goingToLogin = state.subloc == loginLoc;
+
+  // the user is not logged in and not headed to /login, they need to login
+  if (!loggedIn && !goingToLogin)
+    return state.namedLocation('login', queryParams: {'from': state.subloc});
+
+  // the user is logged in and headed to /login, no need to login again
+  if (loggedIn && goingToLogin) return state.namedLocation('home');
+
+  // no need to redirect at all
+  return null;
+},
+```
+
+In this example, we're using `namedLocation` to get the location for the named
+'login' route and then comparing it to the current `subloc` to find out if the
+user is currently logging in or not. Furthermore, when we construct a location
+for redirection, we use `namedLocation` to pass in parameters to construct the
+location. All of this is done without hardcoding any URI formatting into your
+code.
 
 # Custom Transitions
 As you transition between routes, you get transitions based on whether

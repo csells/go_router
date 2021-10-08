@@ -159,11 +159,11 @@ class FamilyPage extends StatelessWidget {
             for (final p in family.people)
               ListTile(
                 title: Text(p.name),
-                onTap: () => context.goNamed(
+                onTap: () => context.go(context.namedLocation(
                   'person',
                   params: {'fid': family.id, 'pid': p.id},
                   queryParams: {'qid': 'quid'},
-                ),
+                )),
               ),
           ],
         ),
