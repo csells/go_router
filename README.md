@@ -65,7 +65,7 @@ developer experience.
 # Contributors
 It's amazing to me how many folks have already contributed to this project. Huge
 shout out to the go_router contributors!
-- [https://github.com/Salakar](https://github.com/Salakar) for the CI action on
+- [Salakar](https://github.com/Salakar) for the CI action on
   GitHub that is always helping me track down stuff I forget
 - [rydmike](https://github.com/rydmike) for a bunch of README and dartdoc fixes
   as well as a great example for keeping state during nested navigation
@@ -79,7 +79,7 @@ shout out to the go_router contributors!
   produce typesafe go and push code for named routes, so thumbs up on [this
   issues](https://github.com/csells/go_router/issues/66) if that's a feature
   you'd like to see in go_router
-- [https://github.com/kevmoo](https://github.com/kevmoo) for helping me track
+- [kevmoo](https://github.com/kevmoo) for helping me track
   down spelling issues in my README and unused imports; keep it coming, Kev!
 
 # Changelog
