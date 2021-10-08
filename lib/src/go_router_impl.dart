@@ -475,7 +475,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       if (match == null) continue;
 
       // if we have a complete match, then return the matched route
-      // NOTE: need a lower case match because subloc is canonicallized to match
+      // NOTE: need a lower case match because subloc is canonicalized to match
       // the path case whereas the location can be of any case and still match
       if (match.subloc.toLowerCase() == loc.toLowerCase()) {
         yield [match];
@@ -531,7 +531,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   // parentFullLoc: '',          path =>                  '/'
   // parentFullLoc: '/',         path => 'family/:fid' => '/family/:fid'
   // parentFullLoc: '/',         path => 'family/f2' =>   '/family/f2'
-  // parentFullLoc: '/famiy/f2', path => 'parent/p1' =>   '/family/f2/person/p1'
+  // parentFullLoc: '/family/f2', path => 'parent/p1' =>   '/family/f2/person/p1'
   static String _fullLocFor(String parentFullLoc, String path) {
     // at the root, just return the path
     if (parentFullLoc.isEmpty) {

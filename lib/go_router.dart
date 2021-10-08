@@ -66,7 +66,7 @@ class GoRouterState {
   /// The parameters for this sub-route, e.g. {'fid': 'f2'}
   final Map<String, String> params;
 
-  /// The query parameters for the location, e.g. {'from': '/famiy/f2'}
+  /// The query parameters for the location, e.g. {'from': '/family/f2'}
   final Map<String, String> queryParams;
 
   /// The error associated with this sub-route.

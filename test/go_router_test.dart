@@ -941,7 +941,7 @@ void main() {
     });
   });
 
-  group('initial locaton', () {
+  group('initial location', () {
     test('initial location', () {
       final routes = [
         GoRoute(
