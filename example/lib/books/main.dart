@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'src/auth.dart';
+import 'src/data/author.dart';
+import 'src/data/book.dart';
 import 'src/data/library.dart';
 import 'src/screens/author_details.dart';
 import 'src/screens/authors.dart';
@@ -82,8 +84,13 @@ class Bookstore extends StatelessWidget {
             path: ':bookId',
             pageBuilder: (context, state) {
               final bookId = state.params['bookId']!;
-              final selectedBook = libraryInstance.allBooks
+
+              var selectedBook = state.hiddenParams['book'] as Book?;
+
+              selectedBook ??= libraryInstance.allBooks
                   .firstWhereOrNull((b) => b.id.toString() == bookId);
+
+              if (selectedBook?.id.toString() != bookId) throw ArgumentError();
 
               return MaterialPage<void>(
                 key: state.pageKey,
@@ -114,8 +121,13 @@ class Bookstore extends StatelessWidget {
             path: ':authorId',
             pageBuilder: (context, state) {
               final authorId = state.params['authorId']!;
-              final selectedAuthor = libraryInstance.allAuthors
+              var selectedAuthor = state.hiddenParams['author'] as Author?;
+
+              selectedAuthor ??= libraryInstance.allAuthors
                   .firstWhereOrNull((a) => a.id.toString() == authorId);
+
+              if (selectedAuthor?.id.toString() != authorId)
+                throw ArgumentError();
 
               return MaterialPage<void>(
                 key: state.pageKey,

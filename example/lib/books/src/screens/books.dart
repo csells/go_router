@@ -95,7 +95,8 @@ class _BooksScreenState extends State<BooksScreen>
       );
 
   void _handleBookTapped(Book book) {
-    context.go('/book/${book.id}');
+    context
+        .go('/book/${book.id}', hiddenParams: <String, dynamic>{'book': book});
   }
 
   void _handleTabTapped(int index) {

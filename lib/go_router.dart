@@ -39,6 +39,7 @@ class GoRouterState {
     this.fullpath,
     this.params = const {},
     this.queryParams = const {},
+    this.hiddenParams = const <String, dynamic>{},
     this.error,
     ValueKey<String>? pageKey,
   })  : pageKey = pageKey ??
@@ -68,6 +69,10 @@ class GoRouterState {
 
   /// The query parameters for the location, e.g. {'from': '/famiy/f2'}
   final Map<String, String> queryParams;
+
+  /// Additional hidden parameters for the matched route
+  /// (these does not appear in path)
+  final Map<String, dynamic> hiddenParams;
 
   /// The error associated with this sub-route.
   final Exception? error;
@@ -319,7 +324,11 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
 
   /// Navigate to a URI location w/ optional query parameters, e.g.
   /// /family/f2/person/p1?color=blue
-  void go(String location) => routerDelegate.go(location);
+  void go(
+    String location, {
+    Map<String, dynamic> hiddenParams = const <String, dynamic>{},
+  }) =>
+      routerDelegate.go(location, hiddenParams);
 
   /// Navigate to a named route w/ optional parameters, e.g.
   /// name='person', params={'fid': 'f2', 'pid': 'p1'}
@@ -328,12 +337,24 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
     String name, {
     Map<String, String> params = const {},
     Map<String, String> queryParams = const {},
+    Map<String, dynamic> hiddenParams = const <String, dynamic>{},
   }) =>
-      go(namedLocation(name, params: params, queryParams: queryParams));
+      go(
+        namedLocation(
+          name,
+          params: params,
+          queryParams: queryParams,
+        ),
+        hiddenParams: hiddenParams,
+      );
 
   /// Push a URI location onto the page stack w/ optional query parameters, e.g.
   /// /family/f2/person/p1?color=blue
-  void push(String location) => routerDelegate.push(location);
+  void push(
+    String location, {
+    Map<String, dynamic> hiddenParams = const <String, dynamic>{},
+  }) =>
+      routerDelegate.push(location, hiddenParams);
 
   /// Push a named route onto the page stack w/ optional parameters, e.g.
   /// name='person', params={'fid': 'f2', 'pid': 'p1'}
@@ -341,8 +362,16 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
     String name, {
     Map<String, String> params = const {},
     Map<String, String> queryParams = const {},
+    Map<String, dynamic> hiddenParams = const <String, dynamic>{},
   }) =>
-      push(namedLocation(name, params: params, queryParams: queryParams));
+      push(
+        namedLocation(
+          name,
+          params: params,
+          queryParams: queryParams,
+        ),
+        hiddenParams: hiddenParams,
+      );
 
   /// Refresh the route.
   void refresh() => routerDelegate.refresh();
@@ -389,33 +418,48 @@ extension GoRouterHelper on BuildContext {
           .namedLocation(name, params: params, queryParams: queryParams);
 
   /// Navigate to a location.
-  void go(String location) => GoRouter.of(this).go(location);
+  void go(
+    String location, {
+    Map<String, dynamic> hiddenParams = const <String, dynamic>{},
+  }) =>
+      GoRouter.of(this).go(location, hiddenParams: hiddenParams);
 
   /// Navigate to a named route.
   void goNamed(
     String name, {
     Map<String, String> params = const {},
     Map<String, String> queryParams = const {},
+    Map<String, dynamic> hiddenParams = const <String, dynamic>{},
   }) =>
       GoRouter.of(this).goNamed(
         name,
         params: params,
         queryParams: queryParams,
+        hiddenParams: hiddenParams,
       );
 
   /// Push a location onto the page stack.
-  void push(String location) => GoRouter.of(this).push(location);
+  void push(
+    String location, {
+    Map<String, dynamic> hiddenParams = const <String, dynamic>{},
+  }) =>
+      GoRouter.of(this).push(
+        location,
+        hiddenParams: hiddenParams,
+      );
 
   /// Navigate to a named route onto the page stack.
   void pushNamed(
     String name, {
     Map<String, String> params = const {},
     Map<String, String> queryParams = const {},
+    Map<String, dynamic> hiddenParams = const <String, dynamic>{},
   }) =>
       GoRouter.of(this).pushNamed(
         name,
         params: params,
         queryParams: queryParams,
+        hiddenParams: hiddenParams,
       );
 }
 

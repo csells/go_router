@@ -58,7 +58,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
     // build the list of route matches
     _log('setting initial location $initUri');
-    _go(initUri.toString());
+    _go(initUri.toString(), <String, dynamic>{});
 
     // when the listener changes, refresh the route
     refreshListenable?.addListener(refresh);
@@ -113,6 +113,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
           fullpath: fullpath,
           params: {},
           queryParams: {},
+          hiddenParams: <String, dynamic>{},
         );
 
         namedFullpaths[name] = match;
@@ -147,29 +148,32 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   }
 
   /// Navigate to the given location.
-  void go(String location) {
+  void go(String location, Map<String, dynamic> hiddenParams) {
     _log('going to $location');
-    _go(location);
+    _go(location, hiddenParams);
     _safeNotifyListeners();
   }
 
   /// push the given location onto the page stack
-  void push(String location) {
+  void push(String location, Map<String, dynamic> hiddenParams) {
     _log('pushing $location');
-    _push(location);
+    _push(location, hiddenParams);
     _safeNotifyListeners();
   }
 
   /// Refresh the current location, including re-evaluating redirections.
   void refresh() {
     _log('refreshing $location');
-    _go(location);
+    _go(location, hiddenParams);
     _safeNotifyListeners();
   }
 
   /// Get the current location, e.g. /family/f2/person/p1
   String get location =>
       _addQueryParams(_matches.last.subloc, _matches.last.queryParams);
+
+  /// Get the current hiddenParams e.g. { 'book': Book() }
+  Map<String, dynamic> get hiddenParams => _matches.last.hiddenParams;
 
   /// For internal use; visible for testing only.
   @visibleForTesting
@@ -211,10 +215,16 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     // otherwise, we're cruising to a deep link, so ignore dev initial location
     final config = configuration.toString();
     if (config == '/') {
-      _go(location);
+      _go(
+        location,
+        <String, dynamic>{},
+      );
     } else {
       _log('deep linking to $config');
-      _go(config);
+      _go(
+        config,
+        <String, dynamic>{},
+      );
     }
   }
 
@@ -224,15 +234,19 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     _log2('GoRouterDelegate.setNewRoutePath: configuration= $configuration');
     final config = configuration.toString();
     _log('going to $config');
-    _go(config);
+    _go(config, <String, dynamic>{});
   }
 
   void _log(Object o) {
     if (debugLogDiagnostics) debugPrint('GoRouter: $o');
   }
 
-  void _go(String location) {
-    final matches = _getLocRouteMatchesWithRedirects(location);
+  // ? Maybe hiddenParams should be optional here
+  void _go(String location, Map<String, dynamic> hiddenParams) {
+    final matches = _getLocRouteMatchesWithRedirects(
+      location,
+      hiddenParams,
+    );
     assert(matches.isNotEmpty);
 
     // replace the stack of matches w/ the new ones
@@ -240,8 +254,11 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     _matches.addAll(matches);
   }
 
-  void _push(String location) {
-    final matches = _getLocRouteMatchesWithRedirects(location);
+  void _push(String location, Map<String, dynamic> hiddenParams) {
+    final matches = _getLocRouteMatchesWithRedirects(
+      location,
+      hiddenParams,
+    );
     assert(matches.isNotEmpty);
     final top = matches.last;
 
@@ -257,6 +274,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       params: top.params,
       queryParams: top.queryParams,
       pageKey: pageKey,
+      hiddenParams: hiddenParams,
     );
 
     // add a new match onto the stack of matches
@@ -264,7 +282,10 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     _matches.add(match);
   }
 
-  List<GoRouteMatch> _getLocRouteMatchesWithRedirects(String location) {
+  List<GoRouteMatch> _getLocRouteMatchesWithRedirects(
+    String location,
+    Map<String, dynamic> hiddenParams,
+  ) {
     // start redirecting from the initial location
     List<GoRouteMatch> matches;
 
@@ -304,12 +325,16 @@ class GoRouterDelegate extends RouterDelegate<Uri>
               subloc: uri.path,
               // pass along the query params 'cuz that's all we have right now
               queryParams: uri.queryParameters,
+              hiddenParams: hiddenParams,
             ),
           ),
         )) continue;
 
         // get stack of route matches
-        matches = getLocRouteMatches(loc);
+        matches = getLocRouteMatches(
+          loc,
+          hiddenParams: hiddenParams,
+        );
 
         // check top route for redirect
         final top = matches.last;
@@ -323,6 +348,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
               fullpath: top.fullpath,
               params: top.params,
               queryParams: top.queryParams,
+              hiddenParams: top.hiddenParams,
             ),
           ),
         )) continue;
@@ -345,6 +371,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
           fullpath: uri.path,
           params: {},
           queryParams: uri.queryParameters,
+          hiddenParams: hiddenParams,
           route: GoRoute(
             path: location,
             pageBuilder: (context, state) => errorPageBuilder(
@@ -356,6 +383,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
                 error: ex,
                 fullpath: '',
                 queryParams: state.queryParams,
+                hiddenParams: state.hiddenParams,
               ),
             ),
           ),
@@ -369,7 +397,10 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
   /// For internal use; visible for testing only.
   @visibleForTesting
-  List<GoRouteMatch> getLocRouteMatches(String location) {
+  List<GoRouteMatch> getLocRouteMatches(
+    String location, {
+    Map<String, dynamic> hiddenParams = const <String, dynamic>{},
+  }) {
     final uri = Uri.parse(location);
     final matchStacks = _getLocRouteMatchStacks(
       loc: uri.path,
@@ -378,6 +409,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       parentFullpath: '',
       parentSubloc: '',
       queryParams: uri.queryParameters,
+      hiddenParams: hiddenParams,
     ).toList();
 
     if (matchStacks.isEmpty) {
@@ -460,6 +492,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     required List<GoRoute> routes,
     required String parentFullpath,
     required Map<String, String> queryParams,
+    required Map<String, dynamic> hiddenParams,
   }) sync* {
     // find the set of matches at this level of the tree
     for (final route in routes) {
@@ -471,6 +504,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         path: route.path,
         fullpath: fullpath,
         queryParams: queryParams,
+        hiddenParams: hiddenParams,
       );
       if (match == null) continue;
 
@@ -500,6 +534,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         routes: route.routes,
         parentFullpath: fullpath,
         queryParams: queryParams,
+        hiddenParams: hiddenParams,
       ).toList();
       if (subRouteMatchStacks.isEmpty) continue;
 
@@ -514,6 +549,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     String name, {
     Map<String, String> params = const {},
     Map<String, String> queryParams = const {},
+    Map<String, dynamic> hiddenParams = const <String, dynamic>{},
   }) {
     final partialMatch = _namedMatches[name];
     return partialMatch == null
@@ -524,6 +560,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
             params: params,
             queryParams: queryParams,
             route: partialMatch.route,
+            hiddenParams: hiddenParams,
           );
   }
 
@@ -647,6 +684,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
           fullpath: match.fullpath,
           params: params,
           queryParams: match.queryParams,
+          hiddenParams: match.hiddenParams,
           pageKey: match.pageKey, // push() remaps the page key for uniqueness
         ),
       );
@@ -759,6 +797,7 @@ class GoRouteMatch {
     required this.fullpath,
     required this.params,
     required this.queryParams,
+    required this.hiddenParams,
     this.pageKey,
   })  : assert(subloc.startsWith('/')),
         assert(Uri.parse(subloc).queryParameters.isEmpty),
@@ -777,6 +816,10 @@ class GoRouteMatch {
   /// Parameters for the matched route.
   final Map<String, String> params;
 
+  /// Additional hidden parameters for the matched route
+  /// (these does not appear in path)
+  final Map<String, dynamic> hiddenParams;
+
   /// Query parameters for the matched route.
   final Map<String, String> queryParams;
 
@@ -790,6 +833,7 @@ class GoRouteMatch {
     required String path, // e.g. person/:pid
     required String fullpath, // e.g. /family/:fid/person/:pid
     required Map<String, String> queryParams,
+    required Map<String, dynamic> hiddenParams, // e.g. {'book': Book()}
   }) {
     assert(!path.contains('//'));
 
@@ -805,6 +849,7 @@ class GoRouteMatch {
       fullpath: fullpath,
       params: params,
       queryParams: queryParams,
+      hiddenParams: hiddenParams,
     );
   }
 
@@ -815,6 +860,7 @@ class GoRouteMatch {
     required String fullpath, // e.g. /family/:fid/person/:pid
     required Map<String, String> params, // e.g. {'fid': 'f2', 'pid': 'p1'}
     required Map<String, String> queryParams, // e.g. {'from': '/family/f2'}
+    required Map<String, dynamic> hiddenParams, // e.g. {'book': Book()}
   }) {
     assert(route.name != null);
     assert(route.name!.toLowerCase() == name.toLowerCase());
@@ -842,6 +888,7 @@ class GoRouteMatch {
       fullpath: fullpath,
       params: params,
       queryParams: queryParams,
+      hiddenParams: hiddenParams,
     );
   }
 

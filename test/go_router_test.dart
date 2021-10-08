@@ -258,6 +258,7 @@ void main() {
             expect(state.path, '/');
             expect(state.fullpath, '/');
             expect(state.params, <String, String>{});
+            expect(state.hiddenParams, <String, dynamic>{});
             expect(state.error, null);
             return HomePage();
           },
@@ -270,6 +271,7 @@ void main() {
                 expect(state.path, 'login');
                 expect(state.fullpath, '/login');
                 expect(state.params, <String, String>{});
+                expect(state.hiddenParams, <String, dynamic>{});
                 expect(state.error, null);
                 return LoginPage();
               },
@@ -285,6 +287,7 @@ void main() {
                 expect(state.path, 'family/:fid');
                 expect(state.fullpath, '/family/:fid');
                 expect(state.params, <String, String>{'fid': 'f2'});
+                expect(state.hiddenParams, <String, dynamic>{});
                 expect(state.error, null);
                 return FamilyPage(state.params['fid']!);
               },
@@ -299,6 +302,10 @@ void main() {
                     expect(
                       state.params,
                       <String, String>{'fid': 'f2', 'pid': 'p1'},
+                    );
+                    expect(
+                      state.hiddenParams,
+                      <String, dynamic>{'person': 'person'},
                     );
                     expect(state.error, null);
                     return PersonPage(
@@ -315,7 +322,8 @@ void main() {
       router.go('/');
       router.go('/login');
       router.go('/family/f2');
-      router.go('/family/f2/person/p1');
+      router.go('/family/f2/person/p1',
+          hiddenParams: <String, dynamic>{'person': 'person'});
     });
 
     test('match path case insensitively', () {

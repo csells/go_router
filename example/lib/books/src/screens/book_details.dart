@@ -61,7 +61,10 @@ class BookDetailsScreen extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {
-                context.push('/author/${book!.author.id}');
+                context.push(
+                  '/author/${book!.author.id}',
+                  hiddenParams: <String, dynamic>{'author': book!.author},
+                );
               },
               child: const Text('View author (GoRouter.push)'),
             ),
