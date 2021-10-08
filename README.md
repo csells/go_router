@@ -837,7 +837,7 @@ void _tap(BuildContext context, String fid, String pid) =>
 
 The `namedLocation` method will look up the route by name in a case-insensitive
 way, construct the URI for you and fill in the params as appropriate. If you
-miss a param or pass in params that aren't path of the path, you'll get an
+miss a param or pass in params that aren't part of the path, you'll get an
 error. Since it's somewhat inconvenient to have to dereference the `context`
 object twice, go_router provides a `goNamed` method that does the lookup and
 navigation in one step:
