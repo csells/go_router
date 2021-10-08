@@ -23,6 +23,7 @@ class App extends StatelessWidget {
       );
 
   late final _router = GoRouter(
+    debugLogDiagnostics: true,
     routes: [
       GoRoute(
         name: 'home',
@@ -65,7 +66,7 @@ class App extends StatelessWidget {
         pageBuilder: (context, state) => MaterialPage<void>(
           key: state.pageKey,
           // pass the original location to the LoginPage (if there is one)
-          child: LoginPage(from: state.params['from']),
+          child: LoginPage(from: state.queryParams['from']),
         ),
       ),
     ],
@@ -79,14 +80,19 @@ class App extends StatelessWidget {
     redirect: (state) {
       final loggedIn = loginInfo.loggedIn;
 
-      // check just the path in case there are query parameters
-      final goingToLogin = state.subloc == '/login';
+      // check just the subloc in case there are query parameters
+      final loginLoc = state.namedLocation('login');
+      final goingToLogin = state.subloc == loginLoc;
 
       // the user is not logged in and not headed to /login, they need to login
-      if (!loggedIn && !goingToLogin) return '/login?from=${state.location}';
+      if (!loggedIn && !goingToLogin)
+        return state.namedLocation(
+          'login',
+          queryParams: {'from': state.subloc},
+        );
 
       // the user is logged in and headed to /login, no need to login again
-      if (loggedIn && goingToLogin) return '/';
+      if (loggedIn && goingToLogin) return state.namedLocation('home');
 
       // no need to redirect at all
       return null;
@@ -125,7 +131,7 @@ class HomePage extends StatelessWidget {
           for (final f in families)
             ListTile(
               title: Text(f.name),
-              onTap: () => context.goNamed('family', {'fid': f.id}),
+              onTap: () => context.goNamed('family', params: {'fid': f.id}),
             )
         ],
       ),
@@ -153,11 +159,11 @@ class FamilyPage extends StatelessWidget {
             for (final p in family.people)
               ListTile(
                 title: Text(p.name),
-                onTap: () => context.goNamed('person', {
-                  'fid': family.id,
-                  'pid': p.id,
-                  'qid': 'quid', // extra params turn into query params
-                }),
+                onTap: () => context.goNamed(
+                  'person',
+                  params: {'fid': family.id, 'pid': p.id},
+                  queryParams: {'qid': 'quid'},
+                ),
               ),
           ],
         ),

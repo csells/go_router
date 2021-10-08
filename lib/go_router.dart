@@ -31,12 +31,14 @@ typedef GoRouterRedirect = String? Function(GoRouterState state);
 /// The route state during routing.
 class GoRouterState {
   /// Default constructor for creating route state during routing.
-  GoRouterState({
+  GoRouterState(
+    this._delegate, {
     required this.location,
     required this.subloc,
     this.path,
     this.fullpath,
-    this.params = const <String, String>{},
+    this.params = const {},
+    this.queryParams = const {},
     this.error,
     ValueKey<String>? pageKey,
   })  : pageKey = pageKey ??
@@ -47,10 +49,12 @@ class GoRouterState {
                     : subloc),
         assert((path ?? '').isEmpty == (fullpath ?? '').isEmpty);
 
-  /// The full location of the route, e.g. /family/f1/person/p2
+  final GoRouterDelegate _delegate;
+
+  /// The full location of the route, e.g. /family/f2/person/p1
   final String location;
 
-  /// The location of this sub-route, e.g. /family/f1
+  /// The location of this sub-route, e.g. /family/f2
   final String subloc;
 
   /// The path to this sub-route, e.g. family/:fid
@@ -59,14 +63,26 @@ class GoRouterState {
   /// The full path to this sub-route, e.g. /family/:fid
   final String? fullpath;
 
-  /// The parameters for this sub-route, e.g. {'fid': 'f1'}
+  /// The parameters for this sub-route, e.g. {'fid': 'f2'}
   final Map<String, String> params;
+
+  /// The query parameters for the location, e.g. {'from': '/famiy/f2'}
+  final Map<String, String> queryParams;
 
   /// The error associated with this sub-route.
   final Exception? error;
 
   /// A unique string key for this sub-route, e.g. ValueKey('/family/:fid')
   final ValueKey<String> pageKey;
+
+  /// Get a location from route name and parameters.
+  /// This is useful for redirecting to a named location.
+  String namedLocation(
+    String name, {
+    Map<String, String> params = const {},
+    Map<String, String> queryParams = const {},
+  }) =>
+      _delegate.namedLocation(name, params: params, queryParams: queryParams);
 }
 
 /// A declarative mapping between a route path and a page builder.
@@ -288,14 +304,32 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
   /// Get the current location.
   String get location => routerDelegate.currentConfiguration.toString();
 
+  /// Get a location from route name and parameters.
+  /// This is useful for redirecting to a named location.
+  String namedLocation(
+    String name, {
+    Map<String, String> params = const {},
+    Map<String, String> queryParams = const {},
+  }) =>
+      routerDelegate.namedLocation(
+        name,
+        params: params,
+        queryParams: queryParams,
+      );
+
   /// Navigate to a URI location w/ optional query parameters, e.g.
   /// /family/f2/person/p1?color=blue
   void go(String location) => routerDelegate.go(location);
 
   /// Navigate to a named route w/ optional parameters, e.g.
   /// name='person', params={'fid': 'f2', 'pid': 'p1'}
-  void goNamed(String name, [Map<String, String> params = const {}]) =>
-      routerDelegate.goNamed(name, params);
+  /// Navigate to the named route.
+  void goNamed(
+    String name, {
+    Map<String, String> params = const {},
+    Map<String, String> queryParams = const {},
+  }) =>
+      go(namedLocation(name, params: params, queryParams: queryParams));
 
   /// Push a URI location onto the page stack w/ optional query parameters, e.g.
   /// /family/f2/person/p1?color=blue
@@ -303,8 +337,12 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
 
   /// Push a named route onto the page stack w/ optional parameters, e.g.
   /// name='person', params={'fid': 'f2', 'pid': 'p1'}
-  void pushNamed(String name, [Map<String, String> params = const {}]) =>
-      routerDelegate.pushNamed(name, params);
+  void pushNamed(
+    String name, {
+    Map<String, String> params = const {},
+    Map<String, String> queryParams = const {},
+  }) =>
+      push(namedLocation(name, params: params, queryParams: queryParams));
 
   /// Refresh the route.
   void refresh() => routerDelegate.refresh();
@@ -345,15 +383,31 @@ extension GoRouterHelper on BuildContext {
   void go(String location) => GoRouter.of(this).go(location);
 
   /// Navigate to a named route.
-  void goNamed(String name, [Map<String, String> params = const {}]) =>
-      GoRouter.of(this).goNamed(name, params);
+  void goNamed(
+    String name, {
+    Map<String, String> params = const {},
+    Map<String, String> queryParams = const {},
+  }) =>
+      GoRouter.of(this).goNamed(
+        name,
+        params: params,
+        queryParams: queryParams,
+      );
 
   /// push a location onto the page stack
   void push(String location) => GoRouter.of(this).push(location);
 
   /// navigate to a named route onto the page stack
-  void pushNamed(String name, [Map<String, String> params = const {}]) =>
-      GoRouter.of(this).pushNamed(name, params);
+  void pushNamed(
+    String name, {
+    Map<String, String> params = const {},
+    Map<String, String> queryParams = const {},
+  }) =>
+      GoRouter.of(this).pushNamed(
+        name,
+        params: params,
+        queryParams: queryParams,
+      );
 }
 
 /// Page with custom transition functionality.

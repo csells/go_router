@@ -122,6 +122,30 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     }
   }
 
+  /// Get a location from route name and parameters.
+  /// This is useful for redirecting to a named location.
+  String namedLocation(
+    String name, {
+    required Map<String, String> params,
+    required Map<String, String> queryParams,
+  }) {
+    _log('getting location for name: '
+        '"$name"'
+        '${params.isEmpty ? '' : ', params: $params'}'
+        '${queryParams.isEmpty ? '' : ', queryParams: $queryParams'}');
+
+    // find route and build up the full path along the way
+    final match = getNameRouteMatch(
+      name,
+      params: params,
+      queryParams: queryParams,
+    );
+    if (match == null) throw Exception('unknown route name: $name');
+
+    assert(identical(match.queryParams, queryParams));
+    return _addQueryParams(match.subloc, queryParams);
+  }
+
   /// Navigate to the given location.
   void go(String location) {
     _log('going to $location');
@@ -129,20 +153,12 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     _safeNotifyListeners();
   }
 
-  /// Navigate to the named route.
-  void goNamed(String name, Map<String, String> params) =>
-      go(_lookupNamedRoute(name, params));
-
   /// push the given location onto the page stack
   void push(String location) {
     _log('pushing $location');
     _push(location);
     _safeNotifyListeners();
   }
-
-  /// Push the named route onto the page stack.
-  void pushNamed(String name, Map<String, String> params) =>
-      push(_lookupNamedRoute(name, params));
 
   /// Refresh the current location, including re-evaluating redirections.
   void refresh() {
@@ -215,17 +231,6 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     if (debugLogDiagnostics) debugPrint('GoRouter: $o');
   }
 
-  String _lookupNamedRoute(String name, Map<String, String> params) {
-    _log('looking up named route '
-        '"$name"${params.isEmpty ? '' : ' with $params'}');
-
-    // find route and build up the full path along the way
-    final match = getNameRouteMatch(name, params);
-    if (match == null) throw Exception('unknown route name: $name');
-
-    return _addQueryParams(match.subloc, match.queryParams);
-  }
-
   void _go(String location) {
     final matches = _getLocRouteMatchesWithRedirects(location);
     assert(matches.isNotEmpty);
@@ -269,6 +274,10 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       bool redirected(String? redir) {
         if (redir == null) return false;
 
+        if (Uri.tryParse(redir) == null) {
+          throw Exception('invalid redirect: $redir');
+        }
+
         if (redirects.contains(redir)) {
           redirects.add(redir);
           final msg = 'Redirect loop detected: ${redirects.join(' => ')}';
@@ -286,16 +295,15 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
         // check for top-level redirect
         final uri = Uri.parse(loc);
-        final subloc = uri.path;
-        final queryParams = uri.queryParameters;
         if (redirected(
           topRedirect(
             GoRouterState(
+              this,
               location: loc,
               // trim the query params off the subloc to match route.redirect
-              subloc: subloc,
+              subloc: uri.path,
               // pass along the query params 'cuz that's all we have right now
-              params: queryParams,
+              queryParams: uri.queryParameters,
             ),
           ),
         )) continue;
@@ -308,11 +316,13 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         if (redirected(
           top.route.redirect(
             GoRouterState(
+              this,
               location: loc,
               subloc: top.subloc,
               path: top.route.path,
               fullpath: top.fullpath,
               params: top.params,
+              queryParams: top.queryParams,
             ),
           ),
         )) continue;
@@ -340,10 +350,12 @@ class GoRouterDelegate extends RouterDelegate<Uri>
             pageBuilder: (context, state) => errorPageBuilder(
               context,
               GoRouterState(
+                this,
                 location: state.location,
                 subloc: state.subloc,
                 error: ex,
                 fullpath: '',
+                queryParams: state.queryParams,
               ),
             ),
           ),
@@ -499,17 +511,20 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   /// For internal use; visible for testing only.
   @visibleForTesting
   GoRouteMatch? getNameRouteMatch(
-    String name, [
+    String name, {
     Map<String, String> params = const {},
-  ]) {
+    Map<String, String> queryParams = const {},
+  }) {
     final partialMatch = _namedMatches[name];
-    if (partialMatch == null) return null;
-    return GoRouteMatch._matchNamed(
-      name: name,
-      fullpath: partialMatch.fullpath,
-      params: params,
-      route: partialMatch.route,
-    );
+    return partialMatch == null
+        ? null
+        : GoRouteMatch._matchNamed(
+            name: name,
+            fullpath: partialMatch.fullpath,
+            params: params,
+            queryParams: queryParams,
+            route: partialMatch.route,
+          );
   }
 
   // e.g.
@@ -542,12 +557,15 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       _log(ex.toString());
 
       // if there's an error, show an error page
+      final uri = Uri.parse(location);
       pages = [
         errorPageBuilder(
           context,
           GoRouterState(
+            this,
             location: location,
-            subloc: location,
+            subloc: uri.path,
+            queryParams: uri.queryParameters,
             error: ex,
           ),
         ),
@@ -606,17 +624,15 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     List<GoRouteMatch> matches,
   ) sync* {
     assert(matches.isNotEmpty);
-    var params = matches.first.queryParams; // start w/ the query parameters
     if (kDebugMode) {
       for (final match in matches) {
-        assert(match.queryParams == matches.first.queryParams);
+        assert(identical(match.queryParams, matches.first.queryParams));
       }
     }
 
+    var params = <String, String>{};
     for (final match in matches) {
-      // merge new params, overriding old ones, i.e. path params override
-      // query parameters, sub-location params override top level params, etc.
-      // this also keeps params from previously matched paths, e.g.
+      // merge new params to keep params from previously matched paths, e.g.
       // /family/:fid/person/:pid provides fid and pid to person/:pid
       params = {...params, ...match.params};
 
@@ -624,11 +640,13 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       yield match.route.pageBuilder(
         context,
         GoRouterState(
+          this,
           location: location,
           subloc: match.subloc,
           path: match.route.path,
           fullpath: match.fullpath,
           params: params,
+          queryParams: match.queryParams,
           pageKey: match.pageKey, // push() remaps the page key for uniqueness
         ),
       );
@@ -796,6 +814,7 @@ class GoRouteMatch {
     required String name, // e.g. person
     required String fullpath, // e.g. /family/:fid/person/:pid
     required Map<String, String> params, // e.g. {'fid': 'f2', 'pid': 'p1'}
+    required Map<String, String> queryParams, // e.g. {'from': '/family/f2'}
   }) {
     assert(route.name != null);
     assert(route.name!.toLowerCase() == name.toLowerCase());
@@ -809,14 +828,10 @@ class GoRouteMatch {
       }
     }
 
-    // split params into posParams and queryParams
-    final posParams = <String, String>{};
-    final queryParams = <String, String>{};
+    // check that we have don't have extra params
     for (final key in params.keys) {
-      if (paramNames.contains(key)) {
-        posParams[key] = params[key]!;
-      } else {
-        queryParams[key] = params[key]!;
+      if (!paramNames.contains(key)) {
+        throw Exception('unknown param "$key" for $fullpath');
       }
     }
 
@@ -825,7 +840,7 @@ class GoRouteMatch {
       route: route,
       subloc: subloc,
       fullpath: fullpath,
-      params: posParams,
+      params: params,
       queryParams: queryParams,
     );
   }

@@ -50,6 +50,8 @@ developer experience.
   * [Multiple redirections](#multiple-redirections)
 - [Query Parameters](#query-parameters)
 - [Named Routes](#named-routes)
+  * [Redirecting to Named Routes](#redirecting-to-named-routes)
+  * [Navigating to Named Routes](#navigating-to-named-routes)
 - [Custom Transitions](#custom-transitions)
 - [Async Data](#async-data)
 - [Nested Navigation](#nested-navigation)
@@ -703,9 +705,12 @@ void _tap(BuildContext context, String fid, String pid) =>
 Not only is that error-prone, but the actual URI format of your app could change
 over time. Certainly redirection helps keep old URI formats working, but do you
 really want various versions of your location URIs lying willy-nilly around in
-your code? The idea of named routes is to make it easy to navigate to a route
-w/o knowing or caring what the URI format is. You can add a unique name to your
-route using the `GoRoute.name` parameter:
+your code? 
+
+## Navigating to Named Routes
+The idea of named routes is to make it easy to navigate to a route w/o knowing
+or caring what the URI format is. You can add a unique name to your route using
+the `GoRoute.name` parameter:
 
 ```dart
 final _router = GoRouter(
@@ -752,6 +757,9 @@ query parameters.
 
 There is also a `pushNamed` method that will look up the route by name, pull
 the top page off of the stack and push that onto the existing stack of pages.
+
+## Redirecting to Named Routes
+TODO
 
 # Custom Transitions
 As you transition between routes, you get transitions based on whether
@@ -1208,7 +1216,7 @@ under the covers, e.g.
 ```text
 GoRouter: setting initial location /
 GoRouter: location changed to /
-GoRouter: looking up named route "person" with {fid: f2, pid: p1}
+GoRouter: getting location for name: "person", params: {fid: f2, pid: p1}
 GoRouter: going to /family/f2/person/p1
 GoRouter: location changed to /family/f2/person/p1
 ```
