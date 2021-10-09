@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/diagnostics.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -259,6 +260,7 @@ void main() {
             expect(state.fullpath, '/');
             expect(state.params, <String, String>{});
             expect(state.error, null);
+            expect(state.extra! as int, 1);
             return HomePage();
           },
           routes: [
@@ -271,6 +273,7 @@ void main() {
                 expect(state.fullpath, '/login');
                 expect(state.params, <String, String>{});
                 expect(state.error, null);
+                expect(state.extra! as int, 2);
                 return LoginPage();
               },
             ),
@@ -286,6 +289,7 @@ void main() {
                 expect(state.fullpath, '/family/:fid');
                 expect(state.params, <String, String>{'fid': 'f2'});
                 expect(state.error, null);
+                expect(state.extra! as int, 3);
                 return FamilyPage(state.params['fid']!);
               },
               routes: [
@@ -301,6 +305,7 @@ void main() {
                       <String, String>{'fid': 'f2', 'pid': 'p1'},
                     );
                     expect(state.error, null);
+                    expect(state.extra! as int, 4);
                     return PersonPage(
                         state.params['fid']!, state.params['pid']!);
                   },
@@ -312,10 +317,10 @@ void main() {
       ];
 
       final router = _router(routes);
-      router.go('/');
-      router.go('/login');
-      router.go('/family/f2');
-      router.go('/family/f2/person/p1');
+      router.go('/', extra: 1);
+      router.go('/login', extra: 2);
+      router.go('/family/f2', extra: 3);
+      router.go('/family/f2/person/p1', extra: 4);
     });
 
     test('match path case insensitively', () {
@@ -938,6 +943,22 @@ void main() {
         initialLocation: loc,
         debugLogDiagnostics: true,
       );
+    });
+
+    test('redirect limit', () {
+      final router = GoRouter(
+        routes: [],
+        errorPageBuilder: (context, state) => ErrorPage(state.error!),
+        debugLogDiagnostics: true,
+        redirect: (state) => '${state.location}+',
+        redirectLimit: 10,
+      );
+
+      final matches = router.routerDelegate.matches;
+      expect(matches.length, 1);
+      expect(router.pageFor(matches[0]).runtimeType, ErrorPage);
+      expect((router.pageFor(matches[0]) as ErrorPage).ex, isNotNull);
+      dump((router.pageFor(matches[0]) as ErrorPage).ex);
     });
   });
 

@@ -20,18 +20,20 @@ type to hold the app state that drives the creation of the
 can read [an excellent blog post on these requirements on
 Medium](https://medium.com/flutter/learning-flutters-new-navigation-and-routing-system-7c9068155ade).
 This separation of responsibilities allows the Flutter developer to implement a
-number of routing and navigation policies at the cost of
+number of routing and navigation policies, including deep and dynamic linking,
+but at the cost of
 [complexity](https://www.reddit.com/r/FlutterDev/comments/koxx4w/why_navigator_20_sucks/).
 
 The purpose of the go_router is to use declarative routes to reduce complexity,
 regardless of the platform you're targeting (mobile, web, desktop), handling
-deep linking from Android, iOS and the web while still allowing an easy-to-use
-developer experience.
+deep and dynamic linking from Android, iOS and the web, along with a number of
+other navigation-related scenarios, while still (hopefully) providing an
+easy-to-use developer experience.
 
 # Table of Contents
 - [Contributors](#contributors)
 - [Changelog](#changelog)
-- [Migrating to 2.0](#migrating-to-20)
+- [Migrating to 2.x](#migrating-to-2x)
 - [Getting Started](#getting-started)
 - [Declarative Routing](#declarative-routing)
   * [Router state](#router-state)
@@ -50,6 +52,7 @@ developer experience.
   * [Parameterized redirection](#parameterized-redirection)
   * [Multiple redirections](#multiple-redirections)
 - [Query Parameters](#query-parameters)
+- [Extra Parameter](#extra-parameter)
 - [Named Routes](#named-routes)
   * [Navigating to Named Routes](#navigating-to-named-routes)
   * [Redirecting to Named Routes](#redirecting-to-named-routes)
@@ -87,10 +90,10 @@ shout out to the go_router contributors!
 If you'd like to see what's changed in detail over time, you can read [the
 go_router Changelog](https://pub.dev/packages/go_router/changelog).
 
-# Migrating to 2.0
-There is a breaking change in the go_router 2.0 release: by [popular
-demand](https://twitter.com/csells/status/1445520767190388738), the `params`
-property of the `GoRouterState` object has been split into two properties:
+# Migrating to 2.x
+By [popular demand](https://twitter.com/csells/status/1445520767190388738),
+there is a breaking change in the go_router 2.0 release: the `params` property
+of the `GoRouterState` object has been split into two properties:
 - `params` for parameters that are part of the path and, e.g. `/family/:fid`
 - `queryParams` for parameters that added optionally at the end of the location,
   e.g. `/login?from=/family/f2`
@@ -680,9 +683,12 @@ routes over time and not to worry so much about attempting to trim each of them
 to their direct route. Furthermore, it's possible to redirect at the top level
 and at the route level in any number of combinations.
 
-The only trouble you need worry about is getting into a loop, e.g. ```/ => /foo
-=> /```. If that happens, you'll get an exception with a message like this:
-```Exception: Redirect loop detected: / => /foo => /```.
+If you redirect too many times, that's likely to indicate a bug in your app. By
+default, more than 5 redirections will cause an exception. You can change this
+by setting the `redirectLimit` argument to the `GoRouter` constructor.
+
+The other trouble you need worry about is getting into a loop, e.g. ```/ => /foo
+=> /```. If that happens, you'll get an exception.
 
 # Query Parameters
 Sometimes you're doing [deep linking](#deep-linking) and you'd like a user to
@@ -778,6 +784,33 @@ It's still good practice to pass in the `refreshListenable` when manually
 redirecting, as we do in this case, to ensure any change to the login info
 causes the right routing to happen automatically, e.g. the user logging out will
 cause them to be routed back to the login page.
+
+# Extra parameter
+In addition to passing along path and query parameters, you can also pass along
+an extra object as part of your navigation, e.g.
+
+```dart
+void _tap(BuildContext context, Family family) =>
+  context.go('/family', extra: family);
+```
+
+This object is available during the `pageBuilder` function as `state.extra`:
+
+```dart
+GoRoute(
+  path: '/family',
+  pageBuilder: (context, state) => MaterialPage<Family>(
+    key: state.pageKey,
+    child: FamilyPage(family: state.extra! as Family),
+  ),
+),
+```
+
+The `extra` object is useful if you'd like to simply pass along a single object
+to the `pageBuilder` function w/o passing an object identifier via a URI and
+looking up the object from a store. _However_, this object cannot be used to
+create a dynamic link, cannot be used in deep linking and so is _not
+recommended_ for those cases.
 
 # Named Routes
 When you're navigating to a route with a location, you're hardcoding the URI

@@ -39,6 +39,7 @@ class GoRouterState {
     this.fullpath,
     this.params = const {},
     this.queryParams = const {},
+    this.extra,
     this.error,
     ValueKey<String>? pageKey,
   })  : pageKey = pageKey ??
@@ -68,6 +69,9 @@ class GoRouterState {
 
   /// The query parameters for the location, e.g. {'from': '/family/f2'}
   final Map<String, String> queryParams;
+
+  /// An extra object to pass along with the navigation.
+  final Object? extra;
 
   /// The error associated with this sub-route.
   final Exception? error;
@@ -274,6 +278,7 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
     required GoRouterPageBuilder errorPageBuilder,
     GoRouterRedirect? redirect,
     Listenable? refreshListenable,
+    int redirectLimit = 5,
     String initialLocation = '/',
     UrlPathStrategy? urlPathStrategy,
     List<NavigatorObserver>? observers,
@@ -285,6 +290,7 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
       routes: routes,
       errorPageBuilder: errorPageBuilder,
       topRedirect: redirect ?? (_) => null,
+      redirectLimit: redirectLimit,
       refreshListenable: refreshListenable,
       initUri: Uri.parse(initialLocation),
       observers: [...observers ?? [], this],
@@ -319,7 +325,8 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
 
   /// Navigate to a URI location w/ optional query parameters, e.g.
   /// /family/f2/person/p1?color=blue
-  void go(String location) => routerDelegate.go(location);
+  void go(String location, {Object? extra}) =>
+      routerDelegate.go(location, extra: extra);
 
   /// Navigate to a named route w/ optional parameters, e.g.
   /// name='person', params={'fid': 'f2', 'pid': 'p1'}
@@ -328,12 +335,17 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
     String name, {
     Map<String, String> params = const {},
     Map<String, String> queryParams = const {},
+    Object? extra,
   }) =>
-      go(namedLocation(name, params: params, queryParams: queryParams));
+      go(
+        namedLocation(name, params: params, queryParams: queryParams),
+        extra: extra,
+      );
 
   /// Push a URI location onto the page stack w/ optional query parameters, e.g.
   /// /family/f2/person/p1?color=blue
-  void push(String location) => routerDelegate.push(location);
+  void push(String location, {Object? extra}) =>
+      routerDelegate.push(location, extra: extra);
 
   /// Push a named route onto the page stack w/ optional parameters, e.g.
   /// name='person', params={'fid': 'f2', 'pid': 'p1'}
@@ -341,8 +353,12 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
     String name, {
     Map<String, String> params = const {},
     Map<String, String> queryParams = const {},
+    Object? extra,
   }) =>
-      push(namedLocation(name, params: params, queryParams: queryParams));
+      push(
+        namedLocation(name, params: params, queryParams: queryParams),
+        extra: extra,
+      );
 
   /// Refresh the route.
   void refresh() => routerDelegate.refresh();
@@ -389,33 +405,39 @@ extension GoRouterHelper on BuildContext {
           .namedLocation(name, params: params, queryParams: queryParams);
 
   /// Navigate to a location.
-  void go(String location) => GoRouter.of(this).go(location);
+  void go(String location, {Object? extra}) =>
+      GoRouter.of(this).go(location, extra: extra);
 
   /// Navigate to a named route.
   void goNamed(
     String name, {
     Map<String, String> params = const {},
     Map<String, String> queryParams = const {},
+    Object? extra,
   }) =>
       GoRouter.of(this).goNamed(
         name,
         params: params,
         queryParams: queryParams,
+        extra: extra,
       );
 
   /// Push a location onto the page stack.
-  void push(String location) => GoRouter.of(this).push(location);
+  void push(String location, {Object? extra}) =>
+      GoRouter.of(this).push(location, extra: extra);
 
   /// Navigate to a named route onto the page stack.
   void pushNamed(
     String name, {
     Map<String, String> params = const {},
     Map<String, String> queryParams = const {},
+    Object? extra,
   }) =>
       GoRouter.of(this).pushNamed(
         name,
         params: params,
         queryParams: queryParams,
+        extra: extra,
       );
 }
 

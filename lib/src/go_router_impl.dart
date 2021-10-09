@@ -38,6 +38,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     required this.routes,
     required this.errorPageBuilder,
     required this.topRedirect,
+    required this.redirectLimit,
     required this.refreshListenable,
     required Uri initUri,
     required this.observers,
@@ -76,6 +77,9 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   /// Top level page redirect.
   final GoRouterRedirect topRedirect;
 
+  /// The limit for the number of consecutive redirects.
+  final int redirectLimit;
+
   /// Listenable used to cause the router to refresh it's route.
   final Listenable? refreshListenable;
 
@@ -113,6 +117,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
           fullpath: fullpath,
           params: {},
           queryParams: {},
+          extra: null,
         );
 
         namedFullpaths[name] = match;
@@ -147,23 +152,23 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   }
 
   /// Navigate to the given location.
-  void go(String location) {
+  void go(String location, {Object? extra}) {
     _log('going to $location');
-    _go(location);
+    _go(location, extra: extra);
     _safeNotifyListeners();
   }
 
   /// push the given location onto the page stack
-  void push(String location) {
+  void push(String location, {Object? extra}) {
     _log('pushing $location');
-    _push(location);
+    _push(location, extra: extra);
     _safeNotifyListeners();
   }
 
   /// Refresh the current location, including re-evaluating redirections.
   void refresh() {
     _log('refreshing $location');
-    _go(location);
+    _go(location, extra: _matches.last.extra);
     _safeNotifyListeners();
   }
 
@@ -231,8 +236,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     if (debugLogDiagnostics) debugPrint('GoRouter: $o');
   }
 
-  void _go(String location) {
-    final matches = _getLocRouteMatchesWithRedirects(location);
+  void _go(String location, {Object? extra}) {
+    final matches = _getLocRouteMatchesWithRedirects(location, extra: extra);
     assert(matches.isNotEmpty);
 
     // replace the stack of matches w/ the new ones
@@ -240,8 +245,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     _matches.addAll(matches);
   }
 
-  void _push(String location) {
-    final matches = _getLocRouteMatchesWithRedirects(location);
+  void _push(String location, {Object? extra}) {
+    final matches = _getLocRouteMatchesWithRedirects(location, extra: extra);
     assert(matches.isNotEmpty);
     final top = matches.last;
 
@@ -256,6 +261,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       fullpath: top.fullpath,
       params: top.params,
       queryParams: top.queryParams,
+      extra: extra,
       pageKey: pageKey,
     );
 
@@ -264,7 +270,10 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     _matches.add(match);
   }
 
-  List<GoRouteMatch> _getLocRouteMatchesWithRedirects(String location) {
+  List<GoRouteMatch> _getLocRouteMatchesWithRedirects(
+    String location, {
+    required Object? extra,
+  }) {
     // start redirecting from the initial location
     List<GoRouteMatch> matches;
 
@@ -280,11 +289,16 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
         if (redirects.contains(redir)) {
           redirects.add(redir);
-          final msg = 'Redirect loop detected: ${redirects.join(' => ')}';
+          final msg = 'redirect loop detected: ${redirects.join(' => ')}';
           throw Exception(msg);
         }
 
         redirects.add(redir);
+        if (redirects.length - 1 > redirectLimit) {
+          final msg = 'too many redirects: ${redirects.join(' => ')}';
+          throw Exception(msg);
+        }
+
         _log('redirecting to $redir');
         return true;
       }
@@ -309,7 +323,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         )) continue;
 
         // get stack of route matches
-        matches = getLocRouteMatches(loc);
+        matches = getLocRouteMatches(loc, extra: extra);
 
         // check top route for redirect
         final top = matches.last;
@@ -323,6 +337,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
               fullpath: top.fullpath,
               params: top.params,
               queryParams: top.queryParams,
+              extra: extra,
             ),
           ),
         )) continue;
@@ -345,6 +360,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
           fullpath: uri.path,
           params: {},
           queryParams: uri.queryParameters,
+          extra: null,
           route: GoRoute(
             path: location,
             pageBuilder: (context, state) => errorPageBuilder(
@@ -369,7 +385,10 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
   /// For internal use; visible for testing only.
   @visibleForTesting
-  List<GoRouteMatch> getLocRouteMatches(String location) {
+  List<GoRouteMatch> getLocRouteMatches(
+    String location, {
+    Object? extra,
+  }) {
     final uri = Uri.parse(location);
     final matchStacks = _getLocRouteMatchStacks(
       loc: uri.path,
@@ -378,6 +397,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       parentFullpath: '',
       parentSubloc: '',
       queryParams: uri.queryParameters,
+      extra: extra,
     ).toList();
 
     if (matchStacks.isEmpty) {
@@ -460,6 +480,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     required List<GoRoute> routes,
     required String parentFullpath,
     required Map<String, String> queryParams,
+    required Object? extra,
   }) sync* {
     // find the set of matches at this level of the tree
     for (final route in routes) {
@@ -471,6 +492,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         path: route.path,
         fullpath: fullpath,
         queryParams: queryParams,
+        extra: extra,
       );
       if (match == null) continue;
 
@@ -500,6 +522,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         routes: route.routes,
         parentFullpath: fullpath,
         queryParams: queryParams,
+        extra: extra,
       ).toList();
       if (subRouteMatchStacks.isEmpty) continue;
 
@@ -514,16 +537,18 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     String name, {
     Map<String, String> params = const {},
     Map<String, String> queryParams = const {},
+    Object? extra,
   }) {
     final partialMatch = _namedMatches[name];
     return partialMatch == null
         ? null
         : GoRouteMatch._matchNamed(
             name: name,
+            route: partialMatch.route,
             fullpath: partialMatch.fullpath,
             params: params,
             queryParams: queryParams,
-            route: partialMatch.route,
+            extra: extra,
           );
   }
 
@@ -759,6 +784,7 @@ class GoRouteMatch {
     required this.fullpath,
     required this.params,
     required this.queryParams,
+    required this.extra,
     this.pageKey,
   })  : assert(subloc.startsWith('/')),
         assert(Uri.parse(subloc).queryParameters.isEmpty),
@@ -780,6 +806,9 @@ class GoRouteMatch {
   /// Query parameters for the matched route.
   final Map<String, String> queryParams;
 
+  /// An extra object to pass along with the navigation.
+  final Object? extra;
+
   /// Optional value key of type string, to hold a unique reference to a page.
   final ValueKey<String>? pageKey;
 
@@ -790,6 +819,7 @@ class GoRouteMatch {
     required String path, // e.g. person/:pid
     required String fullpath, // e.g. /family/:fid/person/:pid
     required Map<String, String> queryParams,
+    required Object? extra,
   }) {
     assert(!path.contains('//'));
 
@@ -805,6 +835,7 @@ class GoRouteMatch {
       fullpath: fullpath,
       params: params,
       queryParams: queryParams,
+      extra: extra,
     );
   }
 
@@ -815,6 +846,7 @@ class GoRouteMatch {
     required String fullpath, // e.g. /family/:fid/person/:pid
     required Map<String, String> params, // e.g. {'fid': 'f2', 'pid': 'p1'}
     required Map<String, String> queryParams, // e.g. {'from': '/family/f2'}
+    required Object? extra,
   }) {
     assert(route.name != null);
     assert(route.name!.toLowerCase() == name.toLowerCase());
@@ -842,6 +874,7 @@ class GoRouteMatch {
       fullpath: fullpath,
       params: params,
       queryParams: queryParams,
+      extra: extra,
     );
   }
 

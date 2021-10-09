@@ -1,3 +1,10 @@
+### 2.1.0
+- [Fix 80](https://github.com/csells/go_router/issues/80): adding a redirect
+  limit to catch too many redirects error
+- [Fix 81](https://github.com/csells/go_router/issues/81): allow an extra object
+  to pass through for navigation
+
+
 ### 2.0.1
 - add badges to the README and codecov to the GitHub commit action; thanks to
   [rydmike](https://github.com/rydmike) for both

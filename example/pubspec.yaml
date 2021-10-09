@@ -1,6 +1,6 @@
 name: go_router_examples
 description: go_router examples
-version: 2.0.1
+version: 2.1.0
 publish_to: none
 
 environment:
