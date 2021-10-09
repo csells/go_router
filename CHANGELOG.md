@@ -1,3 +1,8 @@
+### 2.0.1
+- add badges to the README and codecov to the GitHub commit action; thanks to
+  [rydmike](https://github.com/rydmike) for both
+
+
 ### 2.0.0
 - BREAKING CHANGE and [Fix #50](https://github.com/csells/go_router/issues/50):
   split `params` into `params` and `queryParams`; see the [Migrating to 2.0
@@ -15,9 +20,6 @@
   `AutomaticKeepAliveClientMixin` with nested navigation to keep widget state
   between navigations; thanks to [rydmike](https://github.com/rydmike) for this
   update
-- [Fix 61](https://github.com/csells/go_router/issues/61): hopefully fixing
-  issues with relative file references on pub.dev/documentation (can't really
-  know till I publish this version...)
 
 
 ### 1.1.3
