@@ -72,8 +72,8 @@ class Page3Page extends StatelessWidget {
 
 /// sample page to show families
 class HomePage extends StatelessWidget {
-  final List<Family> families;
   const HomePage({required this.families, Key? key}) : super(key: key);
+  final List<Family> families;
 
   @override
   Widget build(BuildContext context) {
@@ -114,8 +114,8 @@ class HomePage extends StatelessWidget {
 
 /// sample page to show a single family
 class FamilyPage extends StatelessWidget {
-  final Family family;
   const FamilyPage({required this.family, Key? key}) : super(key: key);
+  final Family family;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -134,10 +134,11 @@ class FamilyPage extends StatelessWidget {
 
 /// sample page to show a single person
 class PersonPage extends StatelessWidget {
-  final Family family;
-  final Person person;
   const PersonPage({required this.family, required this.person, Key? key})
       : super(key: key);
+
+  final Family family;
+  final Person person;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -147,12 +148,13 @@ class PersonPage extends StatelessWidget {
 }
 
 class FamilyTabsPage extends StatefulWidget {
-  final int index;
   FamilyTabsPage({required Family selectedFamily, Key? key})
       : index = Families.data.indexWhere((f) => f.id == selectedFamily.id),
         super(key: key) {
     assert(index != -1);
   }
+
+  final int index;
 
   @override
   _FamilyTabsPageState createState() => _FamilyTabsPageState();
@@ -232,26 +234,50 @@ class RouterLocationView extends StatelessWidget {
   }
 }
 
-class FamilyView extends StatelessWidget {
-  final Family family;
+class FamilyView extends StatefulWidget {
   const FamilyView({required this.family, Key? key}) : super(key: key);
+  final Family family;
 
   @override
-  Widget build(BuildContext context) => ListView(
-        children: [
-          for (final p in family.people)
-            ListTile(
-              title: Text(p.name),
-              onTap: () => context.go('/family/${family.id}/person/${p.id}'),
-            ),
-        ],
-      );
+  State<FamilyView> createState() => _FamilyViewState();
+}
+
+/// Use the [AutomaticKeepAliveClientMixin] to keep the state, like scroll
+/// position and text fields when switching tabs, as well as when popping back
+/// from sub screens. To use the mixin override [wantKeepAlive] and call
+/// `super.build(context)` in build.
+///
+/// In this example if you make a web build and make the browser window so low
+/// that you have to scroll to see the last person on each family tab, you will
+/// see that state is kept when you switch tabs and when you open a person
+/// screen and pop back to the family.
+class _FamilyViewState extends State<FamilyView>
+    with AutomaticKeepAliveClientMixin {
+  // Override `wantKeepAlive` when using `AutomaticKeepAliveClientMixin`.
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    // Call `super.build` when using `AutomaticKeepAliveClientMixin`.
+    super.build(context);
+    return ListView(
+      children: [
+        for (final p in widget.family.people)
+          ListTile(
+            title: Text(p.name),
+            onTap: () =>
+                context.go('/family/${widget.family.id}/person/${p.id}'),
+          ),
+      ],
+    );
+  }
 }
 
 /// sample error page
 class ErrorPage extends StatelessWidget {
-  final Exception? error;
   const ErrorPage(this.error, {Key? key}) : super(key: key);
+  final Exception? error;
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -273,8 +299,8 @@ class ErrorPage extends StatelessWidget {
 
 /// sample login page
 class LoginPage extends StatelessWidget {
-  final String? from;
   const LoginPage({this.from, Key? key}) : super(key: key);
+  final String? from;
 
   @override
   Widget build(BuildContext context) => Scaffold(

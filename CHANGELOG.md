@@ -1,3 +1,36 @@
+### 2.0.0
+- BREAKING CHANGE and [Fix #50](https://github.com/csells/go_router/issues/50):
+  split `params` into `params` and `queryParams`; see the [Migrating to 2.0
+  section of the README](https://pub.dev/packages/go_router#migrating-to-20)
+  for instructions on how to migrate your code from 1.x to 2.0
+- [Fix 69](https://github.com/csells/go_router/issues/69): exposed named
+  location lookup for redirection
+- [Fix 57](https://github.com/csells/go_router/issues/57): enable the Android
+  system Back button to behave exactly like the `AppBar` Back button; thanks to
+  [SunlightBro](https://github.com/SunlightBro) for the one-line fix that I had
+  no idea about until he pointed it out
+- [Fix 59](https://github.com/csells/go_router/issues/59): add query params to
+  top-level redirect
+- [Fix 44](https://github.com/csells/go_router/issues/44): show how to use the
+  `AutomaticKeepAliveClientMixin` with nested navigation to keep widget state
+  between navigations; thanks to [rydmike](https://github.com/rydmike) for this
+  update
+- [Fix 61](https://github.com/csells/go_router/issues/61): hopefully fixing
+  issues with relative file references on pub.dev/documentation (can't really
+  know till I publish this version...)
+
+
+### 1.1.3
+- enable case-insensitive path matching while still preserving path and query
+  parameter cases
+- change a lifetime of habit to sort constructors first as per
+  [sort_constructors_first](https://dart-lang.github.io/linter/lints/sort_constructors_first.html).
+  Thanks for the PR, [Abhishek01039](https://github.com/Abhishek01039)!
+- set the initial transition example route to `/none` to make pushing the 'fade
+  transition' button on the first run through more fun
+- fixed an error in the async data example
+
+
 ### 1.1.2
 - Thanks, Mikes!
   - updated dartdocs from [rydmike](https://github.com/rydmike)

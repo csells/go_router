@@ -317,6 +317,100 @@ void main() {
       router.go('/family/f2');
       router.go('/family/f2/person/p1');
     });
+
+    test('match path case insensitively', () {
+      final routes = [
+        GoRoute(
+          path: '/',
+          pageBuilder: (builder, state) => HomePage(),
+        ),
+        GoRoute(
+          path: '/family/:fid',
+          pageBuilder: (builder, state) => FamilyPage(state.params['fid']!),
+        ),
+      ];
+
+      final router = _router(routes);
+      const loc = '/FaMiLy/f2';
+      router.go(loc);
+      final matches = router.routerDelegate.matches;
+
+      // NOTE: match the lower case, since subloc is canonicalized to match the
+      // path case whereas the location can be any case; so long as the path
+      // produces a match regardless of the location case, we win!
+      expect(router.location.toLowerCase(), loc.toLowerCase());
+
+      expect(matches.length, 1);
+      expect(router.pageFor(matches[0]).runtimeType, FamilyPage);
+    });
+
+    test('match too many routes, ignoring case', () {
+      const loc = '/PAGE1';
+      final routes = [
+        GoRoute(path: '/page1', pageBuilder: _dummy),
+        GoRoute(path: '/PaGe1', pageBuilder: _dummy),
+      ];
+
+      try {
+        final router = _router(routes);
+        router.routerDelegate.getLocRouteMatches(loc);
+        expect(false, true);
+      } on Exception catch (ex) {
+        dump(ex);
+      }
+    });
+
+    test('preserve inline param case', () {
+      final routes = [
+        GoRoute(
+          path: '/',
+          pageBuilder: (builder, state) => HomePage(),
+        ),
+        GoRoute(
+          path: '/family/:fid',
+          pageBuilder: (builder, state) => FamilyPage(state.params['fid']!),
+        ),
+      ];
+
+      final router = _router(routes);
+      for (final fid in ['f2', 'F2']) {
+        final loc = '/family/$fid';
+        router.go(loc);
+        final matches = router.routerDelegate.matches;
+
+        expect(router.location, loc);
+        expect(matches.length, 1);
+        expect(router.pageFor(matches[0]).runtimeType, FamilyPage);
+        expect(matches[0].params['fid'], fid);
+      }
+    });
+
+    test('preserve query param case', () {
+      final routes = [
+        GoRoute(
+          path: '/',
+          pageBuilder: (builder, state) => HomePage(),
+        ),
+        GoRoute(
+          path: '/family',
+          pageBuilder: (builder, state) => FamilyPage(
+            state.queryParams['fid']!,
+          ),
+        ),
+      ];
+
+      final router = _router(routes);
+      for (final fid in ['f2', 'F2']) {
+        final loc = '/family?fid=$fid';
+        router.go(loc);
+        final matches = router.routerDelegate.matches;
+
+        expect(router.location, loc);
+        expect(matches.length, 1);
+        expect(router.pageFor(matches[0]).runtimeType, FamilyPage);
+        expect(matches[0].queryParams['fid'], fid);
+      }
+    });
   });
 
   group('named routes', () {
@@ -446,7 +540,7 @@ void main() {
       ];
 
       final router = _router(routes);
-      router.goNamed('person', {'fid': 'f2', 'pid': 'p1'});
+      router.goNamed('person', params: {'fid': 'f2', 'pid': 'p1'});
     });
 
     test('too few params', () {
@@ -474,34 +568,11 @@ void main() {
 
       final router = _router(routes);
       try {
-        router.goNamed('person', {'fid': 'f2'});
+        router.goNamed('person', params: {'fid': 'f2'});
         expect(false, true);
       } on Exception catch (ex) {
         dump(ex);
       }
-    });
-
-    test('extra params as query params', () {
-      final routes = [
-        GoRoute(
-          name: 'home',
-          path: '/',
-          pageBuilder: (builder, state) => HomePage(),
-        ),
-        GoRoute(
-          name: 'login',
-          path: '/login',
-          pageBuilder: (builder, state) {
-            expect(state.location, '/login?from=/');
-            expect(state.params, {'from': '/'});
-            return LoginPage();
-          },
-        ),
-      ];
-
-      final router = _router(routes);
-      router.goNamed('login', {'from': '/'});
-      router.routerDelegate.build(DummyBuildContext());
     });
 
     test('match case insensitive w/ params', () {
@@ -531,7 +602,43 @@ void main() {
       ];
 
       final router = _router(routes);
-      router.goNamed('person', {'fid': 'f2', 'pid': 'p1'});
+      router.goNamed('person', params: {'fid': 'f2', 'pid': 'p1'});
+    });
+
+    test('too few params', () {
+      final routes = [
+        GoRoute(
+          name: 'family',
+          path: '/family/:fid',
+          pageBuilder: (context, state) => FamilyPage('dummy'),
+        ),
+      ];
+
+      try {
+        final router = _router(routes);
+        router.goNamed('family');
+        expect(true, false);
+      } on Exception catch (ex) {
+        dump(ex);
+      }
+    });
+
+    test('too many params', () {
+      final routes = [
+        GoRoute(
+          name: 'family',
+          path: '/family/:fid',
+          pageBuilder: (context, state) => FamilyPage('dummy'),
+        ),
+      ];
+
+      try {
+        final router = _router(routes);
+        router.goNamed('family', params: {'fid': 'f2', 'pid': 'p1'});
+        expect(true, false);
+      } on Exception catch (ex) {
+        dump(ex);
+      }
     });
   });
 
@@ -558,6 +665,37 @@ void main() {
       expect(router.location, '/login');
     });
 
+    test('top-level redirect w/ named routes', () {
+      final routes = [
+        GoRoute(
+          name: 'home',
+          path: '/',
+          pageBuilder: (builder, state) => HomePage(),
+          routes: [
+            GoRoute(
+              name: 'dummy',
+              path: 'dummy',
+              pageBuilder: (builder, state) => DummyPage(),
+            ),
+            GoRoute(
+              name: 'login',
+              path: 'login',
+              pageBuilder: (builder, state) => LoginPage(),
+            ),
+          ],
+        ),
+      ];
+
+      final router = GoRouter(
+        debugLogDiagnostics: true,
+        routes: routes,
+        errorPageBuilder: _dummy,
+        redirect: (state) =>
+            state.subloc == '/login' ? null : state.namedLocation('login'),
+      );
+      expect(router.location, '/login');
+    });
+
     test('route-level redirect', () {
       final routes = [
         GoRoute(
@@ -570,6 +708,36 @@ void main() {
               redirect: (state) => '/login',
             ),
             GoRoute(
+              path: 'login',
+              pageBuilder: (builder, state) => LoginPage(),
+            ),
+          ],
+        ),
+      ];
+
+      final router = GoRouter(
+        routes: routes,
+        errorPageBuilder: _dummy,
+      );
+      router.go('/dummy');
+      expect(router.location, '/login');
+    });
+
+    test('route-level redirect w/ named routes', () {
+      final routes = [
+        GoRoute(
+          name: 'home',
+          path: '/',
+          pageBuilder: (builder, state) => HomePage(),
+          routes: [
+            GoRoute(
+              name: 'dummy',
+              path: 'dummy',
+              pageBuilder: (builder, state) => DummyPage(),
+              redirect: (state) => state.namedLocation('login'),
+            ),
+            GoRoute(
+              name: 'login',
               path: 'login',
               pageBuilder: (builder, state) => LoginPage(),
             ),
@@ -732,6 +900,9 @@ void main() {
           expect(Uri.parse(state.subloc).queryParameters, isEmpty);
           expect(state.path, isNull);
           expect(state.fullpath, isNull);
+          expect(state.params.length, 0);
+          expect(state.queryParams.length, 1);
+          expect(state.queryParams['from'], '/');
           return null;
         },
       );
@@ -748,6 +919,7 @@ void main() {
             expect(state.path, '/book/:bookId');
             expect(state.fullpath, '/book/:bookId');
             expect(state.params, {'bookId': '0'});
+            expect(state.queryParams.length, 0);
             return '/book/${state.params['bookId']!}';
           },
         ),
@@ -769,7 +941,7 @@ void main() {
     });
   });
 
-  group('initial locaton', () {
+  group('initial location', () {
     test('initial location', () {
       final routes = [
         GoRoute(
@@ -814,7 +986,7 @@ void main() {
   });
 
   group('params', () {
-    test('duplicate path param', () {
+    test('error: duplicate path param', () {
       try {
         GoRouter(
           routes: [
@@ -833,48 +1005,60 @@ void main() {
     });
 
     test('duplicate query param', () {
-      GoRouter(
+      final router = GoRouter(
         routes: [
           GoRoute(
             path: '/',
             pageBuilder: (_dummy, state) {
-              expect(state.params, {'id': '0'});
-              return DummyPage();
+              dump('id= ${state.params['id']}');
+              expect(state.params.length, 0);
+              expect(state.queryParams.length, 1);
+              expect(state.queryParams['id'], anyOf('0', '1'));
+              return HomePage();
             },
           ),
         ],
-        errorPageBuilder: _dummy,
-        initialLocation: '/?id=0&id=1',
+        errorPageBuilder: (context, state) => ErrorPage(state.error!),
       );
+
+      final matches = router.routerDelegate.getLocRouteMatches('/?id=0&id=1');
+      expect(matches.length, 1);
+      expect(matches[0].fullpath, '/');
+      expect(router.pageFor(matches[0]).runtimeType, HomePage);
     });
 
     test('duplicate path + query param', () {
-      GoRouter(
+      final router = GoRouter(
         routes: [
           GoRoute(
             path: '/:id',
             pageBuilder: (_dummy, state) {
               expect(state.params, {'id': '0'});
-              return DummyPage();
+              expect(state.queryParams, {'id': '1'});
+              return HomePage();
             },
           ),
         ],
         errorPageBuilder: _dummy,
-        initialLocation: '/0?id=1',
       );
+
+      final matches = router.routerDelegate.getLocRouteMatches('/0?id=1');
+      expect(matches.length, 1);
+      expect(matches[0].fullpath, '/:id');
+      expect(router.pageFor(matches[0]).runtimeType, HomePage);
     });
   });
 }
 
 GoRouter _router(List<GoRoute> routes) => GoRouter(
       routes: routes,
-      errorPageBuilder: _dummy,
+      errorPageBuilder: (context, state) => ErrorPage(state.error!),
       debugLogDiagnostics: true,
     );
 
 class ErrorPage extends DummyPage {
-  final Exception ex;
   ErrorPage(this.ex);
+  final Exception ex;
 }
 
 class HomePage extends DummyPage {}
@@ -882,19 +1066,19 @@ class HomePage extends DummyPage {}
 class LoginPage extends DummyPage {}
 
 class FamilyPage extends DummyPage {
-  final String fid;
   FamilyPage(this.fid);
+  final String fid;
 }
 
 class FamiliesPage extends DummyPage {
-  final String selectedFid;
   FamiliesPage({required this.selectedFid});
+  final String selectedFid;
 }
 
 class PersonPage extends DummyPage {
+  PersonPage(this.fid, this.pid);
   final String fid;
   final String pid;
-  PersonPage(this.fid, this.pid);
 }
 
 class DummyPage extends Page<dynamic> {
@@ -908,9 +1092,12 @@ extension on GoRouter {
   Page<dynamic> pageFor(GoRouteMatch match) => match.route.pageBuilder(
         DummyBuildContext(),
         GoRouterState(
+          routerDelegate,
           location: 'DO NOT TEST',
           subloc: match.subloc,
           pageKey: const ValueKey('DO NOT TEST'),
+          params: match.params,
+          queryParams: match.queryParams,
         ),
       );
 }

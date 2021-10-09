@@ -20,7 +20,7 @@ class App extends StatelessWidget {
     routes: [
       GoRoute(
         path: '/',
-        redirect: (_) => '/fade',
+        redirect: (_) => '/none',
       ),
       GoRoute(
         path: '/fade',
@@ -83,11 +83,12 @@ class App extends StatelessWidget {
 }
 
 class TransitionsPage extends StatelessWidget {
+  const TransitionsPage({required this.color, required this.kind, Key? key})
+      : super(key: key);
+
   static final kinds = ['fade', 'scale', 'slide', 'rotation', 'none'];
   final Color color;
   final String kind;
-  const TransitionsPage({required this.color, required this.kind, Key? key})
-      : super(key: key);
 
   @override
   Widget build(BuildContext context) => Scaffold(

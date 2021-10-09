@@ -31,33 +31,6 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         PopNavigatorRouterDelegateMixin<Uri>,
         // ignore: prefer_mixin
         ChangeNotifier {
-  /// Builder function for a go router with Navigator.
-  final GoRouterBuilderWithNav builderWithNav;
-
-  /// List of top level routes used by the go router delegate.
-  final List<GoRoute> routes;
-
-  /// Error page builder for the go router delegate.
-  final GoRouterPageBuilder errorPageBuilder;
-
-  /// Top level page redirect.
-  final GoRouterRedirect topRedirect;
-
-  /// Listenable used to cause the router to refresh it's route.
-  final Listenable? refreshListenable;
-
-  /// NavigatorObserver used to receive change notifications when
-  /// navigation changes.
-  final List<NavigatorObserver> observers;
-
-  /// Set to true to log diagnostic info for your routes.
-  final bool debugLogDiagnostics;
-
-  final _key = GlobalKey<NavigatorState>();
-  final List<GoRouteMatch> _matches = [];
-  final _namedMatches = <String, GoRouteMatch>{};
-  final _pushCounts = <String, int>{};
-
   /// Constructor for GoRouter's implementation of the
   /// RouterDelegate base class.
   GoRouterDelegate({
@@ -91,6 +64,33 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     refreshListenable?.addListener(refresh);
   }
 
+  /// Builder function for a go router with Navigator.
+  final GoRouterBuilderWithNav builderWithNav;
+
+  /// List of top level routes used by the go router delegate.
+  final List<GoRoute> routes;
+
+  /// Error page builder for the go router delegate.
+  final GoRouterPageBuilder errorPageBuilder;
+
+  /// Top level page redirect.
+  final GoRouterRedirect topRedirect;
+
+  /// Listenable used to cause the router to refresh it's route.
+  final Listenable? refreshListenable;
+
+  /// NavigatorObserver used to receive change notifications when
+  /// navigation changes.
+  final List<NavigatorObserver> observers;
+
+  /// Set to true to log diagnostic info for your routes.
+  final bool debugLogDiagnostics;
+
+  final _key = GlobalKey<NavigatorState>();
+  final List<GoRouteMatch> _matches = [];
+  final _namedMatches = <String, GoRouteMatch>{};
+  final _pushCounts = <String, int>{};
+
   void _cacheNamedRoutes(
     List<GoRoute> routes,
     String parentFullpath,
@@ -101,8 +101,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         final name = route.name!.toLowerCase();
         final fullpath = _fullLocFor(parentFullpath, route.path);
         if (namedFullpaths.containsKey(name)) {
-          throw Exception(
-              'duplication fullpaths for name "$name": ${namedFullpaths[name]!.fullpath}, $fullpath');
+          throw Exception('duplication fullpaths for name "$name":'
+              '${namedFullpaths[name]!.fullpath}, $fullpath');
         }
 
         // we only have a partial match until we have a location;
@@ -122,6 +122,30 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     }
   }
 
+  /// Get a location from route name and parameters.
+  /// This is useful for redirecting to a named location.
+  String namedLocation(
+    String name, {
+    required Map<String, String> params,
+    required Map<String, String> queryParams,
+  }) {
+    _log('getting location for name: '
+        '"$name"'
+        '${params.isEmpty ? '' : ', params: $params'}'
+        '${queryParams.isEmpty ? '' : ', queryParams: $queryParams'}');
+
+    // find route and build up the full path along the way
+    final match = getNameRouteMatch(
+      name,
+      params: params,
+      queryParams: queryParams,
+    );
+    if (match == null) throw Exception('unknown route name: $name');
+
+    assert(identical(match.queryParams, queryParams));
+    return _addQueryParams(match.subloc, queryParams);
+  }
+
   /// Navigate to the given location.
   void go(String location) {
     _log('going to $location');
@@ -129,20 +153,12 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     _safeNotifyListeners();
   }
 
-  /// Navigate to the named route.
-  void goNamed(String name, Map<String, String> params) =>
-      go(_lookupNamedRoute(name, params));
-
   /// push the given location onto the page stack
   void push(String location) {
     _log('pushing $location');
     _push(location);
     _safeNotifyListeners();
   }
-
-  /// Push the named route onto the page stack.
-  void pushNamed(String name, Map<String, String> params) =>
-      push(_lookupNamedRoute(name, params));
 
   /// Refresh the current location, including re-evaluating redirections.
   void refresh() {
@@ -215,17 +231,6 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     if (debugLogDiagnostics) debugPrint('GoRouter: $o');
   }
 
-  String _lookupNamedRoute(String name, Map<String, String> params) {
-    _log(
-        'looking up named route "$name"${params.isEmpty ? '' : ' with $params'}');
-
-    // find route and build up the full path along the way
-    final match = getNameRouteMatch(name, params);
-    if (match == null) throw Exception('unknown route name: $name');
-
-    return _addQueryParams(match.subloc, match.queryParams);
-  }
-
   void _go(String location) {
     final matches = _getLocRouteMatchesWithRedirects(location);
     assert(matches.isNotEmpty);
@@ -269,6 +274,10 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       bool redirected(String? redir) {
         if (redir == null) return false;
 
+        if (Uri.tryParse(redir) == null) {
+          throw Exception('invalid redirect: $redir');
+        }
+
         if (redirects.contains(redir)) {
           redirects.add(redir);
           final msg = 'Redirect loop detected: ${redirects.join(' => ')}';
@@ -285,12 +294,16 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         final loc = redirects.last;
 
         // check for top-level redirect
+        final uri = Uri.parse(loc);
         if (redirected(
           topRedirect(
             GoRouterState(
+              this,
               location: loc,
               // trim the query params off the subloc to match route.redirect
-              subloc: Uri.parse(loc).path,
+              subloc: uri.path,
+              // pass along the query params 'cuz that's all we have right now
+              queryParams: uri.queryParameters,
             ),
           ),
         )) continue;
@@ -303,11 +316,13 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         if (redirected(
           top.route.redirect(
             GoRouterState(
+              this,
               location: loc,
               subloc: top.subloc,
               path: top.route.path,
               fullpath: top.fullpath,
               params: top.params,
+              queryParams: top.queryParams,
             ),
           ),
         )) continue;
@@ -335,10 +350,12 @@ class GoRouterDelegate extends RouterDelegate<Uri>
             pageBuilder: (context, state) => errorPageBuilder(
               context,
               GoRouterState(
+                this,
                 location: state.location,
                 subloc: state.subloc,
                 error: ex,
                 fullpath: '',
+                queryParams: state.queryParams,
               ),
             ),
           ),
@@ -381,12 +398,12 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     if (kDebugMode) {
       assert(matchStacks.length == 1);
       final match = matchStacks.first.last;
-      final loc1 = _addQueryParams(
-        match.subloc.toLowerCase(),
-        match.queryParams,
-      );
-      final loc2 = _canonicalUri(location.toLowerCase());
-      assert(loc1 == loc2);
+      final loc1 = _addQueryParams(match.subloc, match.queryParams);
+      final loc2 = _canonicalUri(location);
+
+      // NOTE: match the lower case, since subloc is canonicalized to match the
+      // path case whereas the location can be any case
+      assert(loc1.toLowerCase() == loc2.toLowerCase(), '$loc1 != $loc2');
     }
 
     return matchStacks.first;
@@ -458,7 +475,9 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       if (match == null) continue;
 
       // if we have a complete match, then return the matched route
-      if (match.subloc == loc) {
+      // NOTE: need a lower case match because subloc is canonicalized to match
+      // the path case whereas the location can be of any case and still match
+      if (match.subloc.toLowerCase() == loc.toLowerCase()) {
         yield [match];
         continue;
       }
@@ -492,24 +511,27 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   /// For internal use; visible for testing only.
   @visibleForTesting
   GoRouteMatch? getNameRouteMatch(
-    String name, [
+    String name, {
     Map<String, String> params = const {},
-  ]) {
+    Map<String, String> queryParams = const {},
+  }) {
     final partialMatch = _namedMatches[name];
-    if (partialMatch == null) return null;
-    return GoRouteMatch._matchNamed(
-      name: name,
-      fullpath: partialMatch.fullpath,
-      params: params,
-      route: partialMatch.route,
-    );
+    return partialMatch == null
+        ? null
+        : GoRouteMatch._matchNamed(
+            name: name,
+            fullpath: partialMatch.fullpath,
+            params: params,
+            queryParams: queryParams,
+            route: partialMatch.route,
+          );
   }
 
   // e.g.
   // parentFullLoc: '',          path =>                  '/'
   // parentFullLoc: '/',         path => 'family/:fid' => '/family/:fid'
   // parentFullLoc: '/',         path => 'family/f2' =>   '/family/f2'
-  // parentFullLoc: '/famiy/f2', path => 'parent/p1' =>   '/family/f2/person/p1'
+  // parentFullLoc: '/family/f2', path => 'parent/p1' =>   '/family/f2/person/p1'
   static String _fullLocFor(String parentFullLoc, String path) {
     // at the root, just return the path
     if (parentFullLoc.isEmpty) {
@@ -535,12 +557,15 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       _log(ex.toString());
 
       // if there's an error, show an error page
+      final uri = Uri.parse(location);
       pages = [
         errorPageBuilder(
           context,
           GoRouterState(
+            this,
             location: location,
-            subloc: location,
+            subloc: uri.path,
+            queryParams: uri.queryParameters,
             error: ex,
           ),
         ),
@@ -551,6 +576,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     return builderWithNav(
       context,
       Navigator(
+        key: _key, // needed to enable Android system Back button
         pages: pages,
         observers: observers,
         onPopPage: (route, dynamic result) {
@@ -558,9 +584,12 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
           _log2('GoRouterDelegate.onPopPage: matches.last= ${_matches.last}');
           _matches.remove(_matches.last);
+          if (_matches.isEmpty)
+            throw Exception('have popped the last page off of the stack; '
+                'there are no pages left to show');
 
-          // HACK: fixes the push disable AppBar Back button, but it shouldn't
-          // be necessary...
+          // this hack fixes the push disable AppBar Back button, but it
+          // shouldn't be necessary...
           _safeNotifyListeners();
 
           return true;
@@ -595,17 +624,15 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     List<GoRouteMatch> matches,
   ) sync* {
     assert(matches.isNotEmpty);
-    var params = matches.first.queryParams; // start w/ the query parameters
     if (kDebugMode) {
       for (final match in matches) {
-        assert(match.queryParams == matches.first.queryParams);
+        assert(identical(match.queryParams, matches.first.queryParams));
       }
     }
 
+    var params = <String, String>{};
     for (final match in matches) {
-      // merge new params, overriding old ones, i.e. path params override
-      // query parameters, sub-location params override top level params, etc.
-      // this also keeps params from previously matched paths, e.g.
+      // merge new params to keep params from previously matched paths, e.g.
       // /family/:fid/person/:pid provides fid and pid to person/:pid
       params = {...params, ...match.params};
 
@@ -613,11 +640,13 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       yield match.route.pageBuilder(
         context,
         GoRouterState(
+          this,
           location: location,
           subloc: match.subloc,
           path: match.route.path,
           fullpath: match.fullpath,
           params: params,
+          queryParams: match.queryParams,
           pageKey: match.pageKey, // push() remaps the page key for uniqueness
         ),
       );
@@ -667,13 +696,13 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         Uri(path: uri.path, queryParameters: queryParams).toString());
   }
 
-  // HACK: this is a hack to fix the following error:
-  // The following assertion was thrown while dispatching notifications for
-  // GoRouterDelegate: setState() or markNeedsBuild() called during build.
   void _safeNotifyListeners() {
-    _log2(
-        'GoRouterDelegate.safeNotifyListeners: WidgetsBinding.instance= ${WidgetsBinding.instance == null ? 'null' : 'non-null'}');
+    _log2('GoRouterDelegate.safeNotifyListeners: WidgetsBinding.instance= '
+        '${WidgetsBinding.instance == null ? 'null' : 'non-null'}');
 
+    // this is a hack to fix the following error:
+    // The following assertion was thrown while dispatching notifications for
+    // GoRouterDelegate: setState() or markNeedsBuild() called during build.
     WidgetsBinding.instance == null
         ? notifyListeners()
         : scheduleMicrotask(notifyListeners);
@@ -685,16 +714,16 @@ class GoRouteInformationParser extends RouteInformationParser<Uri> {
   /// for use by the Router architecture as part of the RouteInformationParser
   @override
   Future<Uri> parseRouteInformation(RouteInformation routeInformation) async {
-    _log2(
-        'GoRouteInformationParser.parseRouteInformation: routeInformation.location= ${routeInformation.location}');
+    _log2('GoRouteInformationParser.parseRouteInformation: '
+        'routeInformation.location= ${routeInformation.location}');
     return Uri.parse(routeInformation.location!);
   }
 
   /// for use by the Router architecture as part of the RouteInformationParser
   @override
   RouteInformation restoreRouteInformation(Uri configuration) {
-    _log2(
-        'GoRouteInformationParser.parseRouteInformation: configuration= $configuration');
+    _log2('GoRouteInformationParser.parseRouteInformation: '
+        'configuration= $configuration');
     return RouteInformation(location: configuration.toString());
   }
 }
@@ -704,15 +733,15 @@ class GoRouteInformationParser extends RouteInformationParser<Uri> {
 /// Used for to find the current GoRouter in the widget tree. This is useful
 /// when routing from anywhere in your app.
 class InheritedGoRouter extends InheritedWidget {
-  /// The [GoRouter] that is made available to the widget tree.
-  final GoRouter goRouter;
-
   /// Default constructor for the inherited go router.
   const InheritedGoRouter({
     required Widget child,
     required this.goRouter,
     Key? key,
   }) : super(child: child, key: key);
+
+  /// The [GoRouter] that is made available to the widget tree.
+  final GoRouter goRouter;
 
   /// Used by the Router architecture as part of the InheritedWidget.
   @override
@@ -722,6 +751,20 @@ class InheritedGoRouter extends InheritedWidget {
 /// Each GoRouteMatch instance represents an instance of a GoRoute for a
 /// specific portion of a location.
 class GoRouteMatch {
+  /// Constructor for GoRouteMatch, each instance represents an instance of a
+  /// GoRoute for a specific portion of a location.
+  GoRouteMatch({
+    required this.route,
+    required this.subloc,
+    required this.fullpath,
+    required this.params,
+    required this.queryParams,
+    this.pageKey,
+  })  : assert(subloc.startsWith('/')),
+        assert(Uri.parse(subloc).queryParameters.isEmpty),
+        assert(fullpath.startsWith('/')),
+        assert(Uri.parse(fullpath).queryParameters.isEmpty);
+
   /// The matched route.
   final GoRoute route;
 
@@ -739,20 +782,6 @@ class GoRouteMatch {
 
   /// Optional value key of type string, to hold a unique reference to a page.
   final ValueKey<String>? pageKey;
-
-  /// Constructor for GoRouteMatch, each instance represents an instance of a
-  /// GoRoute for a specific portion of a location.
-  GoRouteMatch({
-    required this.route,
-    required this.subloc,
-    required this.fullpath,
-    required this.params,
-    required this.queryParams,
-    this.pageKey,
-  })  : assert(subloc.startsWith('/')),
-        assert(Uri.parse(subloc).queryParameters.isEmpty),
-        assert(fullpath.startsWith('/')),
-        assert(Uri.parse(fullpath).queryParameters.isEmpty);
 
   static GoRouteMatch? _match({
     required GoRoute route,
@@ -785,6 +814,7 @@ class GoRouteMatch {
     required String name, // e.g. person
     required String fullpath, // e.g. /family/:fid/person/:pid
     required Map<String, String> params, // e.g. {'fid': 'f2', 'pid': 'p1'}
+    required Map<String, String> queryParams, // e.g. {'from': '/family/f2'}
   }) {
     assert(route.name != null);
     assert(route.name!.toLowerCase() == name.toLowerCase());
@@ -798,14 +828,10 @@ class GoRouteMatch {
       }
     }
 
-    // split params into posParams and queryParams
-    final posParams = <String, String>{};
-    final queryParams = <String, String>{};
+    // check that we have don't have extra params
     for (final key in params.keys) {
-      if (paramNames.contains(key)) {
-        posParams[key] = params[key]!;
-      } else {
-        queryParams[key] = params[key]!;
+      if (!paramNames.contains(key)) {
+        throw Exception('unknown param "$key" for $fullpath');
       }
     }
 
@@ -814,7 +840,7 @@ class GoRouteMatch {
       route: route,
       subloc: subloc,
       fullpath: fullpath,
-      params: posParams,
+      params: params,
       queryParams: queryParams,
     );
   }

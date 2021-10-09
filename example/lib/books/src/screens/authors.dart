@@ -9,8 +9,9 @@ import '../data/library.dart';
 import '../widgets/author_list.dart';
 
 class AuthorsScreen extends StatelessWidget {
-  static const title = 'Authors';
   const AuthorsScreen({Key? key}) : super(key: key);
+
+  static const title = 'Authors';
 
   @override
   Widget build(BuildContext context) => Scaffold(

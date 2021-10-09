@@ -9,8 +9,9 @@ void main() => runApp(App());
 
 /// sample app using query parameters in the page builders
 class App extends StatelessWidget {
-  final loginInfo = LoginInfo();
   App({Key? key}) : super(key: key);
+
+  final loginInfo = LoginInfo();
 
   // add the login info into the tree as app state that can change over time
   @override
@@ -63,7 +64,7 @@ class App extends StatelessWidget {
         pageBuilder: (context, state) => MaterialPage<void>(
           key: state.pageKey,
           // pass the original location to the LoginPage (if there is one)
-          child: LoginPage(from: state.params['from']),
+          child: LoginPage(from: state.queryParams['from']),
         ),
       ),
     ],
@@ -77,11 +78,11 @@ class App extends StatelessWidget {
     redirect: (state) {
       final loggedIn = loginInfo.loggedIn;
 
-      // check just the path in case there are query parameters
+      // check just the subloc in case there are query parameters
       final goingToLogin = state.subloc == '/login';
 
       // the user is not logged in and not headed to /login, they need to login
-      if (!loggedIn && !goingToLogin) return '/login?from=${state.location}';
+      if (!loggedIn && !goingToLogin) return '/login?from=${state.subloc}';
 
       // the user is logged in and headed to /login, no need to login again
       if (loggedIn && goingToLogin) return '/';

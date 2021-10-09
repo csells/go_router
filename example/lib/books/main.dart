@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:collection/collection.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -21,8 +20,9 @@ import 'src/screens/sign_in.dart';
 void main() => runApp(Bookstore());
 
 class Bookstore extends StatelessWidget {
-  final _scaffoldKey = const ValueKey<String>('App scaffold');
   Bookstore({Key? key}) : super(key: key);
+
+  final _scaffoldKey = const ValueKey<String>('App scaffold');
 
   @override
   Widget build(BuildContext context) => BookstoreAuthScope(

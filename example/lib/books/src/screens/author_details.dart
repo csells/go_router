@@ -9,11 +9,12 @@ import '../data.dart';
 import '../widgets/book_list.dart';
 
 class AuthorDetailsScreen extends StatelessWidget {
-  final Author? author;
   const AuthorDetailsScreen({
     required this.author,
     Key? key,
   }) : super(key: key);
+
+  final Author? author;
 
   @override
   Widget build(BuildContext context) {

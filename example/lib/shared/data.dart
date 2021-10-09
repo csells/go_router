@@ -2,18 +2,20 @@ import 'package:flutter/foundation.dart';
 
 /// sample Person class
 class Person {
+  Person({required this.id, required this.name, required this.age});
+
   final String id;
   final String name;
   final int age;
-  Person({required this.id, required this.name, required this.age});
 }
 
 /// sample Family class
 class Family {
+  Family({required this.id, required this.name, required this.people});
+
   final String id;
   final String name;
   final List<Person> people;
-  Family({required this.id, required this.name, required this.people});
 
   Person person(String pid) => people.singleWhere(
         (p) => p.id == pid,
@@ -45,13 +47,23 @@ class Families {
     ),
     Family(
       id: 'f3',
-      name: 'Jackson',
+      name: 'Hunting',
       people: [
-        Person(id: 'p1', name: 'Tito', age: 68),
-        Person(id: 'p2', name: 'Jermaine', age: 67),
-        Person(id: 'p3', name: 'Jackie', age: 70),
-        Person(id: 'p4', name: 'Marlon', age: 64),
-        Person(id: 'p5', name: 'Michael', age: 63),
+        Person(id: 'p1', name: 'Mom', age: 54),
+        Person(id: 'p2', name: 'Dad', age: 55),
+        Person(id: 'p3', name: 'Will', age: 20),
+        Person(id: 'p4', name: 'Marky', age: 21),
+        Person(id: 'p5', name: 'Ricky', age: 22),
+        Person(id: 'p6', name: 'Danny', age: 23),
+        Person(id: 'p7', name: 'Terry', age: 24),
+        Person(id: 'p8', name: 'Mikey', age: 25),
+        Person(id: 'p9', name: 'Davey', age: 26),
+        Person(id: 'p10', name: 'Timmy', age: 27),
+        Person(id: 'p11', name: 'Tommy', age: 28),
+        Person(id: 'p12', name: 'Joey', age: 29),
+        Person(id: 'p13', name: 'Robby', age: 30),
+        Person(id: 'p14', name: 'Johnny', age: 31),
+        Person(id: 'p15', name: 'Brian', age: 32),
       ],
     ),
   ];
@@ -84,9 +96,10 @@ class LoginInfo extends ChangeNotifier {
 }
 
 class FamilyPerson {
+  FamilyPerson({required this.family, required this.person});
+
   final Family family;
   final Person person;
-  FamilyPerson({required this.family, required this.person});
 }
 
 class Repository {

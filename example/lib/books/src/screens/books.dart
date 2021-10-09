@@ -9,8 +9,9 @@ import '../data.dart';
 import '../widgets/book_list.dart';
 
 class BooksScreen extends StatefulWidget {
-  final String kind;
   const BooksScreen(this.kind, {Key? key}) : super(key: key);
+
+  final String kind;
 
   @override
   _BooksScreenState createState() => _BooksScreenState();

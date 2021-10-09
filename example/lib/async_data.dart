@@ -7,8 +7,9 @@ import 'shared/pages.dart';
 void main() => runApp(App());
 
 class App extends StatelessWidget {
-  final repo = Repository();
   App({Key? key}) : super(key: key);
+
+  final repo = Repository();
 
   @override
   Widget build(BuildContext context) => MaterialApp.router(
@@ -26,7 +27,8 @@ class App extends StatelessWidget {
           child: FutureBuilder<List<Family>>(
             future: repo.getFamilies(),
             builder: (context, snapshot) {
-              if (snapshot.hasError) return Text(snapshot.error.toString());
+              if (snapshot.hasError)
+                return ErrorPage(snapshot.error as Exception?);
               if (snapshot.hasData) return HomePage(families: snapshot.data!);
               return const Center(child: CircularProgressIndicator());
             },
@@ -40,7 +42,8 @@ class App extends StatelessWidget {
               child: FutureBuilder<Family>(
                 future: repo.getFamily(state.params['fid']!),
                 builder: (context, snapshot) {
-                  if (snapshot.hasError) return Text(snapshot.error.toString());
+                  if (snapshot.hasError)
+                    return ErrorPage(snapshot.error as Exception?);
                   if (snapshot.hasData)
                     return FamilyPage(family: snapshot.data!);
                   return const Center(child: CircularProgressIndicator());
@@ -59,7 +62,7 @@ class App extends StatelessWidget {
                     ),
                     builder: (context, snapshot) {
                       if (snapshot.hasError)
-                        return Text(snapshot.error.toString());
+                        return ErrorPage(snapshot.error as Exception?);
                       if (snapshot.hasData)
                         return PersonPage(
                             family: snapshot.data!.family,

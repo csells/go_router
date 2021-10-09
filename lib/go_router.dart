@@ -30,34 +30,15 @@ typedef GoRouterRedirect = String? Function(GoRouterState state);
 
 /// The route state during routing.
 class GoRouterState {
-  /// The full location of the route, e.g. /family/f1/person/p2
-  final String location;
-
-  /// The location of this sub-route, e.g. /family/f1
-  final String subloc;
-
-  /// The path to this sub-route, e.g. family/:fid
-  final String? path;
-
-  /// The full path to this sub-route, e.g. /family/:fid
-  final String? fullpath;
-
-  /// The parameters for this sub-route, e.g. {'fid': 'f1'}
-  final Map<String, String> params;
-
-  /// The error associated with this sub-route.
-  final Exception? error;
-
-  /// A unique string key for this sub-route, e.g. ValueKey('/family/:fid')
-  final ValueKey<String> pageKey;
-
   /// Default constructor for creating route state during routing.
-  GoRouterState({
+  GoRouterState(
+    this._delegate, {
     required this.location,
     required this.subloc,
     this.path,
     this.fullpath,
-    this.params = const <String, String>{},
+    this.params = const {},
+    this.queryParams = const {},
     this.error,
     ValueKey<String>? pageKey,
   })  : pageKey = pageKey ??
@@ -67,10 +48,92 @@ class GoRouterState {
                     ? fullpath
                     : subloc),
         assert((path ?? '').isEmpty == (fullpath ?? '').isEmpty);
+
+  final GoRouterDelegate _delegate;
+
+  /// The full location of the route, e.g. /family/f2/person/p1
+  final String location;
+
+  /// The location of this sub-route, e.g. /family/f2
+  final String subloc;
+
+  /// The path to this sub-route, e.g. family/:fid
+  final String? path;
+
+  /// The full path to this sub-route, e.g. /family/:fid
+  final String? fullpath;
+
+  /// The parameters for this sub-route, e.g. {'fid': 'f2'}
+  final Map<String, String> params;
+
+  /// The query parameters for the location, e.g. {'from': '/family/f2'}
+  final Map<String, String> queryParams;
+
+  /// The error associated with this sub-route.
+  final Exception? error;
+
+  /// A unique string key for this sub-route, e.g. ValueKey('/family/:fid')
+  final ValueKey<String> pageKey;
+
+  /// Get a location from route name and parameters.
+  /// This is useful for redirecting to a named location.
+  String namedLocation(
+    String name, {
+    Map<String, String> params = const {},
+    Map<String, String> queryParams = const {},
+  }) =>
+      _delegate.namedLocation(name, params: params, queryParams: queryParams);
 }
 
 /// A declarative mapping between a route path and a page builder.
 class GoRoute {
+  /// Default constructor used to create mapping between a
+  /// route path and a page builder.
+  GoRoute({
+    required this.path,
+    this.name,
+    this.pageBuilder = _builder,
+    this.routes = const [],
+    this.redirect = _redirect,
+  }) {
+    if (path.isEmpty) {
+      throw Exception('GoRoute path cannot be empty');
+    }
+
+    if (name != null && name!.isEmpty) {
+      throw Exception('GoRoute name cannot be empty');
+    }
+
+    // cache the path regexp and parameters
+    _pathRE = p2re.pathToRegExp(
+      path,
+      prefix: true,
+      caseSensitive: false,
+      parameters: _pathParams,
+    );
+
+    // check path params
+    final paramNames = <String>[];
+    p2re.parse(path, parameters: paramNames);
+    final groupedParams = paramNames.groupListsBy((p) => p);
+    final dupParams = Map<String, List<String>>.fromEntries(
+      groupedParams.entries.where((e) => e.value.length > 1),
+    );
+    if (dupParams.isNotEmpty) {
+      throw Exception('duplicate path params: ${dupParams.keys.join(', ')}');
+    }
+
+    // check sub-routes
+    for (final route in routes) {
+      // check paths
+      if (route.path != '/' &&
+          (route.path.startsWith('/') || route.path.endsWith('/'))) {
+        throw Exception(
+            'sub-route path may not start or end with /: ${route.path}');
+      }
+    }
+  }
+
   final _pathParams = <String>[];
   late final RegExp _pathRE;
 
@@ -186,53 +249,6 @@ class GoRoute {
   /// ```
   final GoRouterRedirect redirect;
 
-  /// Default constructor used to create mapping between a
-  /// route path and a page builder.
-  GoRoute({
-    required this.path,
-    this.name,
-    this.pageBuilder = _builder,
-    this.routes = const [],
-    this.redirect = _redirect,
-  }) {
-    if (path.isEmpty) {
-      throw Exception('GoRoute path cannot be empty');
-    }
-
-    if (name != null && name!.isEmpty) {
-      throw Exception('GoRoute name cannot be empty');
-    }
-
-    // cache the path regexp and parameters
-    _pathRE = p2re.pathToRegExp(
-      path,
-      prefix: true,
-      caseSensitive: false,
-      parameters: _pathParams,
-    );
-
-    // check path params
-    final paramNames = <String>[];
-    p2re.parse(path, parameters: paramNames);
-    final groupedParams = paramNames.groupListsBy((p) => p);
-    final dupParams = Map<String, List<String>>.fromEntries(
-      groupedParams.entries.where((e) => e.value.length > 1),
-    );
-    if (dupParams.isNotEmpty) {
-      throw Exception('duplicate path params: ${dupParams.keys.join(', ')}');
-    }
-
-    // check sub-routes
-    for (final route in routes) {
-      // check paths
-      if (route.path != '/' &&
-          (route.path.startsWith('/') || route.path.endsWith('/'))) {
-        throw Exception(
-            'sub-route path may not start or end with /: ${route.path}');
-      }
-    }
-  }
-
   /// Match this route against a location.
   Match? matchPatternAsPrefix(String loc) => _pathRE.matchAsPrefix(loc);
 
@@ -251,12 +267,6 @@ class GoRoute {
 /// Create one of these to initialize your app's routing policy.
 // ignore: prefer_mixin
 class GoRouter extends ChangeNotifier with NavigatorObserver {
-  /// The route information parser used by the go router.
-  final routeInformationParser = GoRouteInformationParser();
-
-  /// The router delegate used by the go router.
-  late final GoRouterDelegate routerDelegate;
-
   /// Default constructor to configure a GoRouter with a routes builder
   /// and an error page builder.
   GoRouter({
@@ -285,8 +295,27 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
     );
   }
 
+  /// The route information parser used by the go router.
+  final routeInformationParser = GoRouteInformationParser();
+
+  /// The router delegate used by the go router.
+  late final GoRouterDelegate routerDelegate;
+
   /// Get the current location.
   String get location => routerDelegate.currentConfiguration.toString();
+
+  /// Get a location from route name and parameters.
+  /// This is useful for redirecting to a named location.
+  String namedLocation(
+    String name, {
+    Map<String, String> params = const {},
+    Map<String, String> queryParams = const {},
+  }) =>
+      routerDelegate.namedLocation(
+        name,
+        params: params,
+        queryParams: queryParams,
+      );
 
   /// Navigate to a URI location w/ optional query parameters, e.g.
   /// /family/f2/person/p1?color=blue
@@ -294,8 +323,13 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
 
   /// Navigate to a named route w/ optional parameters, e.g.
   /// name='person', params={'fid': 'f2', 'pid': 'p1'}
-  void goNamed(String name, [Map<String, String> params = const {}]) =>
-      routerDelegate.goNamed(name, params);
+  /// Navigate to the named route.
+  void goNamed(
+    String name, {
+    Map<String, String> params = const {},
+    Map<String, String> queryParams = const {},
+  }) =>
+      go(namedLocation(name, params: params, queryParams: queryParams));
 
   /// Push a URI location onto the page stack w/ optional query parameters, e.g.
   /// /family/f2/person/p1?color=blue
@@ -303,8 +337,12 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
 
   /// Push a named route onto the page stack w/ optional parameters, e.g.
   /// name='person', params={'fid': 'f2', 'pid': 'p1'}
-  void pushNamed(String name, [Map<String, String> params = const {}]) =>
-      routerDelegate.pushNamed(name, params);
+  void pushNamed(
+    String name, {
+    Map<String, String> params = const {},
+    Map<String, String> queryParams = const {},
+  }) =>
+      push(namedLocation(name, params: params, queryParams: queryParams));
 
   /// Refresh the route.
   void refresh() => routerDelegate.refresh();
@@ -341,19 +379,44 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
 /// Dart extension to add navigation function to a BuildContext object, e.g.
 /// context.go('/');
 extension GoRouterHelper on BuildContext {
-  /// navigate to a location
+  /// Get a location from route name and parameters.
+  String namedLocation(
+    String name, {
+    Map<String, String> params = const {},
+    Map<String, String> queryParams = const {},
+  }) =>
+      GoRouter.of(this)
+          .namedLocation(name, params: params, queryParams: queryParams);
+
+  /// Navigate to a location.
   void go(String location) => GoRouter.of(this).go(location);
 
   /// Navigate to a named route.
-  void goNamed(String name, [Map<String, String> params = const {}]) =>
-      GoRouter.of(this).goNamed(name, params);
+  void goNamed(
+    String name, {
+    Map<String, String> params = const {},
+    Map<String, String> queryParams = const {},
+  }) =>
+      GoRouter.of(this).goNamed(
+        name,
+        params: params,
+        queryParams: queryParams,
+      );
 
-  /// push a location onto the page stack
+  /// Push a location onto the page stack.
   void push(String location) => GoRouter.of(this).push(location);
 
-  /// navigate to a named route onto the page stack
-  void pushNamed(String name, [Map<String, String> params = const {}]) =>
-      GoRouter.of(this).pushNamed(name, params);
+  /// Navigate to a named route onto the page stack.
+  void pushNamed(
+    String name, {
+    Map<String, String> params = const {},
+    Map<String, String> queryParams = const {},
+  }) =>
+      GoRouter.of(this).pushNamed(
+        name,
+        params: params,
+        queryParams: queryParams,
+      );
 }
 
 /// Page with custom transition functionality.
@@ -361,6 +424,31 @@ extension GoRouterHelper on BuildContext {
 /// To be used instead of MaterialPage or CupertinoPage, which provide
 /// their own transitions.
 class CustomTransitionPage<T> extends Page<T> {
+  /// Constructor for a page with custom transition functionality.
+  ///
+  /// To be used instead of MaterialPage or CupertinoPage, which provide
+  /// their own transitions.
+  const CustomTransitionPage({
+    required this.child,
+    required this.transitionsBuilder,
+    this.transitionDuration = const Duration(milliseconds: 300),
+    this.maintainState = true,
+    this.fullscreenDialog = false,
+    this.opaque = true,
+    this.barrierDismissible = false,
+    this.barrierColor,
+    this.barrierLabel,
+    LocalKey? key,
+    String? name,
+    Object? arguments,
+    String? restorationId,
+  }) : super(
+          key: key,
+          name: name,
+          arguments: arguments,
+          restorationId: restorationId,
+        );
+
   /// The content to be shown in the Route created by this page.
   final Widget child;
 
@@ -426,31 +514,6 @@ class CustomTransitionPage<T> extends Page<T> {
   /// animation runs from 1.0 to 0.0.
   final Widget Function(BuildContext context, Animation<double> animation,
       Animation<double> secondaryAnimation, Widget child) transitionsBuilder;
-
-  /// Constructor for a page with custom transition functionality.
-  ///
-  /// To be used instead of MaterialPage or CupertinoPage, which provide
-  /// their own transitions.
-  const CustomTransitionPage({
-    required this.child,
-    required this.transitionsBuilder,
-    this.transitionDuration = const Duration(milliseconds: 300),
-    this.maintainState = true,
-    this.fullscreenDialog = false,
-    this.opaque = true,
-    this.barrierDismissible = false,
-    this.barrierColor,
-    this.barrierLabel,
-    LocalKey? key,
-    String? name,
-    Object? arguments,
-    String? restorationId,
-  }) : super(
-          key: key,
-          name: name,
-          arguments: arguments,
-          restorationId: restorationId,
-        );
 
   @override
   Route<T> createRoute(BuildContext context) =>
