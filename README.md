@@ -823,7 +823,7 @@ void _tap(BuildContext context, String fid, String pid) =>
 
 Not only is that error-prone, but the actual URI format of your app could change
 over time. Certainly redirection helps keep old URI formats working, but do you
-really want various versions of your location URIs lying willy-nilly around in
+really want various versions of your location URIs lying  around willy-nilly in
 your code? 
 
 ## Navigating to Named Routes
