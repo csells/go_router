@@ -35,6 +35,7 @@ class GoRouterState {
     this._delegate, {
     required this.location,
     required this.subloc,
+    required this.name,
     this.path,
     this.fullpath,
     this.params = const {},
@@ -57,6 +58,9 @@ class GoRouterState {
 
   /// The location of this sub-route, e.g. /family/f2
   final String subloc;
+
+  /// The optional name of the route.
+  final String? name;
 
   /// The path to this sub-route, e.g. family/:fid
   final String? path;

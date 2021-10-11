@@ -314,6 +314,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
             GoRouterState(
               this,
               location: loc,
+              name: null,
               // trim the query params off the subloc to match route.redirect
               subloc: uri.path,
               // pass along the query params 'cuz that's all we have right now
@@ -333,6 +334,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
               this,
               location: loc,
               subloc: top.subloc,
+              name: top.route.name,
               path: top.route.path,
               fullpath: top.fullpath,
               params: top.params,
@@ -369,9 +371,13 @@ class GoRouterDelegate extends RouterDelegate<Uri>
                 this,
                 location: state.location,
                 subloc: state.subloc,
+                name: state.name,
+                path: state.path,
                 error: ex,
                 fullpath: '',
+                params: state.params,
                 queryParams: state.queryParams,
+                extra: state.extra,
               ),
             ),
           ),
@@ -590,6 +596,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
             this,
             location: location,
             subloc: uri.path,
+            name: null,
             queryParams: uri.queryParameters,
             error: ex,
           ),
@@ -652,6 +659,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     if (kDebugMode) {
       for (final match in matches) {
         assert(identical(match.queryParams, matches.first.queryParams));
+        assert(identical(match.extra, matches.first.extra));
       }
     }
 
@@ -668,10 +676,12 @@ class GoRouterDelegate extends RouterDelegate<Uri>
           this,
           location: location,
           subloc: match.subloc,
+          name: match.route.name,
           path: match.route.path,
           fullpath: match.fullpath,
           params: params,
           queryParams: match.queryParams,
+          extra: match.extra,
           pageKey: match.pageKey, // push() remaps the page key for uniqueness
         ),
       );

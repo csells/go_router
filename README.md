@@ -208,10 +208,12 @@ information:
 | ------------------------ | ----------- | ------- | ------- |
 | `location` | location of the full route, including query params | `/login?from=/family/f2` | `/family/f2/person/p1`|
 | `subloc` | location of this sub-route w/o query params | `/login` | `/family/f2` |
+| `name` | the `GoRoute` name | `login` | `family` |
 | `path` | the `GoRoute` path | `/login` | `family/:fid` |
 | `fullpath` | full path to this sub-route | `/login` | `/family/:fid` |
 | `params` | params extracted from the location | `{}` | `{'fid': 'f2'}` |
 | `queryParams` | optional params from the end of the location | `{'from': '/family/f1'}` | `{}` |
+| `extra` | optional object param | `null` | `null` |
 | `error` | `Exception` associated with this sub-route, if any | `Exception('404')` | ... |
 | `pageKey` | unique key for this sub-route | `ValueKey('/login')` | `ValueKey('/family/:fid')` |
 

@@ -1,8 +1,16 @@
+### 2.1.1
+- [Fix 86](https://github.com/csells/go_router/issues/86): add `name` to
+  `GoRouterState` to complete support for URI-free navigation knowledge in your
+  code
+- [Fix 83](https://github.com/csells/go_router/issues/83): fix for `null`
+  `extra` object
+
+
 ### 2.1.0
 - [Fix 80](https://github.com/csells/go_router/issues/80): adding a redirect
   limit to catch too many redirects error
-- [Fix 81](https://github.com/csells/go_router/issues/81): allow an extra object
-  to pass through for navigation
+- [Fix 81](https://github.com/csells/go_router/issues/81): allow an `extra`
+  object to pass through for navigation
 
 
 ### 2.0.1

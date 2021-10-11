@@ -249,6 +249,7 @@ void main() {
     test('router state', () {
       final routes = [
         GoRoute(
+          name: 'home',
           path: '/',
           pageBuilder: (builder, state) {
             expect(
@@ -256,6 +257,7 @@ void main() {
               anyOf(['/', '/login', '/family/f2', '/family/f2/person/p1']),
             );
             expect(state.subloc, '/');
+            expect(state.name, 'home');
             expect(state.path, '/');
             expect(state.fullpath, '/');
             expect(state.params, <String, String>{});
@@ -265,10 +267,12 @@ void main() {
           },
           routes: [
             GoRoute(
+              name: 'login',
               path: 'login',
               pageBuilder: (builder, state) {
                 expect(state.location, '/login');
                 expect(state.subloc, '/login');
+                expect(state.name, 'login');
                 expect(state.path, 'login');
                 expect(state.fullpath, '/login');
                 expect(state.params, <String, String>{});
@@ -278,6 +282,7 @@ void main() {
               },
             ),
             GoRoute(
+              name: 'family',
               path: 'family/:fid',
               pageBuilder: (builder, state) {
                 expect(
@@ -285,6 +290,7 @@ void main() {
                   anyOf(['/family/f2', '/family/f2/person/p1']),
                 );
                 expect(state.subloc, '/family/f2');
+                expect(state.name, 'family');
                 expect(state.path, 'family/:fid');
                 expect(state.fullpath, '/family/:fid');
                 expect(state.params, <String, String>{'fid': 'f2'});
@@ -294,10 +300,12 @@ void main() {
               },
               routes: [
                 GoRoute(
+                  name: 'person',
                   path: 'person/:pid',
                   pageBuilder: (context, state) {
                     expect(state.location, '/family/f2/person/p1');
                     expect(state.subloc, '/family/f2/person/p1');
+                    expect(state.name, 'person');
                     expect(state.path, 'person/:pid');
                     expect(state.fullpath, '/family/:fid/person/:pid');
                     expect(
@@ -1116,6 +1124,7 @@ extension on GoRouter {
           routerDelegate,
           location: 'DO NOT TEST',
           subloc: match.subloc,
+          name: match.route.name,
           pageKey: const ValueKey('DO NOT TEST'),
           params: match.params,
           queryParams: match.queryParams,

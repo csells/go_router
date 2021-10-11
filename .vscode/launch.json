@@ -37,6 +37,13 @@
       "program": "lib/query_params.dart"
     },
     {
+      "name": "Extra Parameter",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "example",
+      "program": "lib/extra_param.dart"
+    },
+    {
       "name": "Named Routes",
       "type": "dart",
       "request": "launch",
