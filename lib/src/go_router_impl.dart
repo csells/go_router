@@ -672,6 +672,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
           fullpath: match.fullpath,
           params: params,
           queryParams: match.queryParams,
+          extra: match.extra,
           pageKey: match.pageKey, // push() remaps the page key for uniqueness
         ),
       );
