@@ -36,6 +36,7 @@ class _AppState extends State<App> with RestorationMixin {
       GoRoute(
         path: '/',
         pageBuilder: (context, state) => MaterialPage<void>(
+          restorationId: 'page1',
           key: state.pageKey,
           child: const Page1Page(),
         ),
@@ -43,6 +44,7 @@ class _AppState extends State<App> with RestorationMixin {
       GoRoute(
         path: '/page2',
         pageBuilder: (context, state) => MaterialPage<void>(
+          restorationId: 'page2',
           key: state.pageKey,
           child: const Page2Page(),
         ),
@@ -52,5 +54,6 @@ class _AppState extends State<App> with RestorationMixin {
       key: state.pageKey,
       child: ErrorPage(state.error),
     ),
+    restorationScopeId: 'router',
   );
 }
