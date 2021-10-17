@@ -653,6 +653,45 @@ void main() {
         dump(ex);
       }
     });
+
+    test('sparsely named routes', () {
+      final routes = [
+        GoRoute(
+          path: '/',
+          redirect: (_) => '/family/f2',
+          routes: [
+            GoRoute(
+              path: 'family/:fid',
+              pageBuilder: (context, state) => FamilyPage(
+                state.params['fid']!,
+              ),
+              routes: [
+                GoRoute(
+                  name: 'person',
+                  path: 'person:pid',
+                  pageBuilder: (context, state) => PersonPage(
+                    state.params['fid']!,
+                    state.params['pid']!,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ];
+      try {
+        final router = _router(routes);
+        router.goNamed('person', params: {'fid': 'f2', 'pid': 'p1'});
+      } on Exception catch (ex) {
+        dump(ex);
+        assert(false, true);
+      }
+      // final top = router.routerDelegate.matches.last;
+      // final page = router.pageFor(top);
+      // expect(page.runtimeType, PersonPage);
+      // expect((page.runtimeType as PersonPage).fid, 'f2');
+      // expect((page.runtimeType as PersonPage).pid, 'p1');
+    });
   });
 
   group('redirects', () {
@@ -1076,6 +1115,50 @@ void main() {
       expect(matches[0].fullpath, '/:id');
       expect(router.pageFor(matches[0]).runtimeType, HomePage);
     });
+
+    test('push + query param', () {
+      // TODO
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/:id',
+            pageBuilder: (_dummy, state) {
+              expect(state.params, {'id': '0'});
+              expect(state.queryParams, {'id': '1'});
+              return HomePage();
+            },
+          ),
+        ],
+        errorPageBuilder: _dummy,
+      );
+
+      final matches = router.routerDelegate.getLocRouteMatches('/0?id=1');
+      expect(matches.length, 1);
+      expect(matches[0].fullpath, '/:id');
+      expect(router.pageFor(matches[0]).runtimeType, HomePage);
+    });
+
+    test('push + extra param', () {
+      // TODO
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/:id',
+            pageBuilder: (_dummy, state) {
+              expect(state.params, {'id': '0'});
+              expect(state.queryParams, {'id': '1'});
+              return HomePage();
+            },
+          ),
+        ],
+        errorPageBuilder: _dummy,
+      );
+
+      final matches = router.routerDelegate.getLocRouteMatches('/0?id=1');
+      expect(matches.length, 1);
+      expect(matches[0].fullpath, '/:id');
+      expect(router.pageFor(matches[0]).runtimeType, HomePage);
+    });
   });
 }
 
@@ -1122,10 +1205,9 @@ extension on GoRouter {
         DummyBuildContext(),
         GoRouterState(
           routerDelegate,
-          location: 'DO NOT TEST',
+          location: location,
           subloc: match.subloc,
           name: match.route.name,
-          pageKey: const ValueKey('DO NOT TEST'),
           params: match.params,
           queryParams: match.queryParams,
         ),
