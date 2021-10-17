@@ -101,9 +101,10 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     Map<String, GoRouteMatch> namedFullpaths,
   ) {
     for (final route in routes) {
+      final fullpath = _fullLocFor(parentFullpath, route.path);
+
       if (route.name != null) {
         final name = route.name!.toLowerCase();
-        final fullpath = _fullLocFor(parentFullpath, route.path);
         if (namedFullpaths.containsKey(name)) {
           throw Exception('duplication fullpaths for name "$name":'
               '${namedFullpaths[name]!.fullpath}, $fullpath');
@@ -121,9 +122,10 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         );
 
         namedFullpaths[name] = match;
-        if (route.routes.isNotEmpty)
-          _cacheNamedRoutes(route.routes, fullpath, namedFullpaths);
       }
+
+      if (route.routes.isNotEmpty)
+        _cacheNamedRoutes(route.routes, fullpath, namedFullpaths);
     }
   }
 
@@ -374,7 +376,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
                 name: state.name,
                 path: state.path,
                 error: ex,
-                fullpath: '',
+                fullpath: state.path,
                 params: state.params,
                 queryParams: state.queryParams,
                 extra: state.extra,

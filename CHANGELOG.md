@@ -1,3 +1,16 @@
+### 2.1.2
+- [Fix 61 again](https://github.com/csells/go_router/issues/61) to enable images
+  and file links to work on pub.dev/documentation.
+- [Fix 62](https://github.com/csells/go_router/issues/62) re-tested; fixed w/
+  earlier Android system Back button fix (using navigation key)
+- [Fix 91](https://github.com/csells/go_router/issues/91) to fix a regression
+  w/ the `errorPageBuilder`
+- [Fix 92](https://github.com/csells/go_router/issues/92) to fix an edge case w/
+  named sub-routes
+- TODO: [Fix 89](https://github.com/csells/go_router/issues/89) to enable
+  queryParams and extra object param w/ `push`
+
+
 ### 2.1.1
 - [Fix 86](https://github.com/csells/go_router/issues/86): add `name` to
   `GoRouterState` to complete support for URI-free navigation knowledge in your
