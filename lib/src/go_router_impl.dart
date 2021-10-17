@@ -142,7 +142,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         '${queryParams.isEmpty ? '' : ', queryParams: $queryParams'}');
 
     // find route and build up the full path along the way
-    final match = getNameRouteMatch(
+    final match = _getNameRouteMatch(
       name,
       params: params,
       queryParams: queryParams,
@@ -326,7 +326,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         )) continue;
 
         // get stack of route matches
-        matches = getLocRouteMatches(loc, extra: extra);
+        matches = _getLocRouteMatches(loc, extra: extra);
 
         // check top route for redirect
         final top = matches.last;
@@ -391,9 +391,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     return matches;
   }
 
-  /// For internal use; visible for testing only.
-  @visibleForTesting
-  List<GoRouteMatch> getLocRouteMatches(
+  List<GoRouteMatch> _getLocRouteMatches(
     String location, {
     Object? extra,
   }) {
@@ -539,9 +537,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     }
   }
 
-  /// For internal use; visible for testing only.
-  @visibleForTesting
-  GoRouteMatch? getNameRouteMatch(
+  GoRouteMatch? _getNameRouteMatch(
     String name, {
     Map<String, String> params = const {},
     Map<String, String> queryParams = const {},
@@ -622,8 +618,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
             throw Exception('have popped the last page off of the stack; '
                 'there are no pages left to show');
 
-          // this hack fixes the push disable AppBar Back button, but it
-          // shouldn't be necessary...
+          // this hack allows the browser's address bar to be updated after a
+          // push and pressing the Back button, but it shouldn't be necessary...
           _safeNotifyListeners();
 
           return true;
@@ -658,12 +654,6 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     List<GoRouteMatch> matches,
   ) sync* {
     assert(matches.isNotEmpty);
-    if (kDebugMode) {
-      for (final match in matches) {
-        assert(identical(match.queryParams, matches.first.queryParams));
-        assert(identical(match.extra, matches.first.extra));
-      }
-    }
 
     var params = <String, String>{};
     for (final match in matches) {

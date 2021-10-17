@@ -8,32 +8,29 @@ import 'package:go_router/src/go_router_impl.dart';
 void main() {
   group('path routes', () {
     test('match home route', () {
-      const loc = '/';
       final routes = [
         GoRoute(path: '/', pageBuilder: (builder, state) => HomePage()),
       ];
 
       final router = _router(routes);
-      final matches = router.routerDelegate.getLocRouteMatches(loc);
+      final matches = router.routerDelegate.matches;
       expect(matches.length, 1);
       expect(matches[0].fullpath, '/');
       expect(router.pageFor(matches[0]).runtimeType, HomePage);
     });
 
     test('match too many routes', () {
-      const loc = '/';
       final routes = [
         GoRoute(path: '/', pageBuilder: _dummy),
         GoRoute(path: '/', pageBuilder: _dummy),
       ];
 
-      try {
-        final router = _router(routes);
-        router.routerDelegate.getLocRouteMatches(loc);
-        expect(false, true);
-      } on Exception catch (ex) {
-        dump(ex);
-      }
+      final router = _router(routes);
+      router.go('/');
+      final matches = router.routerDelegate.matches;
+      expect(matches.length, 1);
+      expect(matches[0].fullpath, '/');
+      expect(router.pageFor(matches[0]).runtimeType, ErrorPage);
     });
 
     test('empty path', () {
@@ -100,36 +97,32 @@ void main() {
     });
 
     test('match no routes', () {
-      const loc = '/foo';
       final routes = [
         GoRoute(path: '/', pageBuilder: _dummy),
       ];
 
-      try {
-        final router = _router(routes);
-        router.routerDelegate.getLocRouteMatches(loc);
-        expect(false, true);
-      } on Exception catch (ex) {
-        dump(ex);
-      }
+      final router = _router(routes);
+      router.go('/foo');
+      final matches = router.routerDelegate.matches;
+      expect(matches.length, 1);
+      expect(router.pageFor(matches[0]).runtimeType, ErrorPage);
     });
 
     test('match 2nd top level route', () {
-      const loc = '/login';
       final routes = [
         GoRoute(path: '/', pageBuilder: (builder, state) => HomePage()),
         GoRoute(path: '/login', pageBuilder: (builder, state) => LoginPage()),
       ];
 
       final router = _router(routes);
-      final matches = router.routerDelegate.getLocRouteMatches(loc);
+      router.go('/login');
+      final matches = router.routerDelegate.matches;
       expect(matches.length, 1);
       expect(matches[0].subloc, '/login');
       expect(router.pageFor(matches[0]).runtimeType, LoginPage);
     });
 
     test('match sub-route', () {
-      const loc = '/login';
       final routes = [
         GoRoute(
           path: '/',
@@ -144,7 +137,8 @@ void main() {
       ];
 
       final router = _router(routes);
-      final matches = router.routerDelegate.getLocRouteMatches(loc);
+      router.go('/login');
+      final matches = router.routerDelegate.matches;
       expect(matches.length, 2);
       expect(matches[0].subloc, '/');
       expect(router.pageFor(matches[0]).runtimeType, HomePage);
@@ -178,30 +172,35 @@ void main() {
 
       final router = _router(routes);
       {
-        final matches = router.routerDelegate.getLocRouteMatches('/');
+        final matches = router.routerDelegate.matches;
         expect(matches.length, 1);
         expect(matches[0].fullpath, '/');
         expect(router.pageFor(matches[0]).runtimeType, HomePage);
       }
+
+      router.go('/login');
       {
-        final matches = router.routerDelegate.getLocRouteMatches('/login');
+        final matches = router.routerDelegate.matches;
         expect(matches.length, 2);
         expect(matches[0].subloc, '/');
         expect(router.pageFor(matches[0]).runtimeType, HomePage);
         expect(matches[1].subloc, '/login');
         expect(router.pageFor(matches[1]).runtimeType, LoginPage);
       }
+
+      router.go('/family/f2');
       {
-        final matches = router.routerDelegate.getLocRouteMatches('/family/f2');
+        final matches = router.routerDelegate.matches;
         expect(matches.length, 2);
         expect(matches[0].subloc, '/');
         expect(router.pageFor(matches[0]).runtimeType, HomePage);
         expect(matches[1].subloc, '/family/f2');
         expect(router.pageFor(matches[1]).runtimeType, FamilyPage);
       }
+
+      router.go('/family/f2/person/p1');
       {
-        final matches =
-            router.routerDelegate.getLocRouteMatches('/family/f2/person/p1');
+        final matches = router.routerDelegate.matches;
         expect(matches.length, 3);
         expect(matches[0].subloc, '/');
         expect(router.pageFor(matches[0]).runtimeType, HomePage);
@@ -213,7 +212,6 @@ void main() {
     });
 
     test('match too many sub-routes', () {
-      const loc = '/foo/bar';
       final routes = [
         GoRoute(
           path: '/',
@@ -237,13 +235,11 @@ void main() {
         ),
       ];
 
-      try {
-        final router = _router(routes);
-        router.routerDelegate.getLocRouteMatches(loc);
-        expect(false, true);
-      } on Exception catch (ex) {
-        dump(ex);
-      }
+      final router = _router(routes);
+      router.go('/foo/bar');
+      final matches = router.routerDelegate.matches;
+      expect(matches.length, 1);
+      expect(router.pageFor(matches[0]).runtimeType, ErrorPage);
     });
 
     test('router state', () {
@@ -358,19 +354,16 @@ void main() {
     });
 
     test('match too many routes, ignoring case', () {
-      const loc = '/PAGE1';
       final routes = [
         GoRoute(path: '/page1', pageBuilder: _dummy),
         GoRoute(path: '/PaGe1', pageBuilder: _dummy),
       ];
 
-      try {
-        final router = _router(routes);
-        router.routerDelegate.getLocRouteMatches(loc);
-        expect(false, true);
-      } on Exception catch (ex) {
-        dump(ex);
-      }
+      final router = _router(routes);
+      router.go('/PAGE1');
+      final matches = router.routerDelegate.matches;
+      expect(matches.length, 1);
+      expect(router.pageFor(matches[0]).runtimeType, ErrorPage);
     });
 
     test('preserve inline param case', () {
@@ -436,12 +429,6 @@ void main() {
       ];
 
       final router = _router(routes);
-      final match = router.routerDelegate.getNameRouteMatch('home');
-
-      expect(match, isNotNull);
-      expect(match!.fullpath, '/');
-      expect(router.pageFor(match).runtimeType, HomePage);
-
       router.goNamed('home');
     });
 
@@ -497,10 +484,7 @@ void main() {
       ];
 
       final router = _router(routes);
-      final match = router.routerDelegate.getNameRouteMatch('login');
-      expect(match, isNotNull);
-      expect(match!.subloc, '/login');
-      expect(router.pageFor(match).runtimeType, LoginPage);
+      router.goNamed('login');
     });
 
     test('match sub-route', () {
@@ -520,10 +504,7 @@ void main() {
       ];
 
       final router = _router(routes);
-      final match = router.routerDelegate.getNameRouteMatch('login');
-      expect(match, isNotNull);
-      expect(match!.subloc, '/login');
-      expect(router.pageFor(match).runtimeType, LoginPage);
+      router.goNamed('login');
     });
 
     test('match w/ params', () {
@@ -1077,7 +1058,7 @@ void main() {
         routes: [
           GoRoute(
             path: '/',
-            pageBuilder: (_dummy, state) {
+            pageBuilder: (context, state) {
               dump('id= ${state.params['id']}');
               expect(state.params.length, 0);
               expect(state.queryParams.length, 1);
@@ -1089,7 +1070,8 @@ void main() {
         errorPageBuilder: (context, state) => ErrorPage(state.error!),
       );
 
-      final matches = router.routerDelegate.getLocRouteMatches('/?id=0&id=1');
+      router.go('/?id=0&id=1');
+      final matches = router.routerDelegate.matches;
       expect(matches.length, 1);
       expect(matches[0].fullpath, '/');
       expect(router.pageFor(matches[0]).runtimeType, HomePage);
@@ -1100,7 +1082,7 @@ void main() {
         routes: [
           GoRoute(
             path: '/:id',
-            pageBuilder: (_dummy, state) {
+            pageBuilder: (context, state) {
               expect(state.params, {'id': '0'});
               expect(state.queryParams, {'id': '1'});
               return HomePage();
@@ -1110,54 +1092,77 @@ void main() {
         errorPageBuilder: _dummy,
       );
 
-      final matches = router.routerDelegate.getLocRouteMatches('/0?id=1');
+      router.go('/0?id=1');
+      final matches = router.routerDelegate.matches;
       expect(matches.length, 1);
       expect(matches[0].fullpath, '/:id');
       expect(router.pageFor(matches[0]).runtimeType, HomePage);
     });
 
     test('push + query param', () {
-      // TODO
       final router = GoRouter(
         routes: [
+          GoRoute(path: '/', pageBuilder: _dummy),
           GoRoute(
-            path: '/:id',
-            pageBuilder: (_dummy, state) {
-              expect(state.params, {'id': '0'});
-              expect(state.queryParams, {'id': '1'});
-              return HomePage();
-            },
+            path: '/family',
+            pageBuilder: (context, state) => FamilyPage(
+              state.queryParams['fid']!,
+            ),
+          ),
+          GoRoute(
+            path: '/person',
+            pageBuilder: (context, state) => PersonPage(
+              state.queryParams['fid']!,
+              state.queryParams['pid']!,
+            ),
           ),
         ],
         errorPageBuilder: _dummy,
       );
 
-      final matches = router.routerDelegate.getLocRouteMatches('/0?id=1');
-      expect(matches.length, 1);
-      expect(matches[0].fullpath, '/:id');
-      expect(router.pageFor(matches[0]).runtimeType, HomePage);
+      router.go('/family?fid=f2');
+      router.push('/person?fid=f2&pid=p1');
+      final page1 =
+          router.pageFor(router.routerDelegate.matches[0]) as FamilyPage;
+      expect(page1.fid, 'f2');
+
+      final page2 =
+          router.pageFor(router.routerDelegate.matches[1]) as PersonPage;
+      expect(page2.fid, 'f2');
+      expect(page2.pid, 'p1');
     });
 
     test('push + extra param', () {
-      // TODO
       final router = GoRouter(
         routes: [
+          GoRoute(path: '/', pageBuilder: _dummy),
           GoRoute(
-            path: '/:id',
-            pageBuilder: (_dummy, state) {
-              expect(state.params, {'id': '0'});
-              expect(state.queryParams, {'id': '1'});
-              return HomePage();
-            },
+            path: '/family',
+            pageBuilder: (context, state) => FamilyPage(
+              (state.extra! as Map<String, String>)['fid']!,
+            ),
+          ),
+          GoRoute(
+            path: '/person',
+            pageBuilder: (context, state) => PersonPage(
+              (state.extra! as Map<String, String>)['fid']!,
+              (state.extra! as Map<String, String>)['pid']!,
+            ),
           ),
         ],
         errorPageBuilder: _dummy,
       );
 
-      final matches = router.routerDelegate.getLocRouteMatches('/0?id=1');
-      expect(matches.length, 1);
-      expect(matches[0].fullpath, '/:id');
-      expect(router.pageFor(matches[0]).runtimeType, HomePage);
+      router.go('/family', extra: {'fid': 'f2'});
+      router.push('/person', extra: {'fid': 'f2', 'pid': 'p1'});
+      final page1 =
+          router.pageFor(router.routerDelegate.matches[0]) as FamilyPage;
+      expect(page1.fid, 'f2');
+
+      final page2 =
+          router.pageFor(router.routerDelegate.matches[1]) as PersonPage;
+      expect(page2.fid, 'f2');
+      expect(page2.pid, 'p1');
     });
   });
 }
@@ -1201,17 +1206,13 @@ class DummyPage extends Page<dynamic> {
 Page<dynamic> _dummy(BuildContext context, GoRouterState state) => DummyPage();
 
 extension on GoRouter {
-  Page<dynamic> pageFor(GoRouteMatch match) => match.route.pageBuilder(
-        DummyBuildContext(),
-        GoRouterState(
-          routerDelegate,
-          location: location,
-          subloc: match.subloc,
-          name: match.route.name,
-          params: match.params,
-          queryParams: match.queryParams,
-        ),
-      );
+  Page<dynamic> pageFor(GoRouteMatch match) {
+    final matches = routerDelegate.matches;
+    final i = matches.indexOf(match);
+    final pages =
+        routerDelegate.getPages(DummyBuildContext(), matches).toList();
+    return pages[i];
+  }
 }
 
 // ignore: avoid_print
