@@ -1,6 +1,6 @@
 name: go_router_examples
 description: go_router examples
-version: 2.1.1
+version: 2.1.2
 publish_to: none
 
 environment:
@@ -9,6 +9,7 @@ environment:
 
 dependencies:
   adaptive_navigation: ^0.0.4
+  collection: ^1.15.0
   cupertino_icons: ^1.0.2
   flutter:
     sdk: flutter
@@ -18,6 +19,7 @@ dependencies:
   url_launcher: ^6.0.7
 
 dev_dependencies:
+  all_lint_rules_community: ^0.0.4
   flutter_test:
     sdk: flutter
 

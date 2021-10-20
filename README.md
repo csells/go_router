@@ -941,10 +941,12 @@ GoRoute(
 
 The `transitionBuilder` argument to the `CustomTransitionPage` is called when
 you're routing to a new route, and it's your chance to return a transition
-widget. The [transitions sample](example/lib/transitions.dart) shows off
-four different kind of transitions, but really you can do whatever you want.
+widget. The [transitions
+sample](https://github.com/csells/go_router/blob/master/example/lib/transitions.dart)
+shows off four different kind of transitions, but really you can do whatever you
+want.
 
-![custom transitions example](readme/transitions.gif)
+![custom transitions example](https://raw.githubusercontent.com/csells/go_router/master/readme/transitions.gif)
 
 The `CustomTransitionPage` constructor also takes a `transitionsDuration`
 argument in case you'd like to customize the duration of the transition as well
@@ -1054,7 +1056,7 @@ class NoTransitionPage<T> extends CustomTransitionPage<T> {
 This is a simple case that shows a circular progress indicator while the data is
 being loaded and before the page is shown.
 
-![async data example](readme/async.gif)
+![async data example](https://raw.githubusercontent.com/csells/go_router/master/readme/async.gif)
 
 The way transitions work, the outgoing page is shown for a little while before
 the incoming page is shown, which looks pretty terrible when your page is doing
@@ -1074,7 +1076,7 @@ called "nested navigation". The key differentiator for "nested" navigation is
 that there's no transition on the part of the page that stays the same, e.g. the
 app bar stays the same as you navigate to different tabs on this `TabView`:
 
-![nested navigation example](readme/nested-nav.gif)
+![nested navigation example](https://raw.githubusercontent.com/csells/go_router/master/readme/nested-nav.gif)
 
 Of course, you can easily do this using the `TabView` widget, but what makes
 this nested "navigation" is that the location of the page changes, i.e. notice
@@ -1226,7 +1228,7 @@ state that they left them in when they navigated to a new page and return, e.g.
 scroll position, text input values, etc. You can enable support for this by
 using `AutomaticKeepAliveClientMixin` on a stateful widget. You can see this in
 action in the `FamiliyView` of the
-[`nested_nav.dart`](example/lib/nested_nav.dart) example:
+[`nested_nav.dart`](https://github.com/csells/go_router/blob/master/example/lib/nested_nav.dart) example:
 
 ```dart
 class FamilyView extends StatefulWidget {
@@ -1267,7 +1269,7 @@ To instruct the `AutomaticKeepAliveClientMixin` to keep the state, you need to
 override `wantKeepAlive` to return `true` and call `super.build` in the `State`
 class's `build` method, as show above.
 
-![keeping state example](readme/keeping-state.gif)
+![keeping state example](https://raw.githubusercontent.com/csells/go_router/master/readme/keeping-state.gif)
 
 Notice that after scrolling to the bottom of the long list of children in the
 Hunting family, then going to another tab and then going to another page, when
@@ -1284,7 +1286,7 @@ docs](https://flutter.dev/docs/development/ui/navigation/deep-linking).
 # URL Path Strategy
 By default, Flutter adds a hash (#) into the URL for web apps:
 
-![URL Strategy w/ Hash](readme/url-strat-hash.png)
+![URL Strategy w/ Hash](https://raw.githubusercontent.com/csells/go_router/master/readme/url-strat-hash.png)
 
 The process for turning off the hash is
 [documented](https://flutter.dev/docs/development/ui/navigation/url-strategies)
@@ -1306,7 +1308,7 @@ void main() {
 
 Setting the path instead of the hash strategy turns off the # in the URLs:
 
-![URL Strategy w/o Hash](readme/url-strat-no-hash.png)
+![URL Strategy w/o Hash](https://raw.githubusercontent.com/csells/go_router/master/readme/url-strat-no-hash.png)
 
 If your router is created as part of the construction of the widget passed to
 the `runApp` method, you can use a shortcut to set the URL path strategy by
@@ -1404,32 +1406,32 @@ This parameter defaults to `false`, which produces no output.
 
 # Examples
 You can see the go_router in action via the following examples:
-- [`main.dart`](example/lib/main.dart): define a basic routing policy using a
+- [`main.dart`](https://github.com/csells/go_router/blob/master/example/lib/main.dart): define a basic routing policy using a
   set of declarative `GoRoute` objects
-- [`init_loc.dart`](example/lib/init_loc.dart): start at a specific location
+- [`init_loc.dart`](https://github.com/csells/go_router/blob/master/example/lib/init_loc.dart): start at a specific location
   instead of home (`/`), which is the default
-- [`sub_routes.dart`](example/lib/sub_routes.dart): provide a stack of pages
+- [`sub_routes.dart`](https://github.com/csells/go_router/blob/master/example/lib/sub_routes.dart): provide a stack of pages
   based on a set of sub routes
-- [`push.dart`](example/lib/push.dart): provide a stack of pages
+- [`push.dart`](https://github.com/csells/go_router/blob/master/example/lib/push.dart): provide a stack of pages
   based on a series of calls to `context.push()`
-- [`redirection.dart`](example/lib/redirection.dart): redirect one route to
+- [`redirection.dart`](https://github.com/csells/go_router/blob/master/example/lib/redirection.dart): redirect one route to
   another based on changing app state
-- [`query_params.dart`](example/lib/query_params.dart): optional query
+- [`query_params.dart`](https://github.com/csells/go_router/blob/master/example/lib/query_params.dart): optional query
   parameters will be passed to all page builders
-- [`named_routes.dart`](example/lib/named_routes.dart): navigate via name
+- [`named_routes.dart`](https://github.com/csells/go_router/blob/master/example/lib/named_routes.dart): navigate via name
   instead of location URI
-- [`transitions.dart`](example/lib/transitions.dart): use custom transitions
+- [`transitions.dart`](https://github.com/csells/go_router/blob/master/example/lib/transitions.dart): use custom transitions
   during routing
-- [`async_data.dart`](example/lib/async_data.dart): async data lookup
-- [`nested_nav.dart`](example/lib/nested_nav.dart): include information about
+- [`async_data.dart`](https://github.com/csells/go_router/blob/master/example/lib/async_data.dart): async data lookup
+- [`nested_nav.dart`](https://github.com/csells/go_router/blob/master/example/lib/nested_nav.dart): include information about
   children on a page as part of the route path
-- [`url_strategy.dart`](example/lib/url_strategy.dart): turn off the # in the
+- [`url_strategy.dart`](https://github.com/csells/go_router/blob/master/example/lib/url_strategy.dart): turn off the # in the
   Flutter web URL
-- [`state_restoration.dart`](example/lib/state_restoration.dart): test to ensure
+- [`state_restoration.dart`](https://github.com/csells/go_router/blob/master/example/lib/state_restoration.dart): test to ensure
   that go_router works with state restoration (it does)
-- [`cupertino.dart`](example/lib/cupertino.dart): test to ensure that go_router
+- [`cupertino.dart`](https://github.com/csells/go_router/blob/master/example/lib/cupertino.dart): test to ensure that go_router
   works with the Cupertino design language as well as Material (it does)
-- [`books/main.dart`](example/lib/books/main.dart): update of the
+- [`books/main.dart`](https://github.com/csells/go_router/blob/master/example/lib/books/main.dart): update of the
   [navigation_and_routing](https://github.com/flutter/samples/tree/master/navigation_and_routing)
   sample to use go_router
 

@@ -101,9 +101,10 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     Map<String, GoRouteMatch> namedFullpaths,
   ) {
     for (final route in routes) {
+      final fullpath = _fullLocFor(parentFullpath, route.path);
+
       if (route.name != null) {
         final name = route.name!.toLowerCase();
-        final fullpath = _fullLocFor(parentFullpath, route.path);
         if (namedFullpaths.containsKey(name)) {
           throw Exception('duplication fullpaths for name "$name":'
               '${namedFullpaths[name]!.fullpath}, $fullpath');
@@ -121,8 +122,10 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         );
 
         namedFullpaths[name] = match;
-        if (route.routes.isNotEmpty)
-          _cacheNamedRoutes(route.routes, fullpath, namedFullpaths);
+      }
+
+      if (route.routes.isNotEmpty) {
+        _cacheNamedRoutes(route.routes, fullpath, namedFullpaths);
       }
     }
   }
@@ -140,7 +143,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         '${queryParams.isEmpty ? '' : ', queryParams: $queryParams'}');
 
     // find route and build up the full path along the way
-    final match = getNameRouteMatch(
+    final match = _getNameRouteMatch(
       name,
       params: params,
       queryParams: queryParams,
@@ -202,7 +205,10 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   @override
   Widget build(BuildContext context) {
     _log2('GoRouterDelegate.build: matches=');
-    for (final match in matches) _log2('  $match');
+    for (final match in matches) {
+      _log2('  $match');
+    }
+
     return _builder(context, _matches);
   }
 
@@ -241,8 +247,9 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     assert(matches.isNotEmpty);
 
     // replace the stack of matches w/ the new ones
-    _matches.clear();
-    _matches.addAll(matches);
+    _matches
+      ..clear()
+      ..addAll(matches);
   }
 
   void _push(String location, {Object? extra}) {
@@ -324,7 +331,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         )) continue;
 
         // get stack of route matches
-        matches = getLocRouteMatches(loc, extra: extra);
+        matches = _getLocRouteMatches(loc, extra: extra);
 
         // check top route for redirect
         final top = matches.last;
@@ -345,8 +352,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         )) continue;
 
         // let Router know to update the address bar
-        if (redirects.length > 1) // the initial route is not a redirect
-          _safeNotifyListeners();
+        // (the initial route is not a redirect)
+        if (redirects.length > 1) _safeNotifyListeners();
 
         // no more redirects!
         break;
@@ -374,7 +381,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
                 name: state.name,
                 path: state.path,
                 error: ex,
-                fullpath: '',
+                fullpath: state.path,
                 params: state.params,
                 queryParams: state.queryParams,
                 extra: state.extra,
@@ -389,9 +396,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     return matches;
   }
 
-  /// For internal use; visible for testing only.
-  @visibleForTesting
-  List<GoRouteMatch> getLocRouteMatches(
+  List<GoRouteMatch> _getLocRouteMatches(
     String location, {
     Object? extra,
   }) {
@@ -411,8 +416,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     }
 
     if (matchStacks.length > 1) {
-      final sb = StringBuffer();
-      sb.writeln('too many routes for location: $location');
+      final sb = StringBuffer()
+        ..writeln('too many routes for location: $location');
 
       for (final stack in matchStacks) {
         sb.writeln('\t${stack.map((m) => m.route.path).join(' => ')}');
@@ -533,13 +538,13 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       if (subRouteMatchStacks.isEmpty) continue;
 
       // add the match to each of the sub-route match stacks and return them
-      for (final stack in subRouteMatchStacks) yield [match, ...stack];
+      for (final stack in subRouteMatchStacks) {
+        yield [match, ...stack];
+      }
     }
   }
 
-  /// For internal use; visible for testing only.
-  @visibleForTesting
-  GoRouteMatch? getNameRouteMatch(
+  GoRouteMatch? _getNameRouteMatch(
     String name, {
     Map<String, String> params = const {},
     Map<String, String> queryParams = const {},
@@ -616,12 +621,15 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
           _log2('GoRouterDelegate.onPopPage: matches.last= ${_matches.last}');
           _matches.remove(_matches.last);
-          if (_matches.isEmpty)
-            throw Exception('have popped the last page off of the stack; '
-                'there are no pages left to show');
+          if (_matches.isEmpty) {
+            throw Exception(
+              'have popped the last page off of the stack; '
+              'there are no pages left to show',
+            );
+          }
 
-          // this hack fixes the push disable AppBar Back button, but it
-          // shouldn't be necessary...
+          // this hack allows the browser's address bar to be updated after a
+          // push and pressing the Back button, but it shouldn't be necessary...
           _safeNotifyListeners();
 
           return true;
@@ -656,12 +664,6 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     List<GoRouteMatch> matches,
   ) sync* {
     assert(matches.isNotEmpty);
-    if (kDebugMode) {
-      for (final match in matches) {
-        assert(identical(match.queryParams, matches.first.queryParams));
-        assert(identical(match.extra, matches.first.extra));
-      }
-    }
 
     var params = <String, String>{};
     for (final match in matches) {
@@ -781,6 +783,12 @@ class InheritedGoRouter extends InheritedWidget {
   /// Used by the Router architecture as part of the InheritedWidget.
   @override
   bool updateShouldNotify(covariant InheritedWidget oldWidget) => true;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<GoRouter>('goRouter', goRouter));
+  }
 }
 
 /// Each GoRouteMatch instance represents an instance of a GoRoute for a

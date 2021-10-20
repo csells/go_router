@@ -8,7 +8,6 @@ void main() => runApp(App());
 /// sample class using simple declarative routes
 class App extends StatelessWidget {
   App({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) => MaterialApp.router(
         routeInformationParser: _router.routeInformationParser,
@@ -16,7 +15,7 @@ class App extends StatelessWidget {
         title: 'Push GoRouter Example',
       );
 
-  final _router = GoRouter(
+  late final _router = GoRouter(
     routes: [
       GoRoute(
         path: '/',
@@ -30,7 +29,7 @@ class App extends StatelessWidget {
         path: '/page2',
         pageBuilder: (context, state) => MaterialPage<void>(
           key: state.pageKey,
-          child: const Page2PageWithPush(),
+          child: Page2PageWithPush(int.parse(state.queryParams['push-count']!)),
         ),
       ),
     ],
@@ -55,7 +54,7 @@ class Page1PageWithPush extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton(
-                onPressed: () => context.push('/page2'),
+                onPressed: () => context.push('/page2?push-count=1'),
                 child: const Text('Push page 2'),
               ),
             ],
@@ -65,11 +64,14 @@ class Page1PageWithPush extends StatelessWidget {
 }
 
 class Page2PageWithPush extends StatelessWidget {
-  const Page2PageWithPush({Key? key}) : super(key: key);
+  const Page2PageWithPush(this.pushCount, {Key? key}) : super(key: key);
+  final int pushCount;
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: Text('${_title(context)}: page 2')),
+        appBar: AppBar(
+          title: Text('${_title(context)}: page 2 w/ push count $pushCount'),
+        ),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -84,7 +86,10 @@ class Page2PageWithPush extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(8),
                 child: ElevatedButton(
-                  onPressed: () => context.pushNamed('page2'),
+                  onPressed: () => context.pushNamed(
+                    'page2',
+                    queryParams: {'push-count': (pushCount + 1).toString()},
+                  ),
                   child: const Text('Push page 2 (again)'),
                 ),
               ),
