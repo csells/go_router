@@ -1298,6 +1298,10 @@ A more complex example of using `navigatorBuilder` is an implementation of authe
 
 To implement inner navigation and the correct behavior of the back button inside, you need to access the router through `Router.of`, this can only be achieved by inserting a widget between `Router` (created inside `MaterialApp`/`WidgetsApp`) and `Navigator`.
 
+This example checks the login status in the `navigatorBuilder`:
+- if the user is logged in, then `navigatorBuilder` simply returns child (this is the `Navigator` passed to him by `GoRouter`);
+- if the user is not logged in, an instance of the `InnerRouter` widget is created, which provides nested navigation and allows the user to navigate between the login screen, registration screen, etc.
+
 ```dart
 final _router = GoRouter(
   // ...routes and errorPageBuilder here...
