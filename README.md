@@ -1279,7 +1279,7 @@ you return to the list of Huntings that the scroll position is maintained.
 # Navigator Builder
 Sometimes it is necessary to insert a widget above the `Navigator`, but below `MaterialApp`/`WidgetsApp`: for example, it may be a provider that needs access to the `MaterialApp`/`WidgetsApp` `context` to get the current locale and localization, or to completely replace the `Navigator`, for example to implement authentication with inner navigation.
 
-For these purposes, you need to use the `navigatorBuilder` parameter in the `GoRouter` constructor. This is similar to the `builder` parameter in the `MaterialApp` constructor.
+For these purposes, you need to use the `navigatorBuilder` parameter in the `GoRouter` constructor. This is similar to the `builder` parameter in the `MaterialApp` constructor, but gives access to `Router` (via `Router.of`) and other infrastructure provided by `MaterialApp`.
 
 An example of placing some data provider widget:
 ```dart
@@ -1295,6 +1295,8 @@ final _router = GoRouter(
 ```
 
 A more complex example of using `navigatorBuilder` is an implementation of authentication with inner navigation.
+
+To implement inner navigation and the correct behavior of the back button inside, you need to access the router through `Router.of`, this can only be achieved by inserting a widget between `Router` (created inside `MaterialApp`/`WidgetsApp`) and `Navigator`.
 
 ```dart
 final _router = GoRouter(
