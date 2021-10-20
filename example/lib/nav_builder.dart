@@ -16,7 +16,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp.router(
         routeInformationParser: _router.routeInformationParser,
         routerDelegate: _router.routerDelegate,
-        title: 'Authentication Example',
+        title: 'Navigator Builder',
       );
 
   final _router = GoRouter(
@@ -111,9 +111,7 @@ class _InnerRouterState extends State<InnerRouter> {
     super.didChangeDependencies();
 
     // Defer back button dispatching to the child router
-    _backButtonDispatcher = Router.of(context)
-        .backButtonDispatcher
-        ?.createChildBackButtonDispatcher();
+    _backButtonDispatcher = Router.of(context).backButtonDispatcher?.createChildBackButtonDispatcher();
   }
 
   @override
