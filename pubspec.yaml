@@ -17,5 +17,6 @@ dependencies:
   path_to_regexp: ^0.4.0
 
 dev_dependencies:
+  all_lint_rules_community: ^0.0.4
   flutter_test:
     sdk: flutter

@@ -124,8 +124,9 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         namedFullpaths[name] = match;
       }
 
-      if (route.routes.isNotEmpty)
+      if (route.routes.isNotEmpty) {
         _cacheNamedRoutes(route.routes, fullpath, namedFullpaths);
+      }
     }
   }
 
@@ -204,7 +205,10 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   @override
   Widget build(BuildContext context) {
     _log2('GoRouterDelegate.build: matches=');
-    for (final match in matches) _log2('  $match');
+    for (final match in matches) {
+      _log2('  $match');
+    }
+
     return _builder(context, _matches);
   }
 
@@ -243,8 +247,9 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     assert(matches.isNotEmpty);
 
     // replace the stack of matches w/ the new ones
-    _matches.clear();
-    _matches.addAll(matches);
+    _matches
+      ..clear()
+      ..addAll(matches);
   }
 
   void _push(String location, {Object? extra}) {
@@ -347,8 +352,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         )) continue;
 
         // let Router know to update the address bar
-        if (redirects.length > 1) // the initial route is not a redirect
-          _safeNotifyListeners();
+        // (the initial route is not a redirect)
+        if (redirects.length > 1) _safeNotifyListeners();
 
         // no more redirects!
         break;
@@ -411,8 +416,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     }
 
     if (matchStacks.length > 1) {
-      final sb = StringBuffer();
-      sb.writeln('too many routes for location: $location');
+      final sb = StringBuffer()
+        ..writeln('too many routes for location: $location');
 
       for (final stack in matchStacks) {
         sb.writeln('\t${stack.map((m) => m.route.path).join(' => ')}');
@@ -533,7 +538,9 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       if (subRouteMatchStacks.isEmpty) continue;
 
       // add the match to each of the sub-route match stacks and return them
-      for (final stack in subRouteMatchStacks) yield [match, ...stack];
+      for (final stack in subRouteMatchStacks) {
+        yield [match, ...stack];
+      }
     }
   }
 
@@ -614,9 +621,12 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
           _log2('GoRouterDelegate.onPopPage: matches.last= ${_matches.last}');
           _matches.remove(_matches.last);
-          if (_matches.isEmpty)
-            throw Exception('have popped the last page off of the stack; '
-                'there are no pages left to show');
+          if (_matches.isEmpty) {
+            throw Exception(
+              'have popped the last page off of the stack; '
+              'there are no pages left to show',
+            );
+          }
 
           // this hack allows the browser's address bar to be updated after a
           // push and pressing the Back button, but it shouldn't be necessary...
@@ -773,6 +783,12 @@ class InheritedGoRouter extends InheritedWidget {
   /// Used by the Router architecture as part of the InheritedWidget.
   @override
   bool updateShouldNotify(covariant InheritedWidget oldWidget) => true;
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty<GoRouter>('goRouter', goRouter));
+  }
 }
 
 /// Each GoRouteMatch instance represents an instance of a GoRoute for a

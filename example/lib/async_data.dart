@@ -27,9 +27,14 @@ class App extends StatelessWidget {
           child: FutureBuilder<List<Family>>(
             future: repo.getFamilies(),
             builder: (context, snapshot) {
-              if (snapshot.hasError)
+              if (snapshot.hasError) {
                 return ErrorPage(snapshot.error as Exception?);
-              if (snapshot.hasData) return HomePage(families: snapshot.data!);
+              }
+
+              if (snapshot.hasData) {
+                return HomePage(families: snapshot.data!);
+              }
+
               return const Center(child: CircularProgressIndicator());
             },
           ),
@@ -42,10 +47,14 @@ class App extends StatelessWidget {
               child: FutureBuilder<Family>(
                 future: repo.getFamily(state.params['fid']!),
                 builder: (context, snapshot) {
-                  if (snapshot.hasError)
+                  if (snapshot.hasError) {
                     return ErrorPage(snapshot.error as Exception?);
-                  if (snapshot.hasData)
+                  }
+
+                  if (snapshot.hasData) {
                     return FamilyPage(family: snapshot.data!);
+                  }
+
                   return const Center(child: CircularProgressIndicator());
                 },
               ),
@@ -61,12 +70,16 @@ class App extends StatelessWidget {
                       state.params['pid']!,
                     ),
                     builder: (context, snapshot) {
-                      if (snapshot.hasError)
+                      if (snapshot.hasError) {
                         return ErrorPage(snapshot.error as Exception?);
-                      if (snapshot.hasData)
+                      }
+
+                      if (snapshot.hasData) {
                         return PersonPage(
                             family: snapshot.data!.family,
                             person: snapshot.data!.person);
+                      }
+
                       return const Center(child: CircularProgressIndicator());
                     },
                   ),

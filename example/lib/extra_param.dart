@@ -88,11 +88,12 @@ class App extends StatelessWidget {
       final goingToLogin = state.subloc == loginLoc;
 
       // the user is not logged in and not headed to /login, they need to login
-      if (!loggedIn && !goingToLogin)
+      if (!loggedIn && !goingToLogin) {
         return state.namedLocation(
           'login',
           queryParams: {'from': state.subloc},
         );
+      }
 
       // the user is logged in and headed to /login, no need to login again
       if (loggedIn && goingToLogin) return state.namedLocation('home');
