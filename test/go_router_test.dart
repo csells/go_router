@@ -1,3 +1,5 @@
+// ignore_for_file: cascade_invocations
+
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/diagnostics.dart';
 import 'package:flutter/widgets.dart';
