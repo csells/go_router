@@ -60,6 +60,7 @@ easy-to-use developer experience.
 - [Async Data](#async-data)
 - [Nested Navigation](#nested-navigation)
   * [Keeping State](#keeping-state)
+- [Navigator Builder](#navigator-builder)
 - [Deep Linking](#deep-linking)
 - [URL Path Strategy](#url-path-strategy)
 - [Debugging Your Routes](#debugging-your-routes)
@@ -1274,6 +1275,50 @@ class's `build` method, as show above.
 Notice that after scrolling to the bottom of the long list of children in the
 Hunting family, then going to another tab and then going to another page, when
 you return to the list of Huntings that the scroll position is maintained.
+
+# Navigator Builder
+Sometimes it is necessary to insert a widget above the `Navigator`, but below `MaterialApp`/`WidgetsApp`: for example, it may be a provider that needs access to the `MaterialApp`/`WidgetsApp` `context` to get the current locale and localization, or to completely replace the `Navigator`, for example to implement authentication with inner navigation.
+
+For these purposes, you need to use the `navigatorBuilder` parameter in the `GoRouter` constructor. This is similar to the `builder` parameter in the `MaterialApp` constructor, but gives access to `Router` (via `Router.of`) and other infrastructure provided by `MaterialApp`.
+
+An example of placing some data provider widget:
+```dart
+final _router = GoRouter(
+  // ...routes and errorPageBuilder here...
+
+  // A wrapper around the navigator to provide data.
+  navigatorBuilder: (context, child) => DataProvider(
+    child: child,
+    locale: Localizations.localeOf(context),
+  ),
+);
+```
+
+A more complex example of using `navigatorBuilder` is an implementation of authentication with inner navigation.
+
+To implement inner navigation and the correct behavior of the back button inside, you need to access the router through `Router.of`, this can only be achieved by inserting a widget between `Router` (created inside `MaterialApp`/`WidgetsApp`) and `Navigator`.
+
+This example checks the login status in the `navigatorBuilder`:
+- if the user is logged in, then `navigatorBuilder` simply returns child (this is the `Navigator` passed to him by `GoRouter`);
+- if the user is not logged in, an instance of the `InnerRouter` widget is created, which provides nested navigation and allows the user to navigate between the login screen, registration screen, etc.
+
+```dart
+final _router = GoRouter(
+  // ...routes and errorPageBuilder here...
+
+  // A wrapper around the navigator to implement
+  // login and registration screens.
+  navigatorBuilder: (context, child) => ValueListenableBuilder<bool>(
+    valueListenable: signedIn,
+    child: child,
+    builder: (context, signedInValue, child) => signedInValue
+        ? child
+        : const InnerRouter(child: AuthScreen()),
+  ),
+);
+```
+
+For more details see [`nav_builder.dart`](https://github.com/csells/go_router/blob/master/example/lib/nav_builder.dart).
 
 # Deep Linking
 Flutter defines "deep linking" as "opening a URL displays that screen in your
