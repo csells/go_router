@@ -18,7 +18,6 @@ analyzer:
     missing_required_param: error
     missing_return: error
     parameter_assignments: error
-    todo: ignore
 
 linter:
   rules:
@@ -35,5 +34,6 @@ linter:
     avoid_annotating_with_dynamic: false # be explicit about dynamic
     avoid_redundant_argument_values: false # sometimes it's nice to be explicit
     one_member_abstracts: false # interfaces can have a single method
+    flutter_style_todos: false # I'm too lazy for this...
     # diagnostic_describe_all_properties: false # too annoying for StatefulWidget
     # library_private_types_in_public_api: false # too annoying for StatefulWidget

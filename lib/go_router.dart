@@ -300,11 +300,12 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
       initUri: Uri.parse(initialLocation),
       observers: [...observers ?? [], this],
       debugLogDiagnostics: debugLogDiagnostics,
-      // wrap the returned Navigator to enable GoRouter.of(context).go() et al
-      builderWithNav: (context, nav) {
-        final navigator = navigatorBuilder?.call(context, nav) ?? nav;
-        return InheritedGoRouter(goRouter: this, child: navigator);
-      },
+      // wrap the returned Navigator to enable GoRouter.of(context).go() et al,
+      // allowing the caller to wrap the navigator themselves
+      builderWithNav: (context, nav) => InheritedGoRouter(
+        goRouter: this,
+        child: navigatorBuilder?.call(context, nav) ?? nav,
+      ),
     );
   }
 
