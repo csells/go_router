@@ -111,9 +111,7 @@ class _InnerRouterState extends State<InnerRouter> {
     super.didChangeDependencies();
 
     // Defer back button dispatching to the child router
-    _backButtonDispatcher = Router.of(context)
-        .backButtonDispatcher
-        ?.createChildBackButtonDispatcher();
+    _backButtonDispatcher = Router.of(context).backButtonDispatcher?.createChildBackButtonDispatcher();
   }
 
   @override
