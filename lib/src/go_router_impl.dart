@@ -91,7 +91,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   /// Set to true to log diagnostic info for your routes.
   final bool debugLogDiagnostics;
 
-  /// Restoration ID to save and restore the state of the navigator, including its history.
+  /// Restoration ID to save and restore the state of the navigator, including
+  /// its history.
   final String? restorationScopeId;
 
   final _key = GlobalKey<NavigatorState>();

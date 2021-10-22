@@ -87,9 +87,8 @@ shout out to the go_router contributors!
 - [kevmoo](https://github.com/kevmoo) for helping me track
   down spelling issues in my README and unused imports; keep it coming, Kev!
 - [andyduke](https://github.com/andyduke) for [the most excellent
-  navigationBuilder feature](#navigator-builder) and updates to state
-  restoration.
-
+  navigationBuilder feature](#navigator-builder) and updates to [state
+  restoration](https://github.com/csells/go_router/blob/master/example/lib/state_restoration.dart).
 
 # Changelog
 If you'd like to see what's changed in detail over time, you can read [the
