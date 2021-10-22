@@ -1,3 +1,10 @@
+### 2.2.0
+- added a new [`navigatorBuilder`](#navigator-builder) argument to the
+  `GoRouter` constructor; thanks to [andyduke](https://github.com/andyduke)!
+- TODO: also from [andyduke](https://github.com/andyduke) is an update to
+  improve state restoration.
+
+
 ### 2.1.2
 - [Fix 61 again](https://github.com/csells/go_router/issues/61): enable images
   and file links to work on pub.dev/documentation

@@ -86,6 +86,10 @@ shout out to the go_router contributors!
   you'd like to see in go_router
 - [kevmoo](https://github.com/kevmoo) for helping me track
   down spelling issues in my README and unused imports; keep it coming, Kev!
+- [andyduke](https://github.com/andyduke) for [the most excellent
+  navigationBuilder feature](#navigator-builder) and updates to state
+  restoration.
+
 
 # Changelog
 If you'd like to see what's changed in detail over time, you can read [the
@@ -1277,48 +1281,100 @@ Hunting family, then going to another tab and then going to another page, when
 you return to the list of Huntings that the scroll position is maintained.
 
 # Navigator Builder
-Sometimes it is necessary to insert a widget above the `Navigator`, but below `MaterialApp`/`WidgetsApp`: for example, it may be a provider that needs access to the `MaterialApp`/`WidgetsApp` `context` to get the current locale and localization, or to completely replace the `Navigator`, for example to implement authentication with inner navigation.
+Sometimes it is necessary to insert a widget above the `Navigator`, but below
+`MaterialApp`/`CupertinoApp`, e.g. to insert a provider that needs access to the
+app's context to get the current locale and localization, to build a UI outside
+of navigation or to completely replace with `Navigator` with something of your
+own (which is outside the scope of this document).
 
-For these purposes, you need to use the `navigatorBuilder` parameter in the `GoRouter` constructor. This is similar to the `builder` parameter in the `MaterialApp` constructor, but gives access to `Router` (via `Router.of`) and other infrastructure provided by `MaterialApp`.
+For these purposes, you need to use the `navigatorBuilder` parameter in the
+`GoRouter` constructor. This is similar to the `builder` parameter in the
+`MaterialApp` constructor, but gives access to infrastructure provided by
+`MaterialApp`.
 
 An example of placing some data provider widget:
+
 ```dart
 final _router = GoRouter(
-  // ...routes and errorPageBuilder here...
+  routes: ...,
+  errorPageBuilder: ...,
+  redirect: ...,
+  refreshListenable: ...,
 
-  // A wrapper around the navigator to provide data.
-  navigatorBuilder: (context, child) => DataProvider(
+  // add a wrapper around the navigator to put loginInfo into the widget tree
+  navigatorBuilder: (context, child) =>
+      ChangeNotifierProvider<LoginInfo>.value(
+    value: loginInfo,
     child: child,
-    locale: Localizations.localeOf(context),
+    builder: (context, child) => child!,
   ),
 );
 ```
 
-A more complex example of using `navigatorBuilder` is an implementation of authentication with inner navigation.
+A more interesting example of using `navigatorBuilder` is the following, which
+puts a floating button on every page to allow for easy logout:
 
-To implement inner navigation and the correct behavior of the back button inside, you need to access the router through `Router.of`, this can only be achieved by inserting a widget between `Router` (created inside `MaterialApp`/`WidgetsApp`) and `Navigator`.
+```dart
+final _router = GoRouter(
+  routes: ...,
+  errorPageBuilder: ...,
+  redirect: ...,
+  refreshListenable: ...,
+
+  // add a wrapper around the navigator to:
+  // - put loginInfo into the widget tree, and to
+  // - add an overlay to show a logout option
+  navigatorBuilder: (context, child) =>
+      ChangeNotifierProvider<LoginInfo>.value(
+    value: loginInfo,
+    child: child,
+    builder: (context, child) => loginInfo.loggedIn
+        ? AuthOverlay(onLogout: loginInfo.logout, child: child!)
+        : child!,
+  ),
+);
+```
 
 This example checks the login status in the `navigatorBuilder`:
-- if the user is logged in, then `navigatorBuilder` simply returns child (this is the `Navigator` passed to him by `GoRouter`);
-- if the user is not logged in, an instance of the `InnerRouter` widget is created, which provides nested navigation and allows the user to navigate between the login screen, registration screen, etc.
+- if the user is logged in, an instance of the `AuthOverlay` widget is created,
+  which wraps the the `Navigator` passed to `navigationBuilder` via the `child`
+  parameter and provides a logout button on every page
+- if the user is not logged in, return the `Navigator` via the `child` parameter
+
+The `AuthOverlay` shows the logout button and the `Navigator` in a `Stack`:
 
 ```dart
-final _router = GoRouter(
-  // ...routes and errorPageBuilder here...
+class AuthOverlay extends StatelessWidget {
+  const AuthOverlay({
+    required this.onLogout,
+    required this.child,
+    Key? key,
+  }) : super(key: key);
 
-  // A wrapper around the navigator to implement
-  // login and registration screens.
-  navigatorBuilder: (context, child) => ValueListenableBuilder<bool>(
-    valueListenable: signedIn,
-    child: child,
-    builder: (context, signedInValue, child) => signedInValue
-        ? child
-        : const InnerRouter(child: AuthScreen()),
-  ),
-);
+  final Widget child;
+  final VoidCallback onLogout;
+
+  @override
+  Widget build(BuildContext context) => Stack(
+        children: [
+          child,
+          Positioned(
+            top: 90,
+            right: 4,
+            child: ElevatedButton(
+              onPressed: onLogout,
+              child: const Icon(Icons.logout),
+            ),
+          ),
+        ],
+      );
+}
 ```
 
-For more details see [`nav_builder.dart`](https://github.com/csells/go_router/blob/master/example/lib/nav_builder.dart).
+Here's what this look like in action:
+
+![navigationBuilder in
+action](https://raw.githubusercontent.com/csells/go_router/master/readme/nav_builder.gif)
 
 # Deep Linking
 Flutter defines "deep linking" as "opening a URL displays that screen in your
@@ -1451,32 +1507,37 @@ This parameter defaults to `false`, which produces no output.
 
 # Examples
 You can see the go_router in action via the following examples:
-- [`main.dart`](https://github.com/csells/go_router/blob/master/example/lib/main.dart): define a basic routing policy using a
-  set of declarative `GoRoute` objects
-- [`init_loc.dart`](https://github.com/csells/go_router/blob/master/example/lib/init_loc.dart): start at a specific location
-  instead of home (`/`), which is the default
-- [`sub_routes.dart`](https://github.com/csells/go_router/blob/master/example/lib/sub_routes.dart): provide a stack of pages
-  based on a set of sub routes
-- [`push.dart`](https://github.com/csells/go_router/blob/master/example/lib/push.dart): provide a stack of pages
-  based on a series of calls to `context.push()`
-- [`redirection.dart`](https://github.com/csells/go_router/blob/master/example/lib/redirection.dart): redirect one route to
-  another based on changing app state
-- [`query_params.dart`](https://github.com/csells/go_router/blob/master/example/lib/query_params.dart): optional query
-  parameters will be passed to all page builders
-- [`named_routes.dart`](https://github.com/csells/go_router/blob/master/example/lib/named_routes.dart): navigate via name
-  instead of location URI
-- [`transitions.dart`](https://github.com/csells/go_router/blob/master/example/lib/transitions.dart): use custom transitions
-  during routing
-- [`async_data.dart`](https://github.com/csells/go_router/blob/master/example/lib/async_data.dart): async data lookup
-- [`nested_nav.dart`](https://github.com/csells/go_router/blob/master/example/lib/nested_nav.dart): include information about
-  children on a page as part of the route path
-- [`url_strategy.dart`](https://github.com/csells/go_router/blob/master/example/lib/url_strategy.dart): turn off the # in the
-  Flutter web URL
-- [`state_restoration.dart`](https://github.com/csells/go_router/blob/master/example/lib/state_restoration.dart): test to ensure
-  that go_router works with state restoration (it does)
-- [`cupertino.dart`](https://github.com/csells/go_router/blob/master/example/lib/cupertino.dart): test to ensure that go_router
-  works with the Cupertino design language as well as Material (it does)
-- [`books/main.dart`](https://github.com/csells/go_router/blob/master/example/lib/books/main.dart): update of the
+- [`main.dart`](https://github.com/csells/go_router/blob/master/example/lib/main.dart):
+  define a basic routing policy using a set of declarative `GoRoute` objects
+- [`init_loc.dart`](https://github.com/csells/go_router/blob/master/example/lib/init_loc.dart):
+  start at a specific location instead of home (`/`), which is the default
+- [`sub_routes.dart`](https://github.com/csells/go_router/blob/master/example/lib/sub_routes.dart):
+  provide a stack of pages based on a set of sub routes
+- [`push.dart`](https://github.com/csells/go_router/blob/master/example/lib/push.dart):
+  provide a stack of pages based on a series of calls to `context.push()`
+- [`redirection.dart`](https://github.com/csells/go_router/blob/master/example/lib/redirection.dart):
+  redirect one route to another based on changing app state
+- [`query_params.dart`](https://github.com/csells/go_router/blob/master/example/lib/query_params.dart):
+  optional query parameters will be passed to all page builders
+- [`named_routes.dart`](https://github.com/csells/go_router/blob/master/example/lib/named_routes.dart):
+  navigate via name instead of location URI
+- [`transitions.dart`](https://github.com/csells/go_router/blob/master/example/lib/transitions.dart):
+  use custom transitions during routing
+- [`async_data.dart`](https://github.com/csells/go_router/blob/master/example/lib/async_data.dart):
+  async data lookup
+- [`nested_nav.dart`](https://github.com/csells/go_router/blob/master/example/lib/nested_nav.dart):
+  include information about children on a page as part of the route path
+- [`nav_builder.dart`](https://github.com/csells/go_router/blob/master/example/lib/nav_builder.dart):
+  inject widgets above the `Navigator` widget
+- [`url_strategy.dart`](https://github.com/csells/go_router/blob/master/example/lib/url_strategy.dart):
+  turn off the # in the Flutter web URL
+- [`state_restoration.dart`](https://github.com/csells/go_router/blob/master/example/lib/state_restoration.dart):
+  test to ensure that go_router works with state restoration (it does)
+- [`cupertino.dart`](https://github.com/csells/go_router/blob/master/example/lib/cupertino.dart):
+  test to ensure that go_router works with the Cupertino design language as well
+  as Material (it does)
+- [`books/main.dart`](https://github.com/csells/go_router/blob/master/example/lib/books/main.dart):
+  update of the
   [navigation_and_routing](https://github.com/flutter/samples/tree/master/navigation_and_routing)
   sample to use go_router
 

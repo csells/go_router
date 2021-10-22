@@ -79,6 +79,13 @@
       "program": "lib/nested_nav.dart"
     },
     {
+      "name": "Navigation Builder",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "example",
+      "program": "lib/nav_builder.dart"
+    },
+    {
       "name": "State Restoration",
       "type": "dart",
       "request": "launch",
