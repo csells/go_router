@@ -288,6 +288,7 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
     List<NavigatorObserver>? observers,
     bool debugLogDiagnostics = false,
     TransitionBuilder? navigatorBuilder,
+    String? restorationScopeId,
   }) {
     if (urlPathStrategy != null) setUrlPathStrategy(urlPathStrategy);
 
@@ -300,6 +301,7 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
       initUri: Uri.parse(initialLocation),
       observers: [...observers ?? [], this],
       debugLogDiagnostics: debugLogDiagnostics,
+      restorationScopeId: restorationScopeId,
       // wrap the returned Navigator to enable GoRouter.of(context).go() et al,
       // allowing the caller to wrap the navigator themselves
       builderWithNav: (context, nav) => InheritedGoRouter(

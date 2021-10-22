@@ -43,6 +43,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     required Uri initUri,
     required this.observers,
     required this.debugLogDiagnostics,
+    this.restorationScopeId,
   }) {
     // check top-level route paths are valid
     for (final route in routes) {
@@ -89,6 +90,9 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
   /// Set to true to log diagnostic info for your routes.
   final bool debugLogDiagnostics;
+
+  /// Restoration ID to save and restore the state of the navigator, including its history.
+  final String? restorationScopeId;
 
   final _key = GlobalKey<NavigatorState>();
   final List<GoRouteMatch> _matches = [];
@@ -613,6 +617,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     return builderWithNav(
       context,
       Navigator(
+        restorationScopeId: restorationScopeId,
         key: _key, // needed to enable Android system Back button
         pages: pages,
         observers: observers,
