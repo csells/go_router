@@ -2,7 +2,8 @@
 - added a new [`navigatorBuilder`](#navigator-builder) argument to the
   `GoRouter` constructor; thanks to [andyduke](https://github.com/andyduke)!
 - also from [andyduke](https://github.com/andyduke) is an update to
-  improve state restoration.
+  improve state restoration
+- refactor from [kevmoo](https://github.com/kevmoo) for easier maintenance
 
 
 ### 2.1.2

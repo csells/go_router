@@ -84,8 +84,8 @@ shout out to the go_router contributors!
   produce typesafe go and push code for named routes, so thumbs up on [this
   issues](https://github.com/csells/go_router/issues/66) if that's a feature
   you'd like to see in go_router
-- [kevmoo](https://github.com/kevmoo) for helping me track
-  down spelling issues in my README and unused imports; keep it coming, Kev!
+- [kevmoo](https://github.com/kevmoo) for helping me track down spelling issues
+  in my README and unused imports and refactoring for easier maintenance
 - [andyduke](https://github.com/andyduke) for [the most excellent
   navigationBuilder feature](#navigator-builder) and updates to [state
   restoration](https://github.com/csells/go_router/blob/master/example/lib/state_restoration.dart).
