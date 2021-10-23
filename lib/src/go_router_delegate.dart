@@ -2,28 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:path_to_regexp/path_to_regexp.dart' as p2re;
 
-import '../go_router.dart';
-
-const _debugLog2Diagnostics = false;
-// const _debugLog2Diagnostics = kDebugMode;
-
-void _log2(String s) {
-  if (_debugLog2Diagnostics) debugPrint('  $s');
-}
-
-/// Signature of a go router builder function with matchers.
-typedef GoRouterBuilderWithMatches = Widget Function(
-  BuildContext context,
-  Iterable<GoRouteMatch> matches,
-);
-
-/// Signature of a go router builder function with navigator.
-typedef GoRouterBuilderWithNav = Widget Function(
-  BuildContext context,
-  Navigator navigator,
-);
+import 'go_route.dart';
+import 'go_route_match.dart';
+import 'go_router_state.dart';
+import 'logging.dart';
+import 'typedefs.dart';
 
 /// GoRouter implementation of the RouterDelegate base class.
 class GoRouterDelegate extends RouterDelegate<Uri>
@@ -106,7 +90,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     Map<String, GoRouteMatch> namedFullpaths,
   ) {
     for (final route in routes) {
-      final fullpath = _fullLocFor(parentFullpath, route.path);
+      final fullpath = fullLocFor(parentFullpath, route.path);
 
       if (route.name != null) {
         final name = route.name!.toLowerCase();
@@ -202,16 +186,16 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   /// For use by the Router architecture as part of the RouterDelegate.
   @override
   Uri get currentConfiguration {
-    _log2('GoRouterDelegate.currentConfiguration: $location');
+    log2('GoRouterDelegate.currentConfiguration: $location');
     return Uri.parse(location);
   }
 
   /// For use by the Router architecture as part of the RouterDelegate.
   @override
   Widget build(BuildContext context) {
-    _log2('GoRouterDelegate.build: matches=');
+    log2('GoRouterDelegate.build: matches=');
     for (final match in matches) {
-      _log2('  $match');
+      log2('  $match');
     }
 
     return _builder(context, _matches);
@@ -220,8 +204,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   /// For use by the Router architecture as part of the RouterDelegate.
   @override
   Future<void> setInitialRoutePath(Uri configuration) async {
-    _log2(
-        'GoRouterDelegate.setInitialRoutePath: configuration= $configuration');
+    log2('GoRouterDelegate.setInitialRoutePath: configuration= $configuration');
 
     // if the initial location is /, then use the dev initial location;
     // otherwise, we're cruising to a deep link, so ignore dev initial location
@@ -237,7 +220,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   /// For use by the Router architecture as part of the RouterDelegate.
   @override
   Future<void> setNewRoutePath(Uri configuration) async {
-    _log2('GoRouterDelegate.setNewRoutePath: configuration= $configuration');
+    log2('GoRouterDelegate.setNewRoutePath: configuration= $configuration');
     final config = configuration.toString();
     _log('going to $config');
     _go(config);
@@ -500,8 +483,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   }) sync* {
     // find the set of matches at this level of the tree
     for (final route in routes) {
-      final fullpath = _fullLocFor(parentFullpath, route.path);
-      final match = GoRouteMatch._match(
+      final fullpath = fullLocFor(parentFullpath, route.path);
+      final match = GoRouteMatch.match(
         route: route,
         restLoc: restLoc,
         parentSubloc: parentSubloc,
@@ -558,7 +541,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     final partialMatch = _namedMatches[name];
     return partialMatch == null
         ? null
-        : GoRouteMatch._matchNamed(
+        : GoRouteMatch.matchNamed(
             name: name,
             route: partialMatch.route,
             fullpath: partialMatch.fullpath,
@@ -573,7 +556,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   // parentFullLoc: '/',         path => 'family/:fid' => '/family/:fid'
   // parentFullLoc: '/',         path => 'family/f2' =>   '/family/f2'
   // parentFullLoc: '/family/f2', path => 'parent/p1' =>   '/family/f2/person/p1'
-  static String _fullLocFor(String parentFullLoc, String path) {
+  // ignore: public_member_api_docs
+  static String fullLocFor(String parentFullLoc, String path) {
     // at the root, just return the path
     if (parentFullLoc.isEmpty) {
       assert(path.startsWith('/'));
@@ -625,7 +609,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         onPopPage: (route, dynamic result) {
           if (!route.didPop(result)) return false;
 
-          _log2('GoRouterDelegate.onPopPage: matches.last= ${_matches.last}');
+          log2('GoRouterDelegate.onPopPage: matches.last= ${_matches.last}');
           _matches.remove(_matches.last);
           if (_matches.isEmpty) {
             throw Exception(
@@ -717,7 +701,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     assert(debugLogDiagnostics);
 
     for (final route in routes) {
-      final fullpath = _fullLocFor(parentFullpath, route.path);
+      final fullpath = fullLocFor(parentFullpath, route.path);
       _log('  => ${''.padLeft(depth * 2)}$fullpath');
       _outputFullPathsFor(route.routes, fullpath, depth + 1);
     }
@@ -740,7 +724,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   }
 
   void _safeNotifyListeners() {
-    _log2('GoRouterDelegate.safeNotifyListeners: WidgetsBinding.instance= '
+    log2('GoRouterDelegate.safeNotifyListeners: WidgetsBinding.instance= '
         '${WidgetsBinding.instance == null ? 'null' : 'non-null'}');
 
     // this is a hack to fix the following error:
@@ -750,163 +734,4 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         ? notifyListeners()
         : scheduleMicrotask(notifyListeners);
   }
-}
-
-/// GoRouter implementation of the RouteInformationParser base class
-class GoRouteInformationParser extends RouteInformationParser<Uri> {
-  /// for use by the Router architecture as part of the RouteInformationParser
-  @override
-  Future<Uri> parseRouteInformation(RouteInformation routeInformation) async {
-    _log2('GoRouteInformationParser.parseRouteInformation: '
-        'routeInformation.location= ${routeInformation.location}');
-    return Uri.parse(routeInformation.location!);
-  }
-
-  /// for use by the Router architecture as part of the RouteInformationParser
-  @override
-  RouteInformation restoreRouteInformation(Uri configuration) {
-    _log2('GoRouteInformationParser.parseRouteInformation: '
-        'configuration= $configuration');
-    return RouteInformation(location: configuration.toString());
-  }
-}
-
-/// GoRouter implementation of InheritedWidget.
-///
-/// Used for to find the current GoRouter in the widget tree. This is useful
-/// when routing from anywhere in your app.
-class InheritedGoRouter extends InheritedWidget {
-  /// Default constructor for the inherited go router.
-  const InheritedGoRouter({
-    required Widget child,
-    required this.goRouter,
-    Key? key,
-  }) : super(child: child, key: key);
-
-  /// The [GoRouter] that is made available to the widget tree.
-  final GoRouter goRouter;
-
-  /// Used by the Router architecture as part of the InheritedWidget.
-  @override
-  bool updateShouldNotify(covariant InheritedWidget oldWidget) => true;
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties.add(DiagnosticsProperty<GoRouter>('goRouter', goRouter));
-  }
-}
-
-/// Each GoRouteMatch instance represents an instance of a GoRoute for a
-/// specific portion of a location.
-class GoRouteMatch {
-  /// Constructor for GoRouteMatch, each instance represents an instance of a
-  /// GoRoute for a specific portion of a location.
-  GoRouteMatch({
-    required this.route,
-    required this.subloc,
-    required this.fullpath,
-    required this.params,
-    required this.queryParams,
-    required this.extra,
-    this.pageKey,
-  })  : assert(subloc.startsWith('/')),
-        assert(Uri.parse(subloc).queryParameters.isEmpty),
-        assert(fullpath.startsWith('/')),
-        assert(Uri.parse(fullpath).queryParameters.isEmpty);
-
-  /// The matched route.
-  final GoRoute route;
-
-  /// Matched sub-location.
-  final String subloc; // e.g. /family/f2
-
-  /// Matched full path.
-  final String fullpath; // e.g. /family/:fid
-
-  /// Parameters for the matched route.
-  final Map<String, String> params;
-
-  /// Query parameters for the matched route.
-  final Map<String, String> queryParams;
-
-  /// An extra object to pass along with the navigation.
-  final Object? extra;
-
-  /// Optional value key of type string, to hold a unique reference to a page.
-  final ValueKey<String>? pageKey;
-
-  static GoRouteMatch? _match({
-    required GoRoute route,
-    required String restLoc, // e.g. person/p1
-    required String parentSubloc, // e.g. /family/f2
-    required String path, // e.g. person/:pid
-    required String fullpath, // e.g. /family/:fid/person/:pid
-    required Map<String, String> queryParams,
-    required Object? extra,
-  }) {
-    assert(!path.contains('//'));
-
-    final match = route.matchPatternAsPrefix(restLoc);
-    if (match == null) return null;
-
-    final params = route.extractPathParams(match);
-    final pathLoc = _locationFor(path, params);
-    final subloc = GoRouterDelegate._fullLocFor(parentSubloc, pathLoc);
-    return GoRouteMatch(
-      route: route,
-      subloc: subloc,
-      fullpath: fullpath,
-      params: params,
-      queryParams: queryParams,
-      extra: extra,
-    );
-  }
-
-  // ignore: prefer_constructors_over_static_methods
-  static GoRouteMatch _matchNamed({
-    required GoRoute route,
-    required String name, // e.g. person
-    required String fullpath, // e.g. /family/:fid/person/:pid
-    required Map<String, String> params, // e.g. {'fid': 'f2', 'pid': 'p1'}
-    required Map<String, String> queryParams, // e.g. {'from': '/family/f2'}
-    required Object? extra,
-  }) {
-    assert(route.name != null);
-    assert(route.name!.toLowerCase() == name.toLowerCase());
-
-    // check that we have all the params we need
-    final paramNames = <String>[];
-    p2re.parse(fullpath, parameters: paramNames);
-    for (final paramName in paramNames) {
-      if (!params.containsKey(paramName)) {
-        throw Exception('missing param "$paramName" for $fullpath');
-      }
-    }
-
-    // check that we have don't have extra params
-    for (final key in params.keys) {
-      if (!paramNames.contains(key)) {
-        throw Exception('unknown param "$key" for $fullpath');
-      }
-    }
-
-    final subloc = _locationFor(fullpath, params);
-    return GoRouteMatch(
-      route: route,
-      subloc: subloc,
-      fullpath: fullpath,
-      params: params,
-      queryParams: queryParams,
-      extra: extra,
-    );
-  }
-
-  /// for use by the Router architecture as part of the GoRouteMatch
-  @override
-  String toString() => 'GoRouteMatch($fullpath, $params)';
-
-  /// expand a path w/ param slots using params, e.g. family/:fid => family/f1
-  static String _locationFor(String path, Map<String, String> params) =>
-      p2re.pathToFunction(path)(params);
 }
