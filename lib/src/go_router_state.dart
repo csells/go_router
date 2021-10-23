@@ -2,7 +2,9 @@ import 'package:flutter/foundation.dart';
 
 import 'go_router_delegate.dart';
 
+/// TODO
 class GoRedirectState {
+  /// TODO
   GoRedirectState(
     this._delegate, {
     required this.location,

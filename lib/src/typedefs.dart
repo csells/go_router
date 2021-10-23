@@ -24,4 +24,5 @@ typedef GoRouterPageBuilder = Page<dynamic> Function(
 /// The signature of the redirect callback.
 typedef GoRouterRedirect = String? Function(GoRouterState state);
 
+/// TODO
 typedef GoTopRedirect = String? Function(GoRedirectState state);
