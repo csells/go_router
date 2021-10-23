@@ -933,9 +933,6 @@ void main() {
         redirect: (state) {
           expect(Uri.parse(state.location).queryParameters, isNotEmpty);
           expect(Uri.parse(state.subloc).queryParameters, isEmpty);
-          expect(state.path, isNull);
-          expect(state.fullpath, isNull);
-          expect(state.params.length, 0);
           expect(state.queryParams.length, 1);
           expect(state.queryParams['from'], '/');
           return null;

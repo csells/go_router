@@ -148,7 +148,7 @@ class Bookstore extends StatelessWidget {
     debugLogDiagnostics: true,
   );
 
-  String? _guard(GoRouterState state) {
+  String? _guard(GoRedirectState state) {
     final signedIn = _auth.signedIn;
     final signingIn = state.subloc == '/signin';
 

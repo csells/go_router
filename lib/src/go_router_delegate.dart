@@ -60,7 +60,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   final GoRouterPageBuilder errorPageBuilder;
 
   /// Top level page redirect.
-  final GoRouterRedirect topRedirect;
+  final GoTopRedirect topRedirect;
 
   /// The limit for the number of consecutive redirects.
   final int redirectLimit;
@@ -306,10 +306,9 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         final uri = Uri.parse(loc);
         if (redirected(
           topRedirect(
-            GoRouterState(
+            GoRedirectState(
               this,
               location: loc,
-              name: null,
               // trim the query params off the subloc to match route.redirect
               subloc: uri.path,
               // pass along the query params 'cuz that's all we have right now

@@ -68,7 +68,7 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
   GoRouter({
     required List<GoRoute> routes,
     required GoRouterPageBuilder errorPageBuilder,
-    GoRouterRedirect? redirect,
+    GoTopRedirect? redirect,
     Listenable? refreshListenable,
     int redirectLimit = 5,
     String initialLocation = '/',
