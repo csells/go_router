@@ -28,7 +28,7 @@ class App extends StatelessWidget {
         path: '/',
         pageBuilder: (context, state) => MaterialPage<void>(
           key: state.pageKey,
-          child: HomePageNoLogout(families: Families.data),
+          child: const HomePageNoLogout(families: Families.data),
         ),
         routes: [
           GoRoute(

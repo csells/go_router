@@ -30,7 +30,7 @@ class App extends StatelessWidget {
         path: '/',
         pageBuilder: (context, state) => MaterialPage<void>(
           key: state.pageKey,
-          child: HomePage(families: Families.data),
+          child: const HomePage(families: Families.data),
         ),
         routes: [
           GoRoute(

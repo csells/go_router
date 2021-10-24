@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 
 /// sample Person class
 class Person {
-  Person({required this.id, required this.name, required this.age});
+  const Person({required this.id, required this.name, required this.age});
 
   final String id;
   final String name;
@@ -11,7 +11,7 @@ class Person {
 
 /// sample Family class
 class Family {
-  Family({required this.id, required this.name, required this.people});
+  const Family({required this.id, required this.name, required this.people});
 
   final String id;
   final String name;
@@ -25,7 +25,7 @@ class Family {
 
 /// sample families data
 class Families {
-  static final data = [
+  static const data = [
     Family(
       id: 'f1',
       name: 'Sells',
