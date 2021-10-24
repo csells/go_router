@@ -20,7 +20,7 @@ class App extends StatelessWidget {
         child: MaterialApp.router(
           routeInformationParser: _router.routeInformationParser,
           routerDelegate: _router.routerDelegate,
-          title: 'Query Parameters GoRouter Example',
+          title: 'GoRouter Example: Query Parameters',
           debugShowCheckedModeBanner: false,
         ),
       );

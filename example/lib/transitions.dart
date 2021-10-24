@@ -13,7 +13,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp.router(
         routeInformationParser: _router.routeInformationParser,
         routerDelegate: _router.routerDelegate,
-        title: 'Custom Transitions GoRouter Example',
+        title: 'GoRouter Example: Custom Transitions',
       );
 
   final _router = GoRouter(

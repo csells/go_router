@@ -27,7 +27,7 @@ class _AppState extends State<App> with RestorationMixin {
   Widget build(BuildContext context) => MaterialApp.router(
         routeInformationParser: _router.routeInformationParser,
         routerDelegate: _router.routerDelegate,
-        title: 'State Restoration GoRouter Example',
+        title: 'GoRouter Example: State Restoration',
         restorationScopeId: 'app',
       );
 

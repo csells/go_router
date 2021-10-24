@@ -10,7 +10,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) => CupertinoApp.router(
         routeInformationParser: _router.routeInformationParser,
         routerDelegate: _router.routerDelegate,
-        title: 'Cupertino App GoRouter Example',
+        title: 'GoRouter Example: Cupertino App',
       );
 
   final _router = GoRouter(

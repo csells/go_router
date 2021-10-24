@@ -4,6 +4,8 @@
 - also from [andyduke](https://github.com/andyduke) is an update to
   improve state restoration
 - refactor from [kevmoo](https://github.com/kevmoo) for easier maintenance
+- added a new [Navigator Integration section of the
+  README](https://pub.dev/packages/go_router#navigator-integration)
 
 
 ### 2.1.2

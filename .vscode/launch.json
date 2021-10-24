@@ -107,6 +107,13 @@
       "program": "lib/push.dart"
     },
     {
+      "name": "Navigator Integration",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "example",
+      "program": "lib/navigator_integration.dart"
+    },
+    {
       "name": "Books",
       "type": "dart",
       "request": "launch",

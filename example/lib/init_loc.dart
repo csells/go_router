@@ -13,7 +13,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp.router(
         routeInformationParser: _router.routeInformationParser,
         routerDelegate: _router.routerDelegate,
-        title: 'Initial Location GoRouter Example',
+        title: 'GoRouter Example: Initial Location',
       );
 
   final _router = GoRouter(

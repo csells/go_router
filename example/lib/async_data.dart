@@ -15,7 +15,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp.router(
         routeInformationParser: _router.routeInformationParser,
         routerDelegate: _router.routerDelegate,
-        title: 'Async Data GoRouter Example',
+        title: 'GoRouter Example: Async Data',
       );
 
   late final _router = GoRouter(

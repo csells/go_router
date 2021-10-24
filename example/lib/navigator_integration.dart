@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -6,25 +8,24 @@ import 'shared/data.dart';
 
 void main() => runApp(App());
 
-/// sample app using query parameters in the page builders
 class App extends StatelessWidget {
   App({Key? key}) : super(key: key);
 
   final loginInfo = LoginInfo();
 
-  // add the login info into the tree as app state that can change over time
   @override
   Widget build(BuildContext context) => ChangeNotifierProvider<LoginInfo>.value(
         value: loginInfo,
         child: MaterialApp.router(
           routeInformationParser: _router.routeInformationParser,
           routerDelegate: _router.routerDelegate,
-          title: 'GoRouter Example: Extra Parameter',
+          title: 'GoRouter Example: Navigator Integration',
           debugShowCheckedModeBanner: false,
         ),
       );
 
   late final _router = GoRouter(
+    debugLogDiagnostics: true,
     routes: [
       GoRoute(
         name: 'home',
@@ -36,23 +37,21 @@ class App extends StatelessWidget {
         routes: [
           GoRoute(
             name: 'family',
-            path: 'family',
+            path: 'family/:fid',
             pageBuilder: (context, state) {
-              final params = state.extra! as Map<String, Object>;
-              final family = params['family']! as Family;
+              final family = Families.family(state.params['fid']!);
               return MaterialPage<void>(
                 key: state.pageKey,
-                child: FamilyPage(family: family),
+                child: FamilyPageWithAdd(family: family),
               );
             },
             routes: [
               GoRoute(
                 name: 'person',
-                path: 'person',
+                path: 'person/:pid',
                 pageBuilder: (context, state) {
-                  final params = state.extra! as Map<String, Object>;
-                  final family = params['family']! as Family;
-                  final person = params['person']! as Person;
+                  final family = Families.family(state.params['fid']!);
+                  final person = family.person(state.params['pid']!);
                   return MaterialPage<void>(
                     key: state.pageKey,
                     child: PersonPage(family: family, person: person),
@@ -135,7 +134,7 @@ class HomePage extends StatelessWidget {
           for (final f in families)
             ListTile(
               title: Text(f.name),
-              onTap: () => context.goNamed('family', extra: {'family': f}),
+              onTap: () => context.goNamed('family', params: {'fid': f.id}),
             )
         ],
       ),
@@ -151,26 +150,58 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class FamilyPage extends StatelessWidget {
-  const FamilyPage({required this.family, Key? key}) : super(key: key);
+class FamilyPageWithAdd extends StatefulWidget {
+  const FamilyPageWithAdd({required this.family, Key? key}) : super(key: key);
   final Family family;
 
   @override
+  State<FamilyPageWithAdd> createState() => _FamilyPageWithAddState();
+}
+
+class _FamilyPageWithAddState extends State<FamilyPageWithAdd> {
+  @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: Text(family.name)),
+        appBar: AppBar(
+          title: Text(widget.family.name),
+          actions: [
+            IconButton(
+              onPressed: () => _addPerson(context),
+              tooltip: 'Add Person',
+              icon: const Icon(Icons.add),
+            ),
+          ],
+        ),
         body: ListView(
           children: [
-            for (final p in family.people)
+            for (final p in widget.family.people)
               ListTile(
                 title: Text(p.name),
-                onTap: () => context.go(
-                  context.namedLocation('person'),
-                  extra: {'family': family, 'person': p},
-                ),
+                onTap: () => context.go(context.namedLocation(
+                  'person',
+                  params: {'fid': widget.family.id, 'pid': p.id},
+                  queryParams: {'qid': 'quid'},
+                )),
               ),
           ],
         ),
       );
+
+  Future<void> _addPerson(BuildContext context) async {
+    final person = await Navigator.push<Person>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => NewPersonPage(family: widget.family),
+      ),
+    );
+
+    if (person != null) {
+      setState(() => widget.family.people.add(person));
+      context.goNamed('person', params: {
+        'fid': widget.family.id,
+        'pid': person.id,
+      });
+    }
+  }
 }
 
 class PersonPage extends StatelessWidget {
@@ -184,6 +215,83 @@ class PersonPage extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: Text(person.name)),
         body: Text('${person.name} ${family.name} is ${person.age} years old'),
+      );
+}
+
+class NewPersonPage extends StatefulWidget {
+  const NewPersonPage({required this.family, Key? key}) : super(key: key);
+  final Family family;
+
+  @override
+  State<NewPersonPage> createState() => _NewPersonPageState();
+}
+
+class _NewPersonPageState extends State<NewPersonPage> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _ageController = TextEditingController();
+
+  @override
+  void dispose() {
+    super.dispose();
+    _nameController.dispose();
+    _ageController.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(
+          title: Text('New person for family ${widget.family.name}'),
+        ),
+        body: Form(
+          key: _formKey,
+          child: Center(
+            child: SizedBox(
+              width: 400,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: const InputDecoration(labelText: 'name'),
+                    validator: (value) => value == null || value.isEmpty
+                        ? 'Please enter a name'
+                        : null,
+                  ),
+                  TextFormField(
+                    controller: _ageController,
+                    decoration: const InputDecoration(labelText: 'age'),
+                    validator: (value) => value == null ||
+                            value.isEmpty ||
+                            int.tryParse(value) == null
+                        ? 'Please enter an age'
+                        : null,
+                  ),
+                  ButtonBar(children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          final person = Person(
+                            id: 'p${widget.family.people.length + 1}',
+                            name: _nameController.text,
+                            age: int.parse(_ageController.text),
+                          );
+
+                          Navigator.pop(context, person);
+                        }
+                      },
+                      child: const Text('Create'),
+                    ),
+                  ]),
+                ],
+              ),
+            ),
+          ),
+        ),
       );
 }
 

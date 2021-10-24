@@ -14,7 +14,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp.router(
         routeInformationParser: _router.routeInformationParser,
         routerDelegate: _router.routerDelegate,
-        title: 'Sub-routes GoRouter Example',
+        title: 'GoRouter Example: Sub-routes',
       );
 
   final _router = GoRouter(

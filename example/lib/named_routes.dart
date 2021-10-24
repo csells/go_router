@@ -17,7 +17,7 @@ class App extends StatelessWidget {
         child: MaterialApp.router(
           routeInformationParser: _router.routeInformationParser,
           routerDelegate: _router.routerDelegate,
-          title: 'Named Routes GoRouter Example',
+          title: 'GoRouter Example: Named Routes',
           debugShowCheckedModeBanner: false,
         ),
       );
