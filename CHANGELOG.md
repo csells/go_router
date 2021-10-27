@@ -1,3 +1,10 @@
+### 2.2.1
+- [Fix 114](https://github.com/csells/go_router/issues/114): give a better error
+  message when the `GoRouter` isn't found in the widget tree via
+  `GoRouter.of(context)`; thanks [aoatmon](https://github.com/aoatmon) for the
+  [excellent bug report](https://github.com/csells/go_router/issues/114)!
+
+
 ### 2.2.0
 - added a new [`navigatorBuilder`](#navigator-builder) argument to the
   `GoRouter` constructor; thanks to [andyduke](https://github.com/andyduke)!

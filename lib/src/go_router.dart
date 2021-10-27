@@ -166,8 +166,12 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
       setUrlPathStrategyImpl(strategy);
 
   /// Find the current GoRouter in the widget tree.
-  static GoRouter of(BuildContext context) =>
-      context.dependOnInheritedWidgetOfExactType<InheritedGoRouter>()!.goRouter;
+  static GoRouter of(BuildContext context) {
+    final inherited =
+        context.dependOnInheritedWidgetOfExactType<InheritedGoRouter>();
+    assert(inherited != null, 'No GoRouter found in context');
+    return inherited!.goRouter;
+  }
 
   /// The [Navigator] pushed `route`.
   @override
