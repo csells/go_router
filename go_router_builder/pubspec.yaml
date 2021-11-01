@@ -1,0 +1,21 @@
+name: go_router_builder
+version: 1.0.0-dev
+
+environment:
+  sdk: ">=2.14.0 <3.0.0"
+  flutter: ">=1.17.0"
+
+dependencies:
+  analyzer: ^2.7.0
+  build: ^2.0.0
+  go_router: any
+  source_gen: ^1.1.1
+
+dev_dependencies:
+  flutter:
+    sdk: flutter
+  lints: ^1.0.0
+
+dependency_overrides:
+  go_router:
+    path: ../go_router
