@@ -60,6 +60,11 @@ abstract class MaterialGoRoute extends TypedGoRoute {
       MaterialPage<void>(
         key: key ?? state.pageKey,
         child: build(context),
+        maintainState: maintainState,
+        fullscreenDialog: fullscreenDialog,
+        name: name,
+        arguments: arguments,
+        restorationId: restorationId,
       );
 }
 
