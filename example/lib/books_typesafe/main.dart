@@ -90,16 +90,19 @@ class Bookstore extends StatelessWidget {
   );
 
   String? _guard(GoRouterState state) {
+    final signinRoute = SigninRoute();
+    final booksRoute = BooksRoute();
+
     final signedIn = _auth.signedIn;
-    final signingIn = state.subloc == '/signin';
+    final signingIn = state.subloc == signinRoute.location;
 
     // Go to /signin if the user is not signed in
     if (!signedIn && !signingIn) {
-      return '/signin';
+      return signinRoute.location;
     }
     // Go to /books if the user is signed in and tries to go to /signin.
     else if (signedIn && signingIn) {
-      return '/books';
+      return booksRoute.location;
     }
 
     // no redirect

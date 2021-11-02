@@ -148,6 +148,8 @@ class HomeRoute extends FadeTransitionRoute {
 }
 
 class SigninRoute extends FadeTransitionRoute {
+  final String location = '/signin';
+
   @override
   Widget build(BuildContext context) => SignInScreen(
         onSignIn: (credentials) {
