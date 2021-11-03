@@ -1072,7 +1072,6 @@ void main() {
       }
     });
 
-    // TODO: do named routes, too
     test('preserve path param spaces and slashes', () {
       const param1 = 'param w/ spaces and slashes';
       final routes = [
@@ -1089,7 +1088,6 @@ void main() {
       expect(matches[0].params['param1'], param1);
     });
 
-    // TODO: do named routes, too
     test('preserve query param spaces and slashes', () {
       const param1 = 'param w/ spaces and slashes';
       final routes = [
