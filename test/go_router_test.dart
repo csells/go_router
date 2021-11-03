@@ -367,58 +367,6 @@ void main() {
       expect(matches.length, 1);
       expect(router.pageFor(matches[0]).runtimeType, ErrorPage);
     });
-
-    test('preserve inline param case', () {
-      final routes = [
-        GoRoute(
-          path: '/',
-          pageBuilder: (builder, state) => HomePage(),
-        ),
-        GoRoute(
-          path: '/family/:fid',
-          pageBuilder: (builder, state) => FamilyPage(state.params['fid']!),
-        ),
-      ];
-
-      final router = _router(routes);
-      for (final fid in ['f2', 'F2']) {
-        final loc = '/family/$fid';
-        router.go(loc);
-        final matches = router.routerDelegate.matches;
-
-        expect(router.location, loc);
-        expect(matches.length, 1);
-        expect(router.pageFor(matches[0]).runtimeType, FamilyPage);
-        expect(matches[0].params['fid'], fid);
-      }
-    });
-
-    test('preserve query param case', () {
-      final routes = [
-        GoRoute(
-          path: '/',
-          pageBuilder: (builder, state) => HomePage(),
-        ),
-        GoRoute(
-          path: '/family',
-          pageBuilder: (builder, state) => FamilyPage(
-            state.queryParams['fid']!,
-          ),
-        ),
-      ];
-
-      final router = _router(routes);
-      for (final fid in ['f2', 'F2']) {
-        final loc = '/family?fid=$fid';
-        router.go(loc);
-        final matches = router.routerDelegate.matches;
-
-        expect(router.location, loc);
-        expect(matches.length, 1);
-        expect(router.pageFor(matches[0]).runtimeType, FamilyPage);
-        expect(matches[0].queryParams['fid'], fid);
-      }
-    });
   });
 
   group('named routes', () {
@@ -674,6 +622,41 @@ void main() {
       // expect(page.runtimeType, PersonPage);
       // expect((page.runtimeType as PersonPage).fid, 'f2');
       // expect((page.runtimeType as PersonPage).pid, 'p1');
+    });
+
+    test('preserve path param spaces and slashes', () {
+      const param1 = 'param w/ spaces and slashes';
+      final routes = [
+        GoRoute(name: 'page1', path: '/page1/:param1', pageBuilder: _dummy),
+      ];
+
+      final router = _router(routes);
+      final loc = router.namedLocation('page1', params: {'param1': param1});
+      print('loc= $loc');
+      router.go(loc);
+
+      final matches = router.routerDelegate.matches;
+      print('param1= ${matches[0].params['param1']}');
+      expect(router.pageFor(matches[0]).runtimeType, DummyPage);
+      expect(matches[0].params['param1'], param1);
+    });
+
+    test('preserve query param spaces and slashes', () {
+      const param1 = 'param w/ spaces and slashes';
+      final routes = [
+        GoRoute(name: 'page1', path: '/page1', pageBuilder: _dummy),
+      ];
+
+      final router = _router(routes);
+      final loc =
+          router.namedLocation('page1', queryParams: {'param1': param1});
+      print('loc= $loc');
+      router.go(loc);
+
+      final matches = router.routerDelegate.matches;
+      print('param1= ${matches[0].queryParams['param1']}');
+      expect(router.pageFor(matches[0]).runtimeType, DummyPage);
+      expect(matches[0].queryParams['param1'], param1);
     });
   });
 
@@ -1037,6 +1020,97 @@ void main() {
   });
 
   group('params', () {
+    test('preserve path param case', () {
+      final routes = [
+        GoRoute(
+          path: '/',
+          pageBuilder: (builder, state) => HomePage(),
+        ),
+        GoRoute(
+          path: '/family/:fid',
+          pageBuilder: (builder, state) => FamilyPage(state.params['fid']!),
+        ),
+      ];
+
+      final router = _router(routes);
+      for (final fid in ['f2', 'F2']) {
+        final loc = '/family/$fid';
+        router.go(loc);
+        final matches = router.routerDelegate.matches;
+
+        expect(router.location, loc);
+        expect(matches.length, 1);
+        expect(router.pageFor(matches[0]).runtimeType, FamilyPage);
+        expect(matches[0].params['fid'], fid);
+      }
+    });
+
+    test('preserve query param case', () {
+      final routes = [
+        GoRoute(
+          path: '/',
+          pageBuilder: (builder, state) => HomePage(),
+        ),
+        GoRoute(
+          path: '/family',
+          pageBuilder: (builder, state) => FamilyPage(
+            state.queryParams['fid']!,
+          ),
+        ),
+      ];
+
+      final router = _router(routes);
+      for (final fid in ['f2', 'F2']) {
+        final loc = '/family?fid=$fid';
+        router.go(loc);
+        final matches = router.routerDelegate.matches;
+
+        expect(router.location, loc);
+        expect(matches.length, 1);
+        expect(router.pageFor(matches[0]).runtimeType, FamilyPage);
+        expect(matches[0].queryParams['fid'], fid);
+      }
+    });
+
+    // TODO: do named routes, too
+    test('preserve path param spaces and slashes', () {
+      const param1 = 'param w/ spaces and slashes';
+      final routes = [
+        GoRoute(path: '/page1/:param1', pageBuilder: _dummy),
+      ];
+
+      final router = _router(routes);
+      final loc = '/page1/${Uri.encodeQueryComponent(param1)}';
+      router.go(loc);
+
+      final matches = router.routerDelegate.matches;
+      print('param1= ${matches[0].params['param1']}');
+      expect(router.pageFor(matches[0]).runtimeType, DummyPage);
+      expect(matches[0].params['param1'], param1);
+    });
+
+    // TODO: do named routes, too
+    test('preserve query param spaces and slashes', () {
+      const param1 = 'param w/ spaces and slashes';
+      final routes = [
+        GoRoute(path: '/page1', pageBuilder: _dummy),
+      ];
+
+      final router = _router(routes);
+      router.go('/page1?param1=$param1');
+
+      final matches = router.routerDelegate.matches;
+      expect(router.pageFor(matches[0]).runtimeType, DummyPage);
+      expect(matches[0].queryParams['param1'], param1);
+
+      final loc = '/page1?param1=${Uri.encodeQueryComponent(param1)}';
+      router.go(loc);
+
+      final matches2 = router.routerDelegate.matches;
+      expect(router.pageFor(matches2[0]).runtimeType, DummyPage);
+      expect(matches2[0].queryParams['param1'], param1);
+    });
+
     test('error: duplicate path param', () {
       try {
         GoRouter(
