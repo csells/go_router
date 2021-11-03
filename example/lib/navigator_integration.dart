@@ -51,7 +51,7 @@ class App extends StatelessWidget {
                 path: 'person/:pid',
                 pageBuilder: (context, state) {
                   final family = Families.family(state.params['fid']!);
-                  final person = family.person(state.params['pid']!);
+                  final person = family.person(int.parse(state.params['pid']!));
                   return MaterialPage<void>(
                     key: state.pageKey,
                     child: PersonPage(family: family, person: person),
@@ -178,7 +178,7 @@ class _FamilyPageWithAddState extends State<FamilyPageWithAdd> {
                 title: Text(p.name),
                 onTap: () => context.go(context.namedLocation(
                   'person',
-                  params: {'fid': widget.family.id, 'pid': p.id},
+                  params: {'fid': widget.family.id, 'pid': p.id.toString()},
                   queryParams: {'qid': 'quid'},
                 )),
               ),
@@ -198,7 +198,7 @@ class _FamilyPageWithAddState extends State<FamilyPageWithAdd> {
       setState(() => widget.family.people.add(person));
       context.goNamed('person', params: {
         'fid': widget.family.id,
-        'pid': person.id,
+        'pid': person.id.toString(),
       });
     }
   }
@@ -277,7 +277,7 @@ class _NewPersonPageState extends State<NewPersonPage> {
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
                           final person = Person(
-                            id: 'p${widget.family.people.length + 1}',
+                            id: widget.family.people.length + 1,
                             name: _nameController.text,
                             age: int.parse(_ageController.text),
                           );

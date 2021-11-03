@@ -2,7 +2,6 @@ include: package:all_lint_rules_community/all.yaml
 
 analyzer:
   exclude:
-    - "**/*.g.dart"
     - "**/*.freezed.dart"
     - "test/.test_coverage.dart"
     - "bin/cache/**"

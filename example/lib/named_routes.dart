@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 
 import 'shared/data.dart';
 
+part 'named_routes.g.dart';
+
 void main() => runApp(App());
 
 class App extends StatelessWidget {
@@ -25,50 +27,8 @@ class App extends StatelessWidget {
   late final _router = GoRouter(
     debugLogDiagnostics: true,
     routes: [
-      GoRoute(
-        name: 'home',
-        path: '/',
-        pageBuilder: (context, state) => MaterialPage<void>(
-          key: state.pageKey,
-          child: HomePage(families: Families.data),
-        ),
-        routes: [
-          GoRoute(
-            name: 'family',
-            path: 'family/:fid',
-            pageBuilder: (context, state) {
-              final family = Families.family(state.params['fid']!);
-              return MaterialPage<void>(
-                key: state.pageKey,
-                child: FamilyPage(family: family),
-              );
-            },
-            routes: [
-              GoRoute(
-                name: 'person',
-                path: 'person/:pid',
-                pageBuilder: (context, state) {
-                  final family = Families.family(state.params['fid']!);
-                  final person = family.person(state.params['pid']!);
-                  return MaterialPage<void>(
-                    key: state.pageKey,
-                    child: PersonPage(family: family, person: person),
-                  );
-                },
-              ),
-            ],
-          ),
-        ],
-      ),
-      GoRoute(
-        name: 'login',
-        path: '/login',
-        pageBuilder: (context, state) => MaterialPage<void>(
-          key: state.pageKey,
-          // pass the original location to the LoginPage (if there is one)
-          child: LoginPage(from: state.queryParams['from']),
-        ),
-      ),
+      homeRoute,
+      loginRoute,
     ],
 
     errorPageBuilder: (context, state) => MaterialPage<void>(
@@ -81,19 +41,16 @@ class App extends StatelessWidget {
       final loggedIn = loginInfo.loggedIn;
 
       // check just the subloc in case there are query parameters
-      final loginLoc = state.namedLocation('login');
+      final loginLoc = const LoginRoute().location();
       final goingToLogin = state.subloc == loginLoc;
 
       // the user is not logged in and not headed to /login, they need to login
       if (!loggedIn && !goingToLogin) {
-        return state.namedLocation(
-          'login',
-          queryParams: {'from': state.subloc},
-        );
+        return LoginRoute(from: state.subloc).location();
       }
 
       // the user is logged in and headed to /login, no need to login again
-      if (loggedIn && goingToLogin) return state.namedLocation('home');
+      if (loggedIn && goingToLogin) return const HomeRoute().location();
 
       // no need to redirect at all
       return null;
@@ -106,6 +63,81 @@ class App extends StatelessWidget {
 
 String _title(BuildContext context) =>
     (context as Element).findAncestorWidgetOfExactType<MaterialApp>()!.title;
+
+@RouteDef<HomeRoute>(
+  path: '/',
+  children: [
+    RouteDef<FamilyRoute>(
+      path: 'family/:fid',
+      children: [
+        RouteDef<PersonRoute>(
+          path: 'person/:pid',
+          children: [
+            RouteDef(path: 'details/:details'),
+          ],
+        ),
+      ],
+    )
+  ],
+)
+class HomeRoute extends MaterialRouteData {
+  const HomeRoute();
+
+  @override
+  Widget build(BuildContext context) => HomePage(families: Families.data);
+}
+
+@RouteDef<LoginRoute>(
+  path: '/login',
+)
+class LoginRoute extends MaterialRouteData {
+  const LoginRoute({this.from});
+
+  final String? from;
+
+  @override
+  Widget build(BuildContext context) => LoginPage(from: from);
+}
+
+class FamilyRoute extends MaterialRouteData {
+  const FamilyRoute(this.fid);
+  final String fid;
+
+  @override
+  Widget build(BuildContext context) =>
+      FamilyPage(family: Families.family(fid));
+}
+
+class PersonRoute extends MaterialRouteData {
+  const PersonRoute(this.fid, this.pid);
+  final String fid;
+  final int pid;
+
+  @override
+  Widget build(BuildContext context) {
+    final family = Families.family(fid);
+    final person = family.person(pid);
+    return PersonPage(family: family, person: person);
+  }
+}
+
+class PersonDetailsRoute extends MaterialRouteData {
+  const PersonDetailsRoute(this.fid, this.pid, this.details);
+  final String fid;
+  final int pid;
+  final PersonDetails details;
+
+  @override
+  Widget build(BuildContext context) {
+    final family = Families.family(fid);
+    final person = family.person(pid);
+    return PersonDetailsPage(
+      family: family,
+      person: person,
+      detailsKey: details,
+    );
+  }
+}
 
 class HomePage extends StatelessWidget {
   const HomePage({required this.families, Key? key}) : super(key: key);
@@ -132,7 +164,7 @@ class HomePage extends StatelessWidget {
           for (final f in families)
             ListTile(
               title: Text(f.name),
-              onTap: () => context.goNamed('family', params: {'fid': f.id}),
+              onTap: () => FamilyRoute(f.id).go(context),
             )
         ],
       ),
@@ -160,11 +192,7 @@ class FamilyPage extends StatelessWidget {
             for (final p in family.people)
               ListTile(
                 title: Text(p.name),
-                onTap: () => context.go(context.namedLocation(
-                  'person',
-                  params: {'fid': family.id, 'pid': p.id},
-                  queryParams: {'qid': 'quid'},
-                )),
+                onTap: () => PersonRoute(family.id, p.id).go(context),
               ),
           ],
         ),
@@ -181,7 +209,47 @@ class PersonPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: Text(person.name)),
-        body: Text('${person.name} ${family.name} is ${person.age} years old'),
+        body: ListView(
+          children: [
+            ListTile(
+              title: Text(
+                  '${person.name} ${family.name} is ${person.age} years old'),
+            ),
+            for (var entry in person.details.entries)
+              ListTile(
+                title: Text('${entry.key.name} - ${entry.value}'),
+                onTap: () => PersonDetailsRoute(family.id, person.id, entry.key)
+                    .go(context),
+              )
+          ],
+        ),
+      );
+}
+
+class PersonDetailsPage extends StatelessWidget {
+  const PersonDetailsPage({
+    required this.family,
+    required this.person,
+    required this.detailsKey,
+    Key? key,
+  }) : super(key: key);
+
+  final Family family;
+  final Person person;
+  final PersonDetails detailsKey;
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: Text(person.name)),
+        body: ListView(
+          children: [
+            ListTile(
+                title: Text(
+              '${person.name} ${family.name}: '
+              '$detailsKey - ${person.details[detailsKey]}',
+            ))
+          ],
+        ),
       );
 }
 
@@ -198,7 +266,7 @@ class ErrorPage extends StatelessWidget {
             children: [
               Text(error?.toString() ?? 'page not found'),
               TextButton(
-                onPressed: () => context.goNamed('home'),
+                onPressed: () => const HomeRoute().go(context),
                 child: const Text('Home'),
               ),
             ],

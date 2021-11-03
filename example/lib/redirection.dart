@@ -48,7 +48,7 @@ class App extends StatelessWidget {
                 path: 'person/:pid',
                 pageBuilder: (context, state) {
                   final family = Families.family(state.params['fid']!);
-                  final person = family.person(state.params['pid']!);
+                  final person = family.person(int.parse(state.params['pid']!));
                   return MaterialPage<void>(
                     key: state.pageKey,
                     child: PersonPage(family: family, person: person),

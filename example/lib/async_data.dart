@@ -67,7 +67,7 @@ class App extends StatelessWidget {
                   child: FutureBuilder<FamilyPerson>(
                     future: repo.getPerson(
                       state.params['fid']!,
-                      state.params['pid']!,
+                      int.parse(state.params['pid']!),
                     ),
                     builder: (context, snapshot) {
                       if (snapshot.hasError) {
