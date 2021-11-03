@@ -367,58 +367,6 @@ void main() {
       expect(matches.length, 1);
       expect(router.pageFor(matches[0]).runtimeType, ErrorPage);
     });
-
-    test('preserve inline param case', () {
-      final routes = [
-        GoRoute(
-          path: '/',
-          pageBuilder: (builder, state) => HomePage(),
-        ),
-        GoRoute(
-          path: '/family/:fid',
-          pageBuilder: (builder, state) => FamilyPage(state.params['fid']!),
-        ),
-      ];
-
-      final router = _router(routes);
-      for (final fid in ['f2', 'F2']) {
-        final loc = '/family/$fid';
-        router.go(loc);
-        final matches = router.routerDelegate.matches;
-
-        expect(router.location, loc);
-        expect(matches.length, 1);
-        expect(router.pageFor(matches[0]).runtimeType, FamilyPage);
-        expect(matches[0].params['fid'], fid);
-      }
-    });
-
-    test('preserve query param case', () {
-      final routes = [
-        GoRoute(
-          path: '/',
-          pageBuilder: (builder, state) => HomePage(),
-        ),
-        GoRoute(
-          path: '/family',
-          pageBuilder: (builder, state) => FamilyPage(
-            state.queryParams['fid']!,
-          ),
-        ),
-      ];
-
-      final router = _router(routes);
-      for (final fid in ['f2', 'F2']) {
-        final loc = '/family?fid=$fid';
-        router.go(loc);
-        final matches = router.routerDelegate.matches;
-
-        expect(router.location, loc);
-        expect(matches.length, 1);
-        expect(router.pageFor(matches[0]).runtimeType, FamilyPage);
-        expect(matches[0].queryParams['fid'], fid);
-      }
-    });
   });
 
   group('named routes', () {
@@ -1037,6 +985,58 @@ void main() {
   });
 
   group('params', () {
+    test('preserve path param case', () {
+      final routes = [
+        GoRoute(
+          path: '/',
+          pageBuilder: (builder, state) => HomePage(),
+        ),
+        GoRoute(
+          path: '/family/:fid',
+          pageBuilder: (builder, state) => FamilyPage(state.params['fid']!),
+        ),
+      ];
+
+      final router = _router(routes);
+      for (final fid in ['f2', 'F2']) {
+        final loc = '/family/$fid';
+        router.go(loc);
+        final matches = router.routerDelegate.matches;
+
+        expect(router.location, loc);
+        expect(matches.length, 1);
+        expect(router.pageFor(matches[0]).runtimeType, FamilyPage);
+        expect(matches[0].params['fid'], fid);
+      }
+    });
+
+    test('preserve query param case', () {
+      final routes = [
+        GoRoute(
+          path: '/',
+          pageBuilder: (builder, state) => HomePage(),
+        ),
+        GoRoute(
+          path: '/family',
+          pageBuilder: (builder, state) => FamilyPage(
+            state.queryParams['fid']!,
+          ),
+        ),
+      ];
+
+      final router = _router(routes);
+      for (final fid in ['f2', 'F2']) {
+        final loc = '/family?fid=$fid';
+        router.go(loc);
+        final matches = router.routerDelegate.matches;
+
+        expect(router.location, loc);
+        expect(matches.length, 1);
+        expect(router.pageFor(matches[0]).runtimeType, FamilyPage);
+        expect(matches[0].queryParams['fid'], fid);
+      }
+    });
+
     test('error: duplicate path param', () {
       try {
         GoRouter(
