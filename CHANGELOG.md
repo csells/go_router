@@ -1,3 +1,8 @@
+### 2.2.4
+- [Fix 116](https://github.com/csells/go_router/issues/116): work-around for
+  auto-import of the `context.go` family of extension methods
+
+
 ### 2.2.3
 - [Fix 132](https://github.com/csells/go_router/issues/132): route names are
   stored as case insensitive and are now matched in a case insensitive manner

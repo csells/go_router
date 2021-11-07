@@ -15,6 +15,8 @@ export 'src/url_path_strategy.dart';
 
 /// Dart extension to add navigation function to a BuildContext object, e.g.
 /// context.go('/');
+// NOTE: adding this here instead of in /src to work-around a Dart analyzer bug
+// and fix: https://github.com/csells/go_router/issues/116
 extension GoRouterHelper on BuildContext {
   /// Get a location from route name and parameters.
   String namedLocation(
