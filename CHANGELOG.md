@@ -1,3 +1,13 @@
+### 2.2.3
+- [Fix 132](https://github.com/csells/go_router/issues/132): route names are
+  stored as case insensitive and are now matched in a case insensitive manner
+
+
+### 2.2.2
+- [Fix 120](https://github.com/csells/go_router/issues/120): encoding and
+  decoding of params and query params
+
+
 ### 2.2.1
 - [Fix 114](https://github.com/csells/go_router/issues/114): give a better error
   message when the `GoRouter` isn't found in the widget tree via

@@ -457,6 +457,32 @@ void main() {
       router.goNamed('login');
     });
 
+    test('match sub-route case insensitive', () {
+      final routes = [
+        GoRoute(
+          name: 'home',
+          path: '/',
+          pageBuilder: (builder, state) => HomePage(),
+          routes: [
+            GoRoute(
+              name: 'page1',
+              path: 'page1',
+              pageBuilder: (builder, state) => Page1Page(),
+            ),
+            GoRoute(
+              name: 'page2',
+              path: 'Page2',
+              pageBuilder: (builder, state) => Page2Page(),
+            ),
+          ],
+        ),
+      ];
+
+      final router = _router(routes);
+      router.goNamed('Page1');
+      router.goNamed('page2');
+    });
+
     test('match w/ params', () {
       final routes = [
         GoRoute(
@@ -617,11 +643,6 @@ void main() {
         dump(ex);
         assert(false, true);
       }
-      // final top = router.routerDelegate.matches.last;
-      // final page = router.pageFor(top);
-      // expect(page.runtimeType, PersonPage);
-      // expect((page.runtimeType as PersonPage).fid, 'f2');
-      // expect((page.runtimeType as PersonPage).pid, 'p1');
     });
 
     test('preserve path param spaces and slashes', () {
@@ -1253,6 +1274,10 @@ class ErrorPage extends DummyPage {
 }
 
 class HomePage extends DummyPage {}
+
+class Page1Page extends DummyPage {}
+
+class Page2Page extends DummyPage {}
 
 class LoginPage extends DummyPage {}
 

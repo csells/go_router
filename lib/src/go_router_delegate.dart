@@ -133,7 +133,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
     // find route and build up the full path along the way
     final match = _getNameRouteMatch(
-      name,
+      name.toLowerCase(),
       params: params,
       queryParams: queryParams,
     );
@@ -710,7 +710,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
   static String _canonicalUri(String loc) {
     final canon = Uri.parse(loc).toString();
-     return canon.endsWith('?') ? canon.substring(0, canon.length - 1) : canon;
+    return canon.endsWith('?') ? canon.substring(0, canon.length - 1) : canon;
   }
 
   static String _addQueryParams(String loc, Map<String, String> queryParams) {
