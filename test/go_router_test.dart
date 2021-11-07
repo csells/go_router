@@ -632,13 +632,13 @@ void main() {
 
       final router = _router(routes);
       final loc = router.namedLocation('page1', params: {'param1': param1});
-      print('loc= $loc');
+      dump('loc= $loc');
       router.go(loc);
 
       final matches = router.routerDelegate.matches;
-      print('param1= ${matches[0].params['param1']}');
+      dump('param1= ${matches[0].decodedParams['param1']}');
       expect(router.pageFor(matches[0]).runtimeType, DummyPage);
-      expect(matches[0].params['param1'], param1);
+      expect(matches[0].decodedParams['param1'], param1);
     });
 
     test('preserve query param spaces and slashes', () {
@@ -650,11 +650,11 @@ void main() {
       final router = _router(routes);
       final loc =
           router.namedLocation('page1', queryParams: {'param1': param1});
-      print('loc= $loc');
+      dump('loc= $loc');
       router.go(loc);
 
       final matches = router.routerDelegate.matches;
-      print('param1= ${matches[0].queryParams['param1']}');
+      dump('param1= ${matches[0].queryParams['param1']}');
       expect(router.pageFor(matches[0]).runtimeType, DummyPage);
       expect(matches[0].queryParams['param1'], param1);
     });
@@ -1041,7 +1041,7 @@ void main() {
         expect(router.location, loc);
         expect(matches.length, 1);
         expect(router.pageFor(matches[0]).runtimeType, FamilyPage);
-        expect(matches[0].params['fid'], fid);
+        expect(matches[0].decodedParams['fid'], fid);
       }
     });
 
@@ -1079,13 +1079,13 @@ void main() {
       ];
 
       final router = _router(routes);
-      final loc = '/page1/${Uri.encodeQueryComponent(param1)}';
+      final loc = '/page1/${Uri.encodeComponent(param1)}';
       router.go(loc);
 
       final matches = router.routerDelegate.matches;
-      print('param1= ${matches[0].params['param1']}');
+      dump('param1= ${matches[0].decodedParams['param1']}');
       expect(router.pageFor(matches[0]).runtimeType, DummyPage);
-      expect(matches[0].params['param1'], param1);
+      expect(matches[0].decodedParams['param1'], param1);
     });
 
     test('preserve query param spaces and slashes', () {

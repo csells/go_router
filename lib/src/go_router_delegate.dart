@@ -105,7 +105,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
           route: route,
           subloc: '/TBD',
           fullpath: fullpath,
-          params: {},
+          encodedParams: {},
           queryParams: {},
           extra: null,
         );
@@ -254,7 +254,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       route: top.route,
       subloc: top.subloc,
       fullpath: top.fullpath,
-      params: top.params,
+      encodedParams: top.encodedParams,
       queryParams: top.queryParams,
       extra: extra,
       pageKey: pageKey,
@@ -332,7 +332,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
               name: top.route.name,
               path: top.route.path,
               fullpath: top.fullpath,
-              params: top.params,
+              params: top.decodedParams,
               queryParams: top.queryParams,
               extra: extra,
             ),
@@ -355,7 +355,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         GoRouteMatch(
           subloc: uri.path,
           fullpath: uri.path,
-          params: {},
+          encodedParams: {},
           queryParams: uri.queryParameters,
           extra: null,
           route: GoRoute(
@@ -418,7 +418,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       assert(matchStacks.length == 1);
       final match = matchStacks.first.last;
       final loc1 = _addQueryParams(match.subloc, match.queryParams);
-      final loc2 = _canonicalUri(location);
+      final uri2 = Uri.parse(location);
+      final loc2 = _addQueryParams(uri2.path, uri2.queryParameters);
 
       // NOTE: match the lower case, since subloc is canonicalized to match the
       // path case whereas the location can be any case
@@ -659,7 +660,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     for (final match in matches) {
       // merge new params to keep params from previously matched paths, e.g.
       // /family/:fid/person/:pid provides fid and pid to person/:pid
-      params = {...params, ...match.params};
+      params = {...params, ...match.encodedParams};
 
       // get a page from the builder and associate it with a sub-location
       yield match.route.pageBuilder(
@@ -707,13 +708,9 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     }
   }
 
-  // e.g. %20 => +
   static String _canonicalUri(String loc) {
-    final uri = Uri.parse(loc);
-    final canon = Uri.decodeFull(
-      Uri(path: uri.path, queryParameters: uri.queryParameters).toString(),
-    );
-    return canon.endsWith('?') ? canon.substring(0, canon.length - 1) : canon;
+    final canon = Uri.parse(loc).toString();
+     return canon.endsWith('?') ? canon.substring(0, canon.length - 1) : canon;
   }
 
   static String _addQueryParams(String loc, Map<String, String> queryParams) {
