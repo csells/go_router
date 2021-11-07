@@ -9,55 +9,6 @@ import 'path_strategy_nonweb.dart'
 import 'typedefs.dart';
 import 'url_path_strategy.dart';
 
-/// Dart extension to add navigation function to a BuildContext object, e.g.
-/// context.go('/');
-extension GoRouterHelper on BuildContext {
-  /// Get a location from route name and parameters.
-  String namedLocation(
-    String name, {
-    Map<String, String> params = const {},
-    Map<String, String> queryParams = const {},
-  }) =>
-      GoRouter.of(this)
-          .namedLocation(name, params: params, queryParams: queryParams);
-
-  /// Navigate to a location.
-  void go(String location, {Object? extra}) =>
-      GoRouter.of(this).go(location, extra: extra);
-
-  /// Navigate to a named route.
-  void goNamed(
-    String name, {
-    Map<String, String> params = const {},
-    Map<String, String> queryParams = const {},
-    Object? extra,
-  }) =>
-      GoRouter.of(this).goNamed(
-        name,
-        params: params,
-        queryParams: queryParams,
-        extra: extra,
-      );
-
-  /// Push a location onto the page stack.
-  void push(String location, {Object? extra}) =>
-      GoRouter.of(this).push(location, extra: extra);
-
-  /// Navigate to a named route onto the page stack.
-  void pushNamed(
-    String name, {
-    Map<String, String> params = const {},
-    Map<String, String> queryParams = const {},
-    Object? extra,
-  }) =>
-      GoRouter.of(this).pushNamed(
-        name,
-        params: params,
-        queryParams: queryParams,
-        extra: extra,
-      );
-}
-
 /// The top-level go router class.
 ///
 /// Create one of these to initialize your app's routing policy.
