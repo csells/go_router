@@ -648,7 +648,14 @@ void main() {
     test('preserve path param spaces and slashes', () {
       const param1 = 'param w/ spaces and slashes';
       final routes = [
-        GoRoute(name: 'page1', path: '/page1/:param1', pageBuilder: _dummy),
+        GoRoute(
+          name: 'page1',
+          path: '/page1/:param1',
+          pageBuilder: (c, s) {
+            expect(s.params['param1'], param1);
+            return DummyPage();
+          },
+        ),
       ];
 
       final router = _router(routes);
@@ -665,7 +672,14 @@ void main() {
     test('preserve query param spaces and slashes', () {
       const param1 = 'param w/ spaces and slashes';
       final routes = [
-        GoRoute(name: 'page1', path: '/page1', pageBuilder: _dummy),
+        GoRoute(
+          name: 'page1',
+          path: '/page1',
+          pageBuilder: (c, s) {
+            expect(s.queryParams['param1'], param1);
+            return DummyPage();
+          },
+        ),
       ];
 
       final router = _router(routes);
@@ -1096,7 +1110,13 @@ void main() {
     test('preserve path param spaces and slashes', () {
       const param1 = 'param w/ spaces and slashes';
       final routes = [
-        GoRoute(path: '/page1/:param1', pageBuilder: _dummy),
+        GoRoute(
+          path: '/page1/:param1',
+          pageBuilder: (c, s) {
+            expect(s.params['param1'], param1);
+            return DummyPage();
+          },
+        ),
       ];
 
       final router = _router(routes);
@@ -1112,7 +1132,13 @@ void main() {
     test('preserve query param spaces and slashes', () {
       const param1 = 'param w/ spaces and slashes';
       final routes = [
-        GoRoute(path: '/page1', pageBuilder: _dummy),
+        GoRoute(
+          path: '/page1',
+          pageBuilder: (c, s) {
+            expect(s.queryParams['param1'], param1);
+            return DummyPage();
+          },
+        ),
       ];
 
       final router = _router(routes);

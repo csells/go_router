@@ -660,7 +660,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     for (final match in matches) {
       // merge new params to keep params from previously matched paths, e.g.
       // /family/:fid/person/:pid provides fid and pid to person/:pid
-      params = {...params, ...match.encodedParams};
+      params = {...params, ...match.decodedParams};
 
       // get a page from the builder and associate it with a sub-location
       yield match.route.pageBuilder(

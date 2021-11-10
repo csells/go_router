@@ -1,3 +1,9 @@
+### 2.2.5
+- [Fix 120 again](https://github.com/csells/go_router/issues/120): found the bug
+  in my tests that was masking the real bug; changed two characters to implement
+  the actual fix (sigh)
+
+
 ### 2.2.4
 - [Fix 116](https://github.com/csells/go_router/issues/116): work-around for
   auto-import of the `context.go` family of extension methods

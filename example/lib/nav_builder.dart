@@ -108,7 +108,12 @@ class App extends StatelessWidget {
       value: loginInfo,
       child: child,
       builder: (context, child) => loginInfo.loggedIn
-          ? AuthOverlay(onLogout: loginInfo.logout, child: child!)
+          ? AuthOverlay(
+              onLogout: () {
+                loginInfo.logout();
+                _router.goNamed('home'); // clear out the `from` query param
+              },
+              child: child!)
           : child!,
     ),
   );
