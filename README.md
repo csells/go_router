@@ -35,6 +35,7 @@ easy-to-use developer experience.
 - [Changelog](#changelog)
 - [Migrating to 2.x](#migrating-to-2x)
 - [Getting Started](#getting-started)
+- [Video Overview](#video-overview)
 - [Declarative Routing](#declarative-routing)
   * [Router state](#router-state)
   * [Error handling](#error-handling)
@@ -167,6 +168,17 @@ and hopefully this change makes things a little more clear.
 To use the go_router package, [follow these
 instructions](https://pub.dev/packages/go_router/install).
 
+# Video Overview
+If you'd like to see a video overview of the go_router package, you can watch
+the following:
+
+[![Flutter Navigator 2.0 made easy with
+go_router](https://img.youtube.com/vi/G41NdhieUoc/0.jpg)](https://www.youtube.com/watch?v=G41NdhieUoc)
+
+In this video, I did some pair programming with Majid Hajian to port an existing
+Flutter app built using the original Navigation API to use go_router for both
+mobile and web.
+
 # Declarative Routing
 The go_router is governed by a set of routes which you specify as part of the
 `GoRouter` constructor:
@@ -229,6 +241,11 @@ create a unique key for the `MaterialPage` or `CupertinoPage` based on the
 current path for that page in the [stack of pages](#sub-routes), so it will
 uniquely identify the page w/o having to hardcode a key or come up with one
 yourself.
+
+Not all of the state parameters will be set every time. In general, the state is
+a superset of the potential current state of a `GoRouter` instance. For example,
+the `error` parameter will only be set of there's an error, the `params` won't
+be set during top-level direction because there's no `path` to match yet, etc.
 
 ## Error handling
 In addition to the list of routes, the go_router needs an `errorPageBuilder`

@@ -1,3 +1,12 @@
+### 2.2.6
+- [Fix 127](https://github.com/csells/go_router/issues/127): updated the README
+  to add a video overview of the project for people that prefer that media style
+  over long-form text when approaching a new topic
+- [Fix 108](https://github.com/csells/go_router/issues/108): updated the
+  description of the `state` parameter to clarfy that not all properties will be
+  set at every usage
+
+
 ### 2.2.5
 - [Fix 120 again](https://github.com/csells/go_router/issues/120): found the bug
   in my tests that was masking the real bug; changed two characters to implement
