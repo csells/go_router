@@ -11,7 +11,9 @@ class GoRouteInformationParser extends RouteInformationParser<Uri> {
   /// DO use [SynchronousFuture] so that the initial url is processed
   /// synchronously and remove unwanted initial animations on deep-linking
   @override
-  SynchronousFuture<Uri> parseRouteInformation(RouteInformation routeInformation) {
+  SynchronousFuture<Uri> parseRouteInformation(
+    RouteInformation routeInformation,
+  ) {
     log2('GoRouteInformationParser.parseRouteInformation: '
         'routeInformation.location= ${routeInformation.location}');
     return SynchronousFuture(Uri.parse(routeInformation.location!));
