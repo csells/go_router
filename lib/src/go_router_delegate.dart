@@ -202,8 +202,12 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   }
 
   /// For use by the Router architecture as part of the RouterDelegate.
+  ///
+  ///
+  /// DO use [SynchronousFuture] so that the initial url is processed
+  /// synchronously and remove unwanted initial animations on deep-linking
   @override
-  Future<void> setInitialRoutePath(Uri configuration) async {
+  SynchronousFuture<void> setInitialRoutePath(Uri configuration) {
     log2('GoRouterDelegate.setInitialRoutePath: configuration= $configuration');
 
     // if the initial location is /, then use the dev initial location;
@@ -215,6 +219,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       _log('deep linking to $config');
       _go(config);
     }
+
+    return SynchronousFuture(null);
   }
 
   /// For use by the Router architecture as part of the RouterDelegate.
