@@ -1,3 +1,15 @@
+### 2.2.7
+- [Fix 163](https://github.com/csells/go_router/issues/163): avoids unnecessary
+  page rebuilds
+- [Fix 139](https://github.com/csells/go_router/issues/139): avoids unnecessary
+  page flashes on deep linking
+- [Fix 158](https://github.com/csells/go_router/issues/158): shows exception
+  info in the debug output even during a top-level redirect coded w/ an
+  anonymous function, i.e. what the samples all use
+- [Fix 151](https://github.com/csells/go_router/issues/151): exposes
+  `Navigator.pop()` via `GoRouter.pop()` to make it easy to find
+
+
 ### 2.2.6
 - [Fix 127](https://github.com/csells/go_router/issues/127): updated the README
   to add a video overview of the project for people that prefer that media style

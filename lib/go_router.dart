@@ -62,4 +62,8 @@ extension GoRouterHelper on BuildContext {
         queryParams: queryParams,
         extra: extra,
       );
+
+  /// Pop the top page off the Navigator's page stack by calling
+  /// [Navigator.pop].
+  void pop() => GoRouter.of(this).pop(this);
 }

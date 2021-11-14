@@ -109,6 +109,10 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
         extra: extra,
       );
 
+  /// Pop the top page off the Navigator's page stack by calling
+  /// [Navigator.pop].
+  void pop(BuildContext context) => Navigator.pop(context);
+
   /// Refresh the route.
   void refresh() => routerDelegate.refresh();
 

@@ -6,16 +6,15 @@ import 'logging.dart';
 /// GoRouter implementation of the RouteInformationParser base class
 class GoRouteInformationParser extends RouteInformationParser<Uri> {
   /// for use by the Router architecture as part of the RouteInformationParser
-  ///
-  ///
-  /// DO use [SynchronousFuture] so that the initial url is processed
-  /// synchronously and remove unwanted initial animations on deep-linking
   @override
-  SynchronousFuture<Uri> parseRouteInformation(
+  Future<Uri> parseRouteInformation(
     RouteInformation routeInformation,
   ) {
     log2('GoRouteInformationParser.parseRouteInformation: '
         'routeInformation.location= ${routeInformation.location}');
+
+    // Use [SynchronousFuture] so that the initial url is processed
+    // synchronously and remove unwanted initial animations on deep-linking
     return SynchronousFuture(Uri.parse(routeInformation.location!));
   }
 

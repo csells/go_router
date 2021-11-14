@@ -47,6 +47,7 @@ easy-to-use developer experience.
   * [Dynamic linking](#dynamic-linking)
 - [Sub-routes](#sub-routes)
 - [Pushing pages](#pushing-pages)
+  * [Popping pages](#popping-pages)
 - [Redirection](#redirection)
   * [Top-level redirection](#top-level-redirection)
   * [Route-level redirection](#route-level-redirection)
@@ -245,7 +246,7 @@ yourself.
 Not all of the state parameters will be set every time. In general, the state is
 a superset of the potential current state of a `GoRouter` instance. For example,
 the `error` parameter will only be set of there's an error, the `params` won't
-be set during top-level direction because there's no `path` to match yet, etc.
+be set during top-level redirection because there's no `path` to match yet, etc.
 
 ## Error handling
 In addition to the list of routes, the go_router needs an `errorPageBuilder`
@@ -490,6 +491,12 @@ declaratively. When the `push` method matches an entire stack via sub-routes, it
 will take the top-most page from the stack and push that page onto the stack.
 
 You can also push a [named route](#named-routes), discussed below.
+
+## Popping pages
+If you'd like to pop a page from the stack, you can use the `pop` method. This
+method simply calls `Navigator.pop`. For more information about the integration
+considerations of using `Navigator` vs `GoRouter`, see [Navigator
+Integration](#navigator-integration).
 
 # Redirection
 Sometimes you want your app to redirect to a different location. The go_router

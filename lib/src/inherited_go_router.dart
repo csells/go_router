@@ -20,7 +20,11 @@ class InheritedGoRouter extends InheritedWidget {
 
   /// Used by the Router architecture as part of the InheritedWidget.
   @override
-  bool updateShouldNotify(covariant InheritedWidget oldWidget) => true;
+  // ignore: prefer_expression_function_bodies
+  bool updateShouldNotify(covariant InheritedWidget oldWidget) {
+    // avoid rebuilding the widget tree if the router has not changed
+    return false;
+  }
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {

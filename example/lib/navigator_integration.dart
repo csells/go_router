@@ -269,7 +269,8 @@ class _NewPersonPageState extends State<NewPersonPage> {
                   ),
                   ButtonBar(children: [
                     TextButton(
-                      onPressed: () => Navigator.pop(context),
+                      // just like Navigator.pop(context),
+                      onPressed: () => context.pop(),
                       child: const Text('Cancel'),
                     ),
                     ElevatedButton(

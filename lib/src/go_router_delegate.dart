@@ -133,7 +133,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
     // find route and build up the full path along the way
     final match = _getNameRouteMatch(
-      name.toLowerCase(),
+      name.toLowerCase(), // case-insensitive name matching
       params: params,
       queryParams: queryParams,
     );
@@ -202,12 +202,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   }
 
   /// For use by the Router architecture as part of the RouterDelegate.
-  ///
-  ///
-  /// DO use [SynchronousFuture] so that the initial url is processed
-  /// synchronously and remove unwanted initial animations on deep-linking
   @override
-  SynchronousFuture<void> setInitialRoutePath(Uri configuration) {
+  Future<void> setInitialRoutePath(Uri configuration) {
     log2('GoRouterDelegate.setInitialRoutePath: configuration= $configuration');
 
     // if the initial location is /, then use the dev initial location;
@@ -220,6 +216,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       _go(config);
     }
 
+    // Use [SynchronousFuture] so that the initial url is processed
+    // synchronously and remove unwanted initial animations on deep-linking
     return SynchronousFuture(null);
   }
 
@@ -235,6 +233,17 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   void _log(Object o) {
     if (debugLogDiagnostics) debugPrint('GoRouter: $o');
   }
+
+  // note that we're dumping this even if the debugLogDiagnostics flag is clear;
+  // exceptions should be loud and proud!
+  void _logError(Object err, StackTrace stack) =>
+      FlutterError.dumpErrorToConsole(
+        FlutterErrorDetails(
+          exception: err is Exception ? err : Exception(err),
+          stack: stack,
+          context: ErrorDescription('Exception during GoRouter navigation'),
+        ),
+      );
 
   void _go(String location, {Object? extra}) {
     final matches = _getLocRouteMatchesWithRedirects(location, extra: extra);
@@ -352,8 +361,13 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         // no more redirects!
         break;
       }
-    } on Exception catch (ex) {
-      _log(ex.toString());
+
+      // note that we need to catch it this way to get all the info, e.g. the
+      // file/line info for an error in an inline function impl, e.g. an inline
+      // `redirect` impl
+      // ignore: avoid_catches_without_on_clauses
+    } catch (err, stack) {
+      _logError(err, stack);
 
       // create a match that routes to the error page
       final uri = Uri.parse(location);
@@ -374,7 +388,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
                 subloc: state.subloc,
                 name: state.name,
                 path: state.path,
-                error: ex,
+                error: err is Exception ? err : Exception(err),
                 fullpath: state.path,
                 params: state.params,
                 queryParams: state.queryParams,
@@ -585,8 +599,13 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     try {
       // build the stack of pages
       pages = getPages(context, matches.toList()).toList();
-    } on Exception catch (ex) {
-      _log(ex.toString());
+
+      // note that we need to catch it this way to get all the info, e.g. the
+      // file/line info for an error in an inline function impl, e.g. an inline
+      // `redirect` impl
+      // ignore: avoid_catches_without_on_clauses
+    } catch (err, stack) {
+      _logError(err, stack);
 
       // if there's an error, show an error page
       final uri = Uri.parse(location);
@@ -599,7 +618,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
             subloc: uri.path,
             name: null,
             queryParams: uri.queryParameters,
-            error: ex,
+            error: err is Exception ? err : Exception(err),
           ),
         ),
       ];
