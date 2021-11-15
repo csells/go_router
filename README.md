@@ -92,6 +92,8 @@ shout out to the go_router contributors!
 - [andyduke](https://github.com/andyduke) for [the most excellent
   navigationBuilder feature](#navigator-builder) and updates to [state
   restoration](https://github.com/csells/go_router/blob/master/example/lib/state_restoration.dart).
+- [lulupointu](https://github.com/lulupointu) for deep link fixes that keep
+  pages from flashing willy-nilly.
 
 # Changelog
 If you'd like to see what's changed in detail over time, you can read [the
