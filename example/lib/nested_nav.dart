@@ -53,5 +53,20 @@ class App extends StatelessWidget {
       key: state.pageKey,
       child: ErrorPage(state.error),
     ),
+
+    // show the current router location as the user navigates page to page; note
+    // that this is not required for nested navigation but it is useful to show
+    // the location as it changes
+    navigatorBuilder: (context, child) => Material(
+      child: Column(
+        children: [
+          Expanded(child: child!),
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child: Text(_router.location),
+          ),
+        ],
+      ),
+    ),
   );
 }

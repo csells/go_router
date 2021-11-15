@@ -196,21 +196,9 @@ class _FamilyTabsPageState extends State<FamilyTabsPage>
             onTap: (index) => _tap(context, index),
           ),
         ),
-        body: Column(
-          children: [
-            Expanded(
-              child: TabBarView(
-                controller: _controller,
-                children: [
-                  for (final f in Families.data) FamilyView(family: f)
-                ],
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.all(8),
-              child: RouterLocationView(),
-            ),
-          ],
+        body: TabBarView(
+          controller: _controller,
+          children: [for (final f in Families.data) FamilyView(family: f)],
         ),
       );
 
@@ -219,19 +207,6 @@ class _FamilyTabsPageState extends State<FamilyTabsPage>
 
   String _title(BuildContext context) =>
       (context as Element).findAncestorWidgetOfExactType<MaterialApp>()!.title;
-}
-
-class RouterLocationView extends StatelessWidget {
-  const RouterLocationView({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final router = GoRouter.of(context);
-    return AnimatedBuilder(
-      animation: router,
-      builder: (context, child) => Text(router.location),
-    );
-  }
 }
 
 class FamilyView extends StatefulWidget {
