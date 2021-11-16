@@ -32,7 +32,7 @@ In this case, we've defined two routes. Each route `path` will be matched
 against the location to which the user is navigating. Only a single path will be
 matched, specifically the one that matches the entire location (and so it
 doesn't matter in which order you list your routes). The `path` will be matched
-in a case-insensitive way, although the case for [parameters](#parameters) will
+in a case-insensitive way, although the case for [parameters](/parameters) will
 be preserved.
 
 ## Router state
@@ -55,11 +55,11 @@ information:
 | `error`                  | `Exception` associated with this sub-route, if any | `Exception('404')`       | ...                        |
 | `pageKey`                | unique key for this sub-route                      | `ValueKey('/login')`     | `ValueKey('/family/:fid')` |
 
-You can read more about [sub-locations/sub-routes](#sub-routes) and
-[parameterized routes](#parameters) below but the example code above uses the
+You can read more about [sub-locations/sub-routes](/sub-routes) and
+[parameterized routes](/parameters) below but the example code above uses the
 `pageKey` property as most of the example code does. The `pageKey` is used to
 create a unique key for the `MaterialPage` or `CupertinoPage` based on the
-current path for that page in the [stack of pages](#sub-routes), so it will
+current path for that page in the [stack of pages](/sub-routes), so it will
 uniquely identify the page w/o having to hardcode a key or come up with one
 yourself.
 

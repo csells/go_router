@@ -1,6 +1,7 @@
 {
   "name": "go_router",
-  "zoomImages": "true",
+  "zoomImages": "false",
+  "zoomImages-Comment": "turning off zoom site-wide to enable images w/ links",
   "sidebar": [
     [
       "Welcome",
@@ -14,6 +15,7 @@
     ["Getting Started", "/getting-started"],
     ["Declarative Routing", "/declarative-routing"],
     ["Navigation", "/navigation"],
+    ["Parameters", "/parameters"],
     ["Sub-routes", "/sub-routes"],
     ["Redirection", "/redirection"],
     ["Named Routes", "/named-routes"],

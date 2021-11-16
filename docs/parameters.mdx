@@ -26,14 +26,44 @@ final _router = GoRouter(
 You can access the matched parameters in the `state` object using the `params`
 property.
 
-## Dynamic linking
+## Dynamic Linking
 The idea of "dynamic linking" is that as the user adds objects to your app, each
 of them gets a link of their own, e.g. a new family gets a new link. This is
 exactly what route parameters enables, e.g. a new family has its own identifier
 when can be a variable in your family route, e.g. path: `/family/:fid`.
 
 ## Query Parameters
-TODO
+
+Including parameters in the `path` is one way to pass information to the page. A
+"path" parameter is required and inline with the location. The other way to pass
+data as part of a location is to use query parameters, which is a set of
+name-value pairs passed at the end of a URI after a `?` character, e.g.
+
+```dart
+void _tap() {
+  context.go('/search?query=kitties');
+}
+```
+
+These parameters are optional and, if passed, will be provided in the
+`state.queryParams` property:
+
+```dart
+GoRoute(
+  path: '/search',
+  pageBuilder: (context, state) {
+    // use state.params to get search query from query parameter
+    final query = state.queryParams['query']; // may be null
+
+    return MaterialPage<void>(
+      key: state.pageKey,
+      child: SearchPage(query: query),
+    );
+  },
+),
+```
+
+Since query parameters are optional, they will be `null` if they're not passed.
 
 ## Extra Parameter
 In addition to passing along path and query parameters, you can also pass along

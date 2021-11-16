@@ -170,10 +170,10 @@ app's data changes.
 
 ## Route-level redirection
 
-The top-level redirect handler passed to the `GoRouter` constructor is handy when you
-want a single function to be called whenever there's a new navigation event and
-to make some decisions based on the app's current state. However, in the case
-that you'd like to make a redirection decision for a specific route (or
+The top-level redirect handler passed to the `GoRouter` constructor is handy
+when you want a single function to be called whenever there's a new navigation
+event and to make some decisions based on the app's current state. However, in
+the case that you'd like to make a redirection decision for a specific route (or
 sub-route), you can do so by passing a `redirect` function to the `GoRoute`
 constructor:
 
@@ -213,22 +213,25 @@ GoRoute(
 
 ## Multiple redirections
 
-It's possible to redirect multiple times w/ a single navigation, e.g. `/ => /foo => /bar`. This is handy because it allows you to build up a list of
-routes over time and not to worry so much about attempting to trim each of them
-to their direct route. Furthermore, it's possible to redirect at the top level
-and at the route level in any number of combinations.
+It's possible to redirect multiple times w/ a single navigation, e.g. `/ => /foo
+=> /bar`. This is handy because it allows you to build up a list of routes over
+time and not to worry so much about attempting to trim each of them to their
+direct route. Furthermore, it's possible to redirect at the top level and at the
+route level in any number of combinations.
 
 If you redirect too many times, that's likely to indicate a bug in your app. By
 default, more than 5 redirections will cause an exception. You can change this
 by setting the `redirectLimit` argument to the `GoRouter` constructor.
 
-The other trouble you need worry about is getting into a loop, e.g. `/ => /foo => /`. If that happens, you'll get an exception.
+The other trouble you need worry about is getting into a loop, e.g. `/ => /foo
+=> /`. If that happens, you'll get an exception.
 
 ## Example: Redirection and Query Parameters
 
-Sometimes you're doing [deep linking](#deep-linking) and you'd like a user to
-first login before going to the location that represents the deep link. In that
-case, you can use query parameters in the redirect function:
+Sometimes you're doing [deep linking](/declarative-routing#deep-linking) and
+you'd like a user to first login before going to the location that represents
+the deep link. In that case, you can use [query
+parameters](/parameters#query-parameters) in the redirect function:
 
 ```dart
 class App extends StatelessWidget {
