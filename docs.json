@@ -3,7 +3,9 @@
   "sidebar": [
     [
       "Welcome",
-      "/"
+      ["Overview", "/"],
+      ["Contributors", "/contributors"],
+      ["Changelog", "/changelog"]
     ]
  ]
 }
