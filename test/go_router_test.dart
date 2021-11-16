@@ -943,7 +943,7 @@ void main() {
         ),
       ];
 
-      GoRouter(
+      final router = GoRouter(
         routes: routes,
         errorPageBuilder: _dummy,
         initialLocation: '/login?from=/',
@@ -959,6 +959,10 @@ void main() {
           return null;
         },
       );
+
+      final matches = router.routerDelegate.matches;
+      expect(matches.length, 1);
+      expect(router.pageFor(matches[0]).runtimeType, LoginPage);
     });
 
     test('route-level redirect state', () {
@@ -973,24 +977,66 @@ void main() {
             expect(state.fullpath, '/book/:bookId');
             expect(state.params, {'bookId': '0'});
             expect(state.queryParams.length, 0);
-            return '/book/${state.params['bookId']!}';
+            return null;
           },
-        ),
-        GoRoute(
-          path: '/book/:bookId',
-          pageBuilder: (builder, state) {
-            expect(state.params, {'bookId': '0'});
-            return DummyPage();
-          },
+          pageBuilder: (c, s) => HomePage(),
         ),
       ];
 
-      GoRouter(
+      final router = GoRouter(
         routes: routes,
         errorPageBuilder: _dummy,
         initialLocation: loc,
         debugLogDiagnostics: true,
       );
+
+      final matches = router.routerDelegate.matches;
+      expect(matches.length, 1);
+      expect(router.pageFor(matches[0]).runtimeType, HomePage);
+    });
+
+    test('sub-sub-route-level redirect params', () {
+      final routes = [
+        GoRoute(
+          path: '/',
+          pageBuilder: (c, s) => HomePage(),
+          routes: [
+            GoRoute(
+              path: 'family/:fid',
+              pageBuilder: (c, s) => FamilyPage(s.params['fid']!),
+              routes: [
+                GoRoute(
+                  path: 'person/:pid',
+                  redirect: (s) {
+                    expect(s.params['fid'], 'f2');
+                    expect(s.params['pid'], 'p1');
+                    return null;
+                  },
+                  pageBuilder: (c, s) => PersonPage(
+                    s.params['fid']!,
+                    s.params['pid']!,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ];
+
+      final router = GoRouter(
+        routes: routes,
+        errorPageBuilder: _dummy,
+        initialLocation: '/family/f2/person/p1',
+        debugLogDiagnostics: true,
+      );
+
+      final matches = router.routerDelegate.matches;
+      expect(matches.length, 3);
+      expect(router.pageFor(matches[0]).runtimeType, HomePage);
+      expect(router.pageFor(matches[1]).runtimeType, FamilyPage);
+      final page = router.pageFor(matches[2]) as PersonPage;
+      expect(page.fid, 'f2');
+      expect(page.pid, 'p1');
     });
 
     test('redirect limit', () {

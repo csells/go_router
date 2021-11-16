@@ -336,6 +336,13 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         // get stack of route matches
         matches = _getLocRouteMatches(loc, extra: extra);
 
+        var params = <String, String>{};
+        for (final match in matches) {
+          // merge new params to keep params from previously matched paths, e.g.
+          // /family/:fid/person/:pid provides fid and pid to person/:pid
+          params = {...params, ...match.decodedParams};
+        }
+
         // check top route for redirect
         final top = matches.last;
         if (redirected(
@@ -347,7 +354,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
               name: top.route.name,
               path: top.route.path,
               fullpath: top.fullpath,
-              params: top.decodedParams,
+              params: params,
               queryParams: top.queryParams,
               extra: extra,
             ),

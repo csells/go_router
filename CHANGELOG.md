@@ -2,7 +2,10 @@
 
 ### 2.2.8
 
-- TODO: docs on [gorouter.dev](https://gorouter.dev/)
+- reformatted CHANGELOG file; lets see if pub.dev is still ok with it...
+- staged an in-progress doc site at https://docs.page/csells/go_router
+- tightened up a test that was silently failing
+- fixed a bug that dropped parent params in sub-route redirects
 
 ### 2.2.7
 

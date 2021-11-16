@@ -4,7 +4,8 @@ Version](https://img.shields.io/pub/v/go_router?label=go_router&labelColor=33394
 [![codecov](https://codecov.io/gh/csells/go_router/branch/master/graph/badge.svg?token=4XJU30IGO3)](https://codecov.io/gh/csells/go_router)
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
-# go_router
+# Welcome to go_router!
+
 The goal of the [go_router package](https://pub.dev/packages/go_router) is to
 simplify use of [the `Router` in
 Flutter](https://api.flutter.dev/flutter/widgets/Router-class.html) as specified
@@ -31,37 +32,38 @@ other navigation-related scenarios, while still (hopefully) providing an
 easy-to-use developer experience.
 
 # Table of Contents
+
 - [Contributors](#contributors)
 - [Changelog](#changelog)
 - [Migrating to 2.x](#migrating-to-2x)
 - [Getting Started](#getting-started)
 - [Video Overview](#video-overview)
 - [Declarative Routing](#declarative-routing)
-  * [Router state](#router-state)
-  * [Error handling](#error-handling)
-  * [Initialization](#initialization)
+  - [Router state](#router-state)
+  - [Error handling](#error-handling)
+  - [Initialization](#initialization)
 - [Navigation](#navigation)
-  * [Current location](#current-location)
+  - [Current location](#current-location)
 - [Initial Location](#initial-location)
 - [Parameters](#parameters)
-  * [Dynamic linking](#dynamic-linking)
+  - [Dynamic linking](#dynamic-linking)
 - [Sub-routes](#sub-routes)
 - [Pushing pages](#pushing-pages)
-  * [Popping pages](#popping-pages)
+  - [Popping pages](#popping-pages)
 - [Redirection](#redirection)
-  * [Top-level redirection](#top-level-redirection)
-  * [Route-level redirection](#route-level-redirection)
-  * [Parameterized redirection](#parameterized-redirection)
-  * [Multiple redirections](#multiple-redirections)
+  - [Top-level redirection](#top-level-redirection)
+  - [Route-level redirection](#route-level-redirection)
+  - [Parameterized redirection](#parameterized-redirection)
+  - [Multiple redirections](#multiple-redirections)
 - [Query Parameters](#query-parameters)
 - [Extra Parameter](#extra-parameter)
 - [Named Routes](#named-routes)
-  * [Navigating to Named Routes](#navigating-to-named-routes)
-  * [Redirecting to Named Routes](#redirecting-to-named-routes)
+  - [Navigating to Named Routes](#navigating-to-named-routes)
+  - [Redirecting to Named Routes](#redirecting-to-named-routes)
 - [Custom Transitions](#custom-transitions)
 - [Async Data](#async-data)
 - [Nested Navigation](#nested-navigation)
-  * [Keeping State](#keeping-state)
+  - [Keeping State](#keeping-state)
 - [Navigator Builder](#navigator-builder)
 - [Deep Linking](#deep-linking)
 - [URL Path Strategy](#url-path-strategy)
@@ -71,8 +73,10 @@ easy-to-use developer experience.
 - [Issues](#issues)
 
 # Contributors
+
 It's amazing to me how many folks have already contributed to this project. Huge
 shout out to the go_router contributors!
+
 - [Salakar](https://github.com/Salakar) for the CI action on
   GitHub that is always helping me track down stuff I forget
 - [rydmike](https://github.com/rydmike) for a bunch of README and dartdoc fixes
@@ -96,13 +100,16 @@ shout out to the go_router contributors!
   pages from flashing willy-nilly.
 
 # Changelog
+
 If you'd like to see what's changed in detail over time, you can read [the
 go_router Changelog](https://pub.dev/packages/go_router/changelog).
 
 # Migrating to 2.x
+
 By [popular demand](https://twitter.com/csells/status/1445520767190388738),
 there is a breaking change in the go_router 2.0 release: the `params` property
 of the `GoRouterState` object has been split into two properties:
+
 - `params` for parameters that are part of the path and, e.g. `/family/:fid`
 - `queryParams` for parameters that added optionally at the end of the location,
   e.g. `/login?from=/family/f2`
@@ -168,10 +175,12 @@ I got a little clever merging the two kinds of parameters into a single scope
 and hopefully this change makes things a little more clear.
 
 # Getting Started
+
 To use the go_router package, [follow these
 instructions](https://pub.dev/packages/go_router/install).
 
 # Video Overview
+
 If you'd like to see a video overview of the go_router package, you can watch
 the following:
 
@@ -183,6 +192,7 @@ Flutter app built using the original Navigation API to use go_router for both
 mobile and web.
 
 # Declarative Routing
+
 The go_router is governed by a set of routes which you specify as part of the
 `GoRouter` constructor:
 
@@ -219,23 +229,24 @@ in a case-insensitive way, although the case for [parameters](#parameters) will
 be preserved.
 
 ## Router state
+
 A `GoRoute` also contains a `pageBuilder` function which is called to create the
 page when a path is matched. The builder function is passed a `state` object,
 which is an instance of the `GoRouterState` class that contains some useful
 information:
 
-| `GoRouterState` property | description | example 1 | example 2 |
-| ------------------------ | ----------- | ------- | ------- |
-| `location` | location of the full route, including query params | `/login?from=/family/f2` | `/family/f2/person/p1`|
-| `subloc` | location of this sub-route w/o query params | `/login` | `/family/f2` |
-| `name` | the `GoRoute` name | `login` | `family` |
-| `path` | the `GoRoute` path | `/login` | `family/:fid` |
-| `fullpath` | full path to this sub-route | `/login` | `/family/:fid` |
-| `params` | params extracted from the location | `{}` | `{'fid': 'f2'}` |
-| `queryParams` | optional params from the end of the location | `{'from': '/family/f1'}` | `{}` |
-| `extra` | optional object param | `null` | `null` |
-| `error` | `Exception` associated with this sub-route, if any | `Exception('404')` | ... |
-| `pageKey` | unique key for this sub-route | `ValueKey('/login')` | `ValueKey('/family/:fid')` |
+| `GoRouterState` property | description                                        | example 1                | example 2                  |
+| ------------------------ | -------------------------------------------------- | ------------------------ | -------------------------- |
+| `location`               | location of the full route, including query params | `/login?from=/family/f2` | `/family/f2/person/p1`     |
+| `subloc`                 | location of this sub-route w/o query params        | `/login`                 | `/family/f2`               |
+| `name`                   | the `GoRoute` name                                 | `login`                  | `family`                   |
+| `path`                   | the `GoRoute` path                                 | `/login`                 | `family/:fid`              |
+| `fullpath`               | full path to this sub-route                        | `/login`                 | `/family/:fid`             |
+| `params`                 | params extracted from the location                 | `{}`                     | `{'fid': 'f2'}`            |
+| `queryParams`            | optional params from the end of the location       | `{'from': '/family/f1'}` | `{}`                       |
+| `extra`                  | optional object param                              | `null`                   | `null`                     |
+| `error`                  | `Exception` associated with this sub-route, if any | `Exception('404')`       | ...                        |
+| `pageKey`                | unique key for this sub-route                      | `ValueKey('/login')`     | `ValueKey('/family/:fid')` |
 
 You can read more about [sub-locations/sub-routes](#sub-routes) and
 [parameterized routes](#parameters) below but the example code above uses the
@@ -251,6 +262,7 @@ the `error` parameter will only be set of there's an error, the `params` won't
 be set during top-level redirection because there's no `path` to match yet, etc.
 
 ## Error handling
+
 In addition to the list of routes, the go_router needs an `errorPageBuilder`
 function in case no page is found, more than one page is found or if any of the
 page builder functions throws an exception, e.g.
@@ -272,6 +284,7 @@ The `GoRouterState` object contains the location that caused the exception and
 the `Exception` that was thrown attempting to navigate to that route.
 
 ## Initialization
+
 With just a list of routes and an error page builder function, you can create an
 instance of a `GoRouter`, which itself provides the objects you need to call the
 `MaterialApp.router` constructor:
@@ -293,6 +306,7 @@ class App extends StatelessWidget {
 With the router in place, your app can now navigate between pages.
 
 # Navigation
+
 To navigate between pages, use the `GoRouter.go` method:
 
 ```dart
@@ -333,6 +347,7 @@ inside the app using the built-in navigation system.
 You can also navigate to a [named route](#named-routes), discussed below.
 
 ## Current location
+
 If you want to know the current location, use the `GoRouter.location` property.
 If you'd like to know when the current location changes, either because of
 manual navigation or a deep link or a pop due to the user pushing the Back
@@ -364,6 +379,7 @@ it comes with built-in support for re-building a `Widget` when a
 purpose.
 
 # Initial Location
+
 If you'd like to set an initial location for routing, you can set the
 `initialLocation` argument of the `GoRouter` constructor:
 
@@ -379,9 +395,10 @@ The value you provide to `initialLocation` will be ignored if your app is starte
 using [deep linking](#deep-linking).
 
 # Parameters
+
 The route paths are defined and implemented in [the path_to_regexp
 package](https://pub.dev/packages/path_to_regexp), which gives you the ability
-to include parameters in your route's `path`: 
+to include parameters in your route's `path`:
 
 ```dart
 final _router = GoRouter(
@@ -407,12 +424,14 @@ You can access the matched parameters in the `state` object using the `params`
 property.
 
 ## Dynamic linking
+
 The idea of "dynamic linking" is that as the user adds objects to your app, each
 of them gets a link of their own, e.g. a new family gets a new link. This is
 exactly what route parameters enables, e.g. a new family has its own identifier
 when can be a variable in your family route, e.g. path: `/family/:fid`.
 
 # Sub-routes
+
 Every top-level route will create a navigation stack of one page. To produce an
 entire stack of pages, you can use sub-routes. In the case that a top-level
 route only matches part of the location, the rest of the location can be matched
@@ -427,6 +446,7 @@ sub-routes to create a stack of pages:
   family/f1   => FamilyPage('f1')
     person/p2 => PersonPage('f1', 'p2') ← showing this page, Back pops the stack ↑
 ```
+
 To specify a set of pages like this, you can use sub-page routing via the
 `routes` parameter to the `GoRoute` constructor:
 
@@ -482,6 +502,7 @@ they can be used in lower level routes, e.g. `fid` is matched as part of the
 it's a sub-route of the `family/:fid` route.
 
 # Pushing pages
+
 In addition to the `go` method, the go_router also provides a `push` method.
 Both `go` and `push` can be used to build up a stack of pages, but in different
 ways. The `go` method does this by turning a single location into any number of
@@ -495,17 +516,20 @@ will take the top-most page from the stack and push that page onto the stack.
 You can also push a [named route](#named-routes), discussed below.
 
 ## Popping pages
+
 If you'd like to pop a page from the stack, you can use the `pop` method. This
 method simply calls `Navigator.pop`. For more information about the integration
 considerations of using `Navigator` vs `GoRouter`, see [Navigator
 Integration](#navigator-integration).
 
 # Redirection
+
 Sometimes you want your app to redirect to a different location. The go_router
 allows you to do this at a top level for each new navigation event or at the
 route level for a specific route.
 
 ## Top-level redirection
+
 Sometimes you want to guard pages from being accessed when they shouldn't be,
 e.g. when the user is not yet logged in. For example, assume you have a class
 that tracks the user's login info:
@@ -575,7 +599,7 @@ class App extends StatelessWidget {
 ```
 
 In this code, if the user is not logged in and not going to the `/login`
-path, we redirect to `/login`. Likewise, if the user *is* logged in but going to
+path, we redirect to `/login`. Likewise, if the user _is_ logged in but going to
 `/login`, we redirect to `/`. If there is no redirect, then we just return
 `null`. The `redirect` function will be called again until `null` is returned to
 enable [multiple redirects](#multiple-redirections).
@@ -669,6 +693,7 @@ recommended because it will handle the routing automatically for you when the
 app's data changes.
 
 ## Route-level redirection
+
 The top-level redirect handler passed to the `GoRouter` constructor is handy when you
 want a single function to be called whenever there's a new navigation event and
 to make some decisions based on the app's current state. However, in the case
@@ -698,6 +723,7 @@ middle of a location being parsed when you're already on your way to another
 page anyway.
 
 ## Parameterized redirection
+
 In some cases, a path is parameterized, and you'd like to redirect with those
 parameters in mind. You can do that with the `params` argument to the `state`
 object passed to the `redirect` function:
@@ -710,8 +736,8 @@ GoRoute(
 ```
 
 ## Multiple redirections
-It's possible to redirect multiple times w/ a single navigation, e.g. ```/ =>
-/foo => /bar```. This is handy because it allows you to build up a list of
+
+It's possible to redirect multiple times w/ a single navigation, e.g. `/ => /foo => /bar`. This is handy because it allows you to build up a list of
 routes over time and not to worry so much about attempting to trim each of them
 to their direct route. Furthermore, it's possible to redirect at the top level
 and at the route level in any number of combinations.
@@ -720,10 +746,10 @@ If you redirect too many times, that's likely to indicate a bug in your app. By
 default, more than 5 redirections will cause an exception. You can change this
 by setting the `redirectLimit` argument to the `GoRouter` constructor.
 
-The other trouble you need worry about is getting into a loop, e.g. ```/ => /foo
-=> /```. If that happens, you'll get an exception.
+The other trouble you need worry about is getting into a loop, e.g. `/ => /foo => /`. If that happens, you'll get an exception.
 
 # Query Parameters
+
 Sometimes you're doing [deep linking](#deep-linking) and you'd like a user to
 first login before going to the location that represents the deep link. In that
 case, you can use query parameters in the redirect function:
@@ -819,6 +845,7 @@ causes the right routing to happen automatically, e.g. the user logging out will
 cause them to be routed back to the login page.
 
 # Extra parameter
+
 In addition to passing along path and query parameters, you can also pass along
 an extra object as part of your navigation, e.g.
 
@@ -846,6 +873,7 @@ create a dynamic link, cannot be used in deep linking and so is _not
 recommended_ for those cases.
 
 # Named Routes
+
 When you're navigating to a route with a location, you're hardcoding the URI
 construction into your app, e.g.
 
@@ -856,10 +884,11 @@ void _tap(BuildContext context, String fid, String pid) =>
 
 Not only is that error-prone, but the actual URI format of your app could change
 over time. Certainly redirection helps keep old URI formats working, but do you
-really want various versions of your location URIs lying  around willy-nilly in
-your code? 
+really want various versions of your location URIs lying around willy-nilly in
+your code?
 
 ## Navigating to Named Routes
+
 The idea of named routes is to make it easy to navigate to a route w/o knowing
 or caring what the URI format is. You can add a unique name to your route using
 the `GoRoute.name` parameter:
@@ -919,6 +948,7 @@ top page off of the generated match stack and push that onto the existing stack
 of pages.
 
 ## Redirecting to Named Routes
+
 In addition to navigation, you may also want to be able to redirect to a named
 route, which you can also do using the `namedLocation` method of either
 `GoRouter` or `GoRouterState`:
@@ -952,6 +982,7 @@ location. All of this is done without hardcoding any URI formatting into your
 code.
 
 # Custom Transitions
+
 As you transition between routes, you get transitions based on whether
 you're using `MaterialPage` or `CupertinoPage`; each of them implements the
 transitions as defined by the underlying platform. However, if you'd like to
@@ -984,6 +1015,7 @@ argument in case you'd like to customize the duration of the transition as well
 (it defaults to 300ms).
 
 # Async Data
+
 Sometimes you'll want to load data asynchronously, and you'll need to wait for
 the data before showing content. Flutter provides a way to do this with the
 `FutureBuilder` widget that works just the same with the go_router as it always
@@ -1100,6 +1132,7 @@ be on your own to show an error in the case that the data can't be loaded. Such
 polish is left as an exercise for the reader.
 
 # Nested Navigation
+
 Sometimes you want to choose a page based on a route as well as the state of
 that page, e.g. the currently selected tab. In that case, you want to choose not
 just the page from a route but also the widgets nested inside the page. That's
@@ -1220,7 +1253,7 @@ final _router = GoRouter(
       },
     ),
   ],
-  
+
   errorPageBuilder: ...,
 );
 ```
@@ -1237,23 +1270,24 @@ This may seem like a lot, but in summary, you need to do three things with the
 page you create in your page builder to support nested navigation:
 
 1. Use a `StatefulWidget` as the base class of the thing you pass to
-`MaterialPage` (or whatever).
+   `MaterialPage` (or whatever).
 
 1. Pass the same key value to the `MaterialPage` so that Flutter knows that
-you're keeping the same state for your `StatefulWidget`-derived page;
-`state.pageKey` is handy for this.
+   you're keeping the same state for your `StatefulWidget`-derived page;
+   `state.pageKey` is handy for this.
 
 1. As the user navigates, you'll create the same `StatefulWidget`-derived type,
-passing in new data, e.g. which tab is currently selected. Because you're
-using a widget with the same key, Flutter will keep the state but swap out the
-widget wrapping w/ the new data as constructor args. When that new widget wrapper is
-in place, Flutter will call `didChangeDependencies` so that you can use the new
-data to update the existing widgets, e.g. the selected tab.
+   passing in new data, e.g. which tab is currently selected. Because you're
+   using a widget with the same key, Flutter will keep the state but swap out the
+   widget wrapping w/ the new data as constructor args. When that new widget wrapper is
+   in place, Flutter will call `didChangeDependencies` so that you can use the new
+   data to update the existing widgets, e.g. the selected tab.
 
 This example shows off the selected tab on a `TabView` but you can use it for
 any nested content of a page your app navigates to.
 
 ## Keeping State
+
 When doing nested navigation, the user expects that widgets will be in the same
 state that they left them in when they navigated to a new page and return, e.g.
 scroll position, text input values, etc. You can enable support for this by
@@ -1273,7 +1307,7 @@ class FamilyView extends StatefulWidget {
 /// Use the [AutomaticKeepAliveClientMixin] to keep the state.
 class _FamilyViewState extends State<FamilyView>
     with AutomaticKeepAliveClientMixin {
-      
+
   // Override `wantKeepAlive` when using `AutomaticKeepAliveClientMixin`.
   @override
   bool get wantKeepAlive => true;
@@ -1307,6 +1341,7 @@ Hunting family, then going to another tab and then going to another page, when
 you return to the list of Huntings that the scroll position is maintained.
 
 # Navigator Builder
+
 Sometimes it is necessary to insert a widget above the `Navigator`, but below
 `MaterialApp`/`CupertinoApp`, e.g. to insert a provider that needs access to the
 app's context to get the current locale and localization, to build a UI outside
@@ -1362,6 +1397,7 @@ final _router = GoRouter(
 ```
 
 This example checks the login status in the `navigatorBuilder`:
+
 - if the user is logged in, an instance of the `AuthOverlay` widget is created,
   which wraps the the `Navigator` passed to `navigationBuilder` via the `child`
   parameter and provides a logout button on every page
@@ -1403,6 +1439,7 @@ Here's what this look like in action:
 action](https://raw.githubusercontent.com/csells/go_router/master/readme/nav_builder.gif)
 
 # Deep Linking
+
 Flutter defines "deep linking" as "opening a URL displays that screen in your
 app." Anything that's listed as a `GoRoute` can be accessed via deep linking
 across Android, iOS and the web. Support works out of the box for the web, of
@@ -1411,6 +1448,7 @@ and iOS as described in the [Flutter
 docs](https://flutter.dev/docs/development/ui/navigation/deep-linking).
 
 # URL Path Strategy
+
 By default, Flutter adds a hash (#) into the URL for web apps:
 
 ![URL Strategy w/ Hash](https://raw.githubusercontent.com/csells/go_router/master/readme/url-strat-hash.png)
@@ -1480,6 +1518,7 @@ to `index.html` will do, e.g.
 [live-server](https://www.npmjs.com/package/live-server).
 
 # Debugging Your Routes
+
 Because go_router asks that you provide a set of paths, sometimes as fragments
 to match just part of a location, it's hard to know just what routes you have in
 your app. In those cases, it's handy to be able to see the full paths of the
@@ -1532,6 +1571,7 @@ final _router = GoRouter(
 This parameter defaults to `false`, which produces no output.
 
 # Navigator Integration
+
 If you'd like to integrate with the built in `Navigator` widget, you can, as
 shown in this snippet from the [navigator integration
 example](https://github.com/csells/go_router/blob/master/example/lib/navigator_integration.dart):
@@ -1559,7 +1599,7 @@ This example shows how to use the `Navigator` widget to push a new page and
 gather the result. It doesn't use the `GoRouter` but works just the way you'd
 expect, e.g. it will create a new page on the stack of pages, show a Back button
 in the `AppBar`, etc. To return results, use `Navigator.pop` as you normally
-would: 
+would:
 
 ```dart
 ButtonBar(children: [
@@ -1687,7 +1727,9 @@ There's no reason not to use the `Navigator` in your app when you're using the
 the implications of using `Navigator` vs. `GoRouter` for navigation.
 
 # Examples
+
 You can see the go_router in action via the following examples:
+
 - [`main.dart`](https://github.com/csells/go_router/blob/master/example/lib/main.dart):
   define a basic routing policy using a set of declarative `GoRoute` objects
 - [`init_loc.dart`](https://github.com/csells/go_router/blob/master/example/lib/init_loc.dart):
@@ -1735,5 +1777,6 @@ Or, if you're using Visual Studio Code, a [`launch.json`](.vscode/launch.json)
 file has been provided with these examples configured.
 
 # Issues
+
 Do you have an issue with or feature request for go_router? Log it on the [issue
 tracker](https://github.com/csells/go_router/issues).
