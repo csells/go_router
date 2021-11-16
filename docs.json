@@ -11,6 +11,7 @@
       ]
     ],
     ["Getting Started", "/getting-started"],
-    ["Declarative Routing", "/declarative-routing"]
+    ["Declarative Routing", "/declarative-routing"],
+    ["Navigation", "/navigation"]
   ]
 }
