@@ -6,16 +6,11 @@
       [
         ["Overview", "/"],
         ["Contributors", "/contributors"],
-        ["Changelog", "/changelog"]
-      ]
-    ],
-    [
-      "Getting Started",
-      [
-        ["Overview", "/getting-started"],
+        ["Changelog", "/changelog"],
         ["Migrating to 2.x", "/migrating"]
       ]
     ],
+    ["Getting Started", "/getting-started"],
     ["Declarative Routing", "/declarative-routing"]
   ]
 }
