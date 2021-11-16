@@ -15,6 +15,7 @@
         ["Overview", "/getting-started"],
         ["Migrating to 2.x", "/migrating"]
       ]
-    ]
+    ],
+    ["Declarative Routing", "/declarative-routing"]
   ]
 }
