@@ -1,0 +1,66 @@
+By [popular demand](https://twitter.com/csells/status/1445520767190388738),
+there is a breaking change in the go_router 2.0 release: the `params` property
+of the `GoRouterState` object has been split into two properties:
+- `params` for parameters that are part of the path and, e.g. `/family/:fid`
+- `queryParams` for parameters that added optionally at the end of the location,
+  e.g. `/login?from=/family/f2`
+
+In the 1.x releases, the `params` property was a single object that contained
+both the path and query parameters in a single map. For example, if you had been
+using the `params` property to access query parameters like this in 1.x:
+
+```dart
+GoRoute(
+  path: '/login',
+  pageBuilder: (context, state) => MaterialPage<void>(
+    key: state.pageKey,
+    // 1.x: accessing query parameters
+    child: LoginPage(from: state.params['from']),
+  ),
+),
+```
+
+in 2.0, you would access the query parameters like this:
+
+```dart
+GoRoute(
+  path: '/login',
+  pageBuilder: (context, state) => MaterialPage<void>(
+    key: state.pageKey,
+    // 2.0: accessing query parameters
+    child: LoginPage(from: state.queryParams['from']),
+  ),
+),
+```
+
+Likewise, if you were using named routes in 1.x, you may have been passing both
+path and query parameters like so:
+
+```dart
+ListTile(
+  title: Text(p.name),
+  // 1.x: passing both path and query parameters
+  onTap: () => context.goNamed(
+    'person',
+    // "extra" path params were query params
+    {'fid': family.id, 'pid': p.id, 'qid': 'quid'},
+  ),
+),
+```
+
+Now you'll need to change your code to do the following in 2.0:
+
+```dart
+ListTile(
+  title: Text(p.name),
+  // 2.0: passing both path and query parameters
+  onTap: () => context.goNamed(
+    'person',
+    params: {'fid': family.id, 'pid': p.id},
+    queryParams: {'qid': 'quid'},
+  ),
+),
+```
+
+I got a little clever merging the two kinds of parameters into a single scope
+and hopefully this change makes things a little more clear.

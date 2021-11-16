@@ -8,6 +8,13 @@
         ["Contributors", "/contributors"],
         ["Changelog", "/changelog"]
       ]
+    ],
+    [
+      "Getting Started",
+      [
+        ["Overview", "/getting-started"],
+        ["Migrating to 2.x", "/migrating"]
+      ]
     ]
   ]
 }
