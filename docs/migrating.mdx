@@ -1,6 +1,9 @@
+# Migration to 2.x
+
 By [popular demand](https://twitter.com/csells/status/1445520767190388738),
 there is a breaking change in the go_router 2.0 release: the `params` property
 of the `GoRouterState` object has been split into two properties:
+
 - `params` for parameters that are part of the path and, e.g. `/family/:fid`
 - `queryParams` for parameters that added optionally at the end of the location,
   e.g. `/login?from=/family/f2`
