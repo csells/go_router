@@ -1,9 +1,11 @@
 # Redirection
+
 Sometimes you want your app to redirect to a different location. The go_router
 allows you to do this at a top level for each new navigation event or at the
 route level for a specific route.
 
 ## Top-level redirection
+
 Sometimes you want to guard pages from being accessed when they shouldn't be,
 e.g. when the user is not yet logged in. For example, assume you have a class
 that tracks the user's login info:
@@ -73,7 +75,7 @@ class App extends StatelessWidget {
 ```
 
 In this code, if the user is not logged in and not going to the `/login`
-path, we redirect to `/login`. Likewise, if the user *is* logged in but going to
+path, we redirect to `/login`. Likewise, if the user _is_ logged in but going to
 `/login`, we redirect to `/`. If there is no redirect, then we just return
 `null`. The `redirect` function will be called again until `null` is returned to
 enable [multiple redirects](#multiple-redirections).
@@ -167,6 +169,7 @@ recommended because it will handle the routing automatically for you when the
 app's data changes.
 
 ## Route-level redirection
+
 The top-level redirect handler passed to the `GoRouter` constructor is handy when you
 want a single function to be called whenever there's a new navigation event and
 to make some decisions based on the app's current state. However, in the case
@@ -196,6 +199,7 @@ middle of a location being parsed when you're already on your way to another
 page anyway.
 
 ## Parameterized redirection
+
 In some cases, a path is parameterized, and you'd like to redirect with those
 parameters in mind. You can do that with the `params` argument to the `state`
 object passed to the `redirect` function:
@@ -208,8 +212,8 @@ GoRoute(
 ```
 
 ## Multiple redirections
-It's possible to redirect multiple times w/ a single navigation, e.g. ```/ =>
-/foo => /bar```. This is handy because it allows you to build up a list of
+
+It's possible to redirect multiple times w/ a single navigation, e.g. `/ => /foo => /bar`. This is handy because it allows you to build up a list of
 routes over time and not to worry so much about attempting to trim each of them
 to their direct route. Furthermore, it's possible to redirect at the top level
 and at the route level in any number of combinations.
@@ -218,10 +222,10 @@ If you redirect too many times, that's likely to indicate a bug in your app. By
 default, more than 5 redirections will cause an exception. You can change this
 by setting the `redirectLimit` argument to the `GoRouter` constructor.
 
-The other trouble you need worry about is getting into a loop, e.g. ```/ => /foo
-=> /```. If that happens, you'll get an exception.
+The other trouble you need worry about is getting into a loop, e.g. `/ => /foo => /`. If that happens, you'll get an exception.
 
 ## Example: Redirection and Query Parameters
+
 Sometimes you're doing [deep linking](#deep-linking) and you'd like a user to
 first login before going to the location that represents the deep link. In that
 case, you can use query parameters in the redirect function:
