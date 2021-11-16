@@ -6,10 +6,7 @@
       [
         ["Overview", "/"],
         ["Contributors", "/contributors"],
-        [
-          "Changelog",
-          "https://github.com/csells/go_router/blob/master/CHANGELOG.md"
-        ],
+        ["Changelog", "/changelog"],
         ["Migrating to 2.x", "/migrating"]
       ]
     ],
