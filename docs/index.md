@@ -1,0 +1,31 @@
+[![Pub
+Version](https://img.shields.io/pub/v/go_router?label=go_router&labelColor=333940&logo=dart)](https://pub.dev/packages/go_router)
+![Test](https://github.com/csells/go_router/workflows/validate/badge.svg)
+[![codecov](https://codecov.io/gh/csells/go_router/branch/master/graph/badge.svg?token=4XJU30IGO3)](https://codecov.io/gh/csells/go_router)
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+
+# Welcome to go_router!
+The goal of the [go_router package](https://pub.dev/packages/go_router) is to
+simplify use of [the `Router` in
+Flutter](https://api.flutter.dev/flutter/widgets/Router-class.html) as specified
+by [the `MaterialApp.router`
+constructor](https://api.flutter.dev/flutter/material/MaterialApp/MaterialApp.router.html).
+By default, it requires an implementation of the
+[`RouterDelegate`](https://api.flutter.dev/flutter/widgets/RouterDelegate-class.html)
+and
+[`RouteInformationParser`](https://api.flutter.dev/flutter/widgets/RouteInformationParser-class.html)
+classes. These two implementations themselves imply the definition of a third
+type to hold the app state that drives the creation of the
+[`Navigator`](https://api.flutter.dev/flutter/widgets/Navigator-class.html). You
+can read [an excellent blog post on these requirements on
+Medium](https://medium.com/flutter/learning-flutters-new-navigation-and-routing-system-7c9068155ade).
+This separation of responsibilities allows the Flutter developer to implement a
+number of routing and navigation policies, including deep and dynamic linking,
+but at the cost of
+[complexity](https://www.reddit.com/r/FlutterDev/comments/koxx4w/why_navigator_20_sucks/).
+
+The purpose of the go_router is to use declarative routes to reduce complexity,
+regardless of the platform you're targeting (mobile, web, desktop), handling
+deep and dynamic linking from Android, iOS and the web, along with a number of
+other navigation-related scenarios, while still (hopefully) providing an
+easy-to-use developer experience.
