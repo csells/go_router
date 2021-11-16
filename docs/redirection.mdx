@@ -1,0 +1,321 @@
+# Redirection
+
+Sometimes you want your app to redirect to a different location. The go_router
+allows you to do this at a top level for each new navigation event or at the
+route level for a specific route.
+
+## Top-level redirection
+
+Sometimes you want to guard pages from being accessed when they shouldn't be,
+e.g. when the user is not yet logged in. For example, assume you have a class
+that tracks the user's login info:
+
+```dart
+class LoginInfo extends ChangeNotifier {
+  var _userName = '';
+  String get userName => _userName;
+  bool get loggedIn => _userName.isNotEmpty;
+
+  void login(String userName) {
+    _userName = userName;
+    notifyListeners();
+  }
+
+  void logout() {
+    _userName = '';
+    notifyListeners();
+  }
+}
+```
+
+You can use this info in the implementation of a `redirect` function that you
+pass as to the `GoRouter` constructor:
+
+```dart
+class App extends StatelessWidget {
+  final loginInfo = LoginInfo();
+  ...
+  late final _router = GoRouter(
+    routes: [
+      GoRoute(
+        path: '/',
+        pageBuilder: (context, state) => MaterialPage<void>(
+          key: state.pageKey,
+          child: HomePage(families: Families.data),
+        ),
+      ),
+      ...,
+      GoRoute(
+        path: '/login',
+        pageBuilder: (context, state) => MaterialPage<void>(
+          key: state.pageKey,
+          child: const LoginPage(),
+        ),
+      ),
+    ],
+
+    errorPageBuilder: ...,
+
+    // redirect to the login page if the user is not logged in
+    redirect: (state) {
+      final loggedIn = loginInfo.loggedIn;
+      final goingToLogin = state.location == '/login';
+
+      // the user is not logged in and not headed to /login, they need to login
+      if (!loggedIn && !goingToLogin) return '/login';
+
+      // the user is logged in and headed to /login, no need to login again
+      if (loggedIn && goingToLogin) return '/';
+
+      // no need to redirect at all
+      return null;
+    },
+  );
+}
+```
+
+In this code, if the user is not logged in and not going to the `/login`
+path, we redirect to `/login`. Likewise, if the user _is_ logged in but going to
+`/login`, we redirect to `/`. If there is no redirect, then we just return
+`null`. The `redirect` function will be called again until `null` is returned to
+enable [multiple redirects](#multiple-redirections).
+
+To make it easy to access this info wherever it's need in the app, consider
+using a state management option like
+[provider](https://pub.dev/packages/provider) to put the login info into the
+widget tree:
+
+```dart
+class App extends StatelessWidget {
+  final loginInfo = LoginInfo();
+
+  // add the login info into the tree as app state that can change over time
+  @override
+  Widget build(BuildContext context) => ChangeNotifierProvider<LoginInfo>.value(
+        value: loginInfo,
+        child: MaterialApp.router(...),
+      );
+  ...
+}
+```
+
+With the login info in the widget tree, you can easily implement your login
+page:
+
+```dart
+class LoginPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: Text(_title(context))),
+    body: Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ElevatedButton(
+            onPressed: () {
+              // log a user in, letting all the listeners know
+              context.read<LoginInfo>().login('test-user');
+
+              // go home
+              context.go('/');
+            },
+            child: const Text('Login'),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+```
+
+In this case, we've logged the user in and manually redirected them to the home
+page. That's because the go_router doesn't know that the app's state has
+changed in a way that affects the route. If you'd like to have the app's state
+cause go_router to automatically redirect, you can use the `refreshListenable`
+argument of the `GoRouter` constructor:
+
+```dart
+class App extends StatelessWidget {
+  final loginInfo = LoginInfo();
+  ...
+  late final _router = GoRouter(
+    routes: ...,
+    errorPageBuilder: ...,
+    redirect: ...
+
+    // changes on the listenable will cause the router to refresh it's route
+    refreshListenable: loginInfo,
+  );
+}
+```
+
+Since the `loginInfo` is a `ChangeNotifier`, it will notify listeners when it
+changes. By passing it to the `GoRouter` constructor, the go_router will
+automatically refresh the route when the login info changes. This allows you to
+simplify the login logic in your app:
+
+```dart
+onPressed: () {
+  // log a user in, letting all the listeners know
+  context.read<LoginInfo>().login('test-user');
+
+  // router will automatically redirect from /login to / because login info
+  //context.go('/');
+},
+```
+
+The use of the top-level `redirect` and `refreshListenable` together is
+recommended because it will handle the routing automatically for you when the
+app's data changes.
+
+## Route-level redirection
+
+The top-level redirect handler passed to the `GoRouter` constructor is handy when you
+want a single function to be called whenever there's a new navigation event and
+to make some decisions based on the app's current state. However, in the case
+that you'd like to make a redirection decision for a specific route (or
+sub-route), you can do so by passing a `redirect` function to the `GoRoute`
+constructor:
+
+```dart
+final _router = GoRouter(
+  routes: [
+    GoRoute(
+      path: '/',
+      redirect: (_) => '/family/${Families.data[0].id}',
+    ),
+    GoRoute(
+      path: '/family/:fid',
+      pageBuilder: ...,
+  ],
+  errorPageBuilder: ...,
+);
+```
+
+In this case, when the user navigates to `/`, the `redirect` function will be
+called to redirect to the first family's page. Redirection will only occur on
+the last sub-route matched, so you can't have to worry about redirecting in the
+middle of a location being parsed when you're already on your way to another
+page anyway.
+
+## Parameterized redirection
+
+In some cases, a path is parameterized, and you'd like to redirect with those
+parameters in mind. You can do that with the `params` argument to the `state`
+object passed to the `redirect` function:
+
+```dart
+GoRoute(
+  path: '/author/:authorId',
+  redirect: (state) => '/authors/${state.params['authorId']}',
+),
+```
+
+## Multiple redirections
+
+It's possible to redirect multiple times w/ a single navigation, e.g. `/ => /foo => /bar`. This is handy because it allows you to build up a list of
+routes over time and not to worry so much about attempting to trim each of them
+to their direct route. Furthermore, it's possible to redirect at the top level
+and at the route level in any number of combinations.
+
+If you redirect too many times, that's likely to indicate a bug in your app. By
+default, more than 5 redirections will cause an exception. You can change this
+by setting the `redirectLimit` argument to the `GoRouter` constructor.
+
+The other trouble you need worry about is getting into a loop, e.g. `/ => /foo => /`. If that happens, you'll get an exception.
+
+## Example: Redirection and Query Parameters
+
+Sometimes you're doing [deep linking](#deep-linking) and you'd like a user to
+first login before going to the location that represents the deep link. In that
+case, you can use query parameters in the redirect function:
+
+```dart
+class App extends StatelessWidget {
+  final loginInfo = LoginInfo();
+  ...
+  late final _router = GoRouter(
+    routes: ...,
+    errorPageBuilder: ...,
+
+    // redirect to the login page if the user is not logged in
+    redirect: (state) {
+      final loggedIn = loginInfo.loggedIn;
+
+      // check just the subloc in case there are query parameters
+      final goingToLogin = state.subloc == '/login';
+
+      // the user is not logged in and not headed to /login, they need to login
+      if (!loggedIn && !goingToLogin) return '/login?from=${state.subloc}';
+
+      // the user is logged in and headed to /login, no need to login again
+      if (loggedIn && goingToLogin) return '/';
+
+      // no need to redirect at all
+      return null;
+    },
+
+    // changes on the listenable will cause the router to refresh it's route
+    refreshListenable: loginInfo,
+  );
+}
+```
+
+In this example, if the user isn't logged in, they're redirected to `/login`
+with a `from` query parameter set to the deep link. The `state` object has the
+`location` and the `subloc` to choose from. The `location` includes the query
+parameters whereas the `subloc` does not. Since the `/login` route may include
+query parameters, it's easiest to use the `subloc` in this case (and using the
+raw `location` will cause a stack overflow, an exercise that I'll leave to the
+reader).
+
+Now, when the `/login` route is matched, we want to pull the `from` parameter
+out of the `state` object to pass along to the `LoginPage`:
+
+```dart
+GoRoute(
+  path: '/login',
+  pageBuilder: (context, state) => MaterialPage<void>(
+    key: state.pageKey,
+    // pass the original location to the LoginPage (if there is one)
+    child: LoginPage(from: state.queryParams['from']),
+  ),
+),
+```
+
+In the `LoginPage`, if the `from` parameter was passed, we use it to go to the
+deep link location after a successful login:
+
+```dart
+class LoginPage extends StatelessWidget {
+  final String? from;
+  const LoginPage({this.from, Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: Text(_title(context))),
+    body: Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ElevatedButton(
+            onPressed: () {
+              // log a user in, letting all the listeners know
+              context.read<LoginInfo>().login('test-user');
+
+              // if there's a deep link, go there
+              if (from != null) context.go(from!);
+            },
+            child: const Text('Login'),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+```
+
+It's still good practice to pass in the `refreshListenable` when manually
+redirecting, as we do in this case, to ensure any change to the login info
+causes the right routing to happen automatically, e.g. the user logging out will
+cause them to be routed back to the login page.

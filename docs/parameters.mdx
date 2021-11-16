@@ -1,0 +1,63 @@
+# Parameters
+The route paths are defined and implemented in [the path_to_regexp
+package](https://pub.dev/packages/path_to_regexp), which gives you the ability
+to include parameters in your route's `path`: 
+
+```dart
+final _router = GoRouter(
+  routes: [
+    GoRoute(
+      path: '/family/:fid',
+      pageBuilder: (context, state) {
+        // use state.params to get router parameter values
+        final family = Families.family(state.params['fid']!);
+
+        return MaterialPage<void>(
+          key: state.pageKey,
+          child: FamilyPage(family: family),
+        );
+      },
+    ),
+  ],
+  errorPageBuilder: ...,
+]);
+```
+
+You can access the matched parameters in the `state` object using the `params`
+property.
+
+## Dynamic linking
+The idea of "dynamic linking" is that as the user adds objects to your app, each
+of them gets a link of their own, e.g. a new family gets a new link. This is
+exactly what route parameters enables, e.g. a new family has its own identifier
+when can be a variable in your family route, e.g. path: `/family/:fid`.
+
+## Query Parameters
+TODO
+
+## Extra Parameter
+In addition to passing along path and query parameters, you can also pass along
+an extra object as part of your navigation, e.g.
+
+```dart
+void _tap(BuildContext context, Family family) =>
+  context.go('/family', extra: family);
+```
+
+This object is available during the `pageBuilder` function as `state.extra`:
+
+```dart
+GoRoute(
+  path: '/family',
+  pageBuilder: (context, state) => MaterialPage<Family>(
+    key: state.pageKey,
+    child: FamilyPage(family: state.extra! as Family),
+  ),
+),
+```
+
+The `extra` object is useful if you'd like to simply pass along a single object
+to the `pageBuilder` function w/o passing an object identifier via a URI and
+looking up the object from a store. _However_, this object cannot be used to
+create a dynamic link, cannot be used in deep linking and so is _not
+recommended_ for those cases.
