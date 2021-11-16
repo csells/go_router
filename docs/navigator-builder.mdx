@@ -1,0 +1,97 @@
+# Navigator Builder
+
+Sometimes it is necessary to insert a widget above the `Navigator`, but below
+`MaterialApp`/`CupertinoApp`, e.g. to insert a provider that needs access to the
+app's context to get the current locale and localization, to build a UI outside
+of navigation or to completely replace with `Navigator` with something of your
+own (which is outside the scope of this document).
+
+For these purposes, you need to use the `navigatorBuilder` parameter in the
+`GoRouter` constructor. This is similar to the `builder` parameter in the
+`MaterialApp` constructor, but gives access to infrastructure provided by
+`MaterialApp`.
+
+An example of placing some data provider widget:
+
+```dart
+final _router = GoRouter(
+  routes: ...,
+  errorPageBuilder: ...,
+  redirect: ...,
+  refreshListenable: ...,
+
+  // add a wrapper around the navigator to put loginInfo into the widget tree
+  navigatorBuilder: (context, child) =>
+      ChangeNotifierProvider<LoginInfo>.value(
+    value: loginInfo,
+    child: child,
+    builder: (context, child) => child!,
+  ),
+);
+```
+
+A more interesting example of using `navigatorBuilder` is the following, which
+puts a floating button on every page to allow for easy logout:
+
+```dart
+final _router = GoRouter(
+  routes: ...,
+  errorPageBuilder: ...,
+  redirect: ...,
+  refreshListenable: ...,
+
+  // add a wrapper around the navigator to:
+  // - put loginInfo into the widget tree, and to
+  // - add an overlay to show a logout option
+  navigatorBuilder: (context, child) =>
+      ChangeNotifierProvider<LoginInfo>.value(
+    value: loginInfo,
+    child: child,
+    builder: (context, child) => loginInfo.loggedIn
+        ? AuthOverlay(onLogout: loginInfo.logout, child: child!)
+        : child!,
+  ),
+);
+```
+
+This example checks the login status in the `navigatorBuilder`:
+
+- if the user is logged in, an instance of the `AuthOverlay` widget is created,
+  which wraps the the `Navigator` passed to `navigationBuilder` via the `child`
+  parameter and provides a logout button on every page
+- if the user is not logged in, return the `Navigator` via the `child` parameter
+
+The `AuthOverlay` shows the logout button and the `Navigator` in a `Stack`:
+
+```dart
+class AuthOverlay extends StatelessWidget {
+  const AuthOverlay({
+    required this.onLogout,
+    required this.child,
+    Key? key,
+  }) : super(key: key);
+
+  final Widget child;
+  final VoidCallback onLogout;
+
+  @override
+  Widget build(BuildContext context) => Stack(
+        children: [
+          child,
+          Positioned(
+            top: 90,
+            right: 4,
+            child: ElevatedButton(
+              onPressed: onLogout,
+              child: const Icon(Icons.logout),
+            ),
+          ),
+        ],
+      );
+}
+```
+
+Here's what this look like in action:
+
+![navigationBuilder in
+action](https://raw.githubusercontent.com/csells/go_router/master/readme/nav_builder.gif)

@@ -12,6 +12,23 @@
     ],
     ["Getting Started", "/getting-started"],
     ["Declarative Routing", "/declarative-routing"],
-    ["Navigation", "/navigation"]
+    ["Navigation", "/navigation"],
+    ["Sub-routes", "/sub-routes"],
+    ["Redirection", "/redirection"],
+    ["Named Routes", "/named-routes"],
+    ["URL Path Strategy", "/url-path-strategy"],
+    ["Debugging Your Routes", "/debugging"],
+    ["Examples", "/examples"],
+    ["Issues", "/issues"],
+    [
+      "Advanced Routing",
+      [
+        ["Custom Transitions", "/custom-transitions"],
+        ["Async Data", "/async-data"],
+        ["Nested Navigation", "/nested-navigation"],
+        ["Navigator Builder", "/navigator-builder"],
+        ["Navigator Integration", "/navigator-integration"]
+      ]
+    ]
   ]
 }

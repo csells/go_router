@@ -1,0 +1,49 @@
+# Examples
+
+You can see the go_router in action via the following examples:
+
+- [`main.dart`](https://github.com/csells/go_router/blob/master/example/lib/main.dart):
+  define a basic routing policy using a set of declarative `GoRoute` objects
+- [`init_loc.dart`](https://github.com/csells/go_router/blob/master/example/lib/init_loc.dart):
+  start at a specific location instead of home (`/`), which is the default
+- [`sub_routes.dart`](https://github.com/csells/go_router/blob/master/example/lib/sub_routes.dart):
+  provide a stack of pages based on a set of sub routes
+- [`push.dart`](https://github.com/csells/go_router/blob/master/example/lib/push.dart):
+  provide a stack of pages based on a series of calls to `context.push()`
+- [`redirection.dart`](https://github.com/csells/go_router/blob/master/example/lib/redirection.dart):
+  redirect one route to another based on changing app state
+- [`query_params.dart`](https://github.com/csells/go_router/blob/master/example/lib/query_params.dart):
+  optional query parameters will be passed to all page builders
+- [`named_routes.dart`](https://github.com/csells/go_router/blob/master/example/lib/named_routes.dart):
+  navigate via name instead of location URI
+- [`transitions.dart`](https://github.com/csells/go_router/blob/master/example/lib/transitions.dart):
+  use custom transitions during routing
+- [`async_data.dart`](https://github.com/csells/go_router/blob/master/example/lib/async_data.dart):
+  async data lookup
+- [`nested_nav.dart`](https://github.com/csells/go_router/blob/master/example/lib/nested_nav.dart):
+  include information about children on a page as part of the route path
+- [`nav_builder.dart`](https://github.com/csells/go_router/blob/master/example/lib/nav_builder.dart):
+  inject widgets above the `Navigator` widget
+- [`url_strategy.dart`](https://github.com/csells/go_router/blob/master/example/lib/url_strategy.dart):
+  turn off the # in the Flutter web URL
+- [`navigator_integration.dart`](https://github.com/csells/go_router/blob/master/example/lib/navigator_integration.dart):
+  using `Navigator` to navigate to a page that gathers user input
+- [`state_restoration.dart`](https://github.com/csells/go_router/blob/master/example/lib/state_restoration.dart):
+  test to ensure that go_router works with state restoration (it does)
+- [`cupertino.dart`](https://github.com/csells/go_router/blob/master/example/lib/cupertino.dart):
+  test to ensure that go_router works with the Cupertino design language as well
+  as Material (it does)
+- [`books/main.dart`](https://github.com/csells/go_router/blob/master/example/lib/books/main.dart):
+  update of the
+  [navigation_and_routing](https://github.com/flutter/samples/tree/master/navigation_and_routing)
+  sample to use go_router
+
+You can run these examples from the command line like so (from the `example`
+folder):
+
+```sh
+$ flutter run lib/main.dart
+```
+
+Or, if you're using Visual Studio Code, a [`launch.json`](.vscode/launch.json)
+file has been provided with these examples configured.

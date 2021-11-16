@@ -1,0 +1,105 @@
+# Named Routes
+When you're navigating to a route with a location, you're hardcoding the URI
+construction into your app, e.g.
+
+```dart
+void _tap(BuildContext context, String fid, String pid) =>
+  context.go('/family/$fid/person/$pid');
+```
+
+Not only is that error-prone, but the actual URI format of your app could change
+over time. Certainly redirection helps keep old URI formats working, but do you
+really want various versions of your location URIs lying  around willy-nilly in
+your code? 
+
+## Navigating to Named Routes
+The idea of named routes is to make it easy to navigate to a route w/o knowing
+or caring what the URI format is. You can add a unique name to your route using
+the `GoRoute.name` parameter:
+
+```dart
+final _router = GoRouter(
+  routes: [
+    GoRoute(
+      name: 'home',
+      path: '/',
+      pageBuilder: ...,
+      routes: [
+        GoRoute(
+          name: 'family',
+          path: 'family/:fid',
+          pageBuilder: ...,
+          routes: [
+            GoRoute(
+              name: 'person',
+              path: 'person/:pid',
+              pageBuilder: ...,
+            ),
+          ],
+        ),
+      ],
+    ),
+    GoRoute(
+      name: 'login',
+      path: '/login',
+      pageBuilder: ...,
+    ),
+  ],
+```
+
+You don't need to name any of your routes but the ones that you do name, you can
+navigate to using the name and whatever params are needed:
+
+```dart
+void _tap(BuildContext context, String fid, String pid) =>
+  context.go(context.namedLocation('person', params: {'fid': fid, 'pid': pid}));
+```
+
+The `namedLocation` method will look up the route by name in a case-insensitive
+way, construct the URI for you and fill in the params as appropriate. If you
+miss a param or pass in params that aren't part of the path, you'll get an
+error. Since it's somewhat inconvenient to have to dereference the `context`
+object twice, go_router provides a `goNamed` method that does the lookup and
+navigation in one step:
+
+```dart
+void _tap(BuildContext context, String fid, String pid) =>
+  context.goNamed('person', params: {'fid': fid, 'pid': pid});
+```
+
+There is also a `pushNamed` method that will look up the route by name, pull the
+top page off of the generated match stack and push that onto the existing stack
+of pages.
+
+## Redirecting to Named Routes
+In addition to navigation, you may also want to be able to redirect to a named
+route, which you can also do using the `namedLocation` method of either
+`GoRouter` or `GoRouterState`:
+
+```dart
+// redirect to the login page if the user is not logged in
+redirect: (state) {
+  final loggedIn = loginInfo.loggedIn;
+
+  // check just the subloc in case there are query parameters
+  final loginLoc = state.namedLocation('login');
+  final goingToLogin = state.subloc == loginLoc;
+
+  // the user is not logged in and not headed to /login, they need to login
+  if (!loggedIn && !goingToLogin)
+    return state.namedLocation('login', queryParams: {'from': state.subloc});
+
+  // the user is logged in and headed to /login, no need to login again
+  if (loggedIn && goingToLogin) return state.namedLocation('home');
+
+  // no need to redirect at all
+  return null;
+},
+```
+
+In this example, we're using `namedLocation` to get the location for the named
+'login' route and then comparing it to the current `subloc` to find out if the
+user is currently logging in or not. Furthermore, when we construct a location
+for redirection, we use `namedLocation` to pass in parameters to construct the
+location. All of this is done without hardcoding any URI formatting into your
+code.
