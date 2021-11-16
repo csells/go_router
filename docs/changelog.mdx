@@ -1,4 +1,4 @@
-# CHANGELOG
+# Changelog
 
 ### 2.2.8
 
