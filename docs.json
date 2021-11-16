@@ -1,3 +1,9 @@
 {
-  "name": "go_router"
+  "name": "go_router",
+  "sidebar": [
+    [
+      "Welcome",
+      "/"
+    ]
+ ]
 }
