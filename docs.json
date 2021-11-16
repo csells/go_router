@@ -4,8 +4,8 @@
     [
       "Welcome",
       ["Overview", "/"],
-      ["Contributors", "/contributors.mdx"],
-      ["Changelog", "/changelog.mdx"]
+      ["Contributors", "/contributors"],
+      ["Changelog", "/changelog"]
     ]
  ]
 }
