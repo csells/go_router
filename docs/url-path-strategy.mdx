@@ -4,6 +4,8 @@ By default, Flutter adds a hash (#) into the URL for web apps:
 
 ![URL Strategy w/ Hash](https://raw.githubusercontent.com/csells/go_router/master/readme/url-strat-hash.png)
 
+## Turning Off the Hash
+
 The process for turning off the hash is
 [documented](https://flutter.dev/docs/development/ui/navigation/url-strategies)
 but fiddly. The go_router has built-in support for setting the URL path
@@ -46,6 +48,8 @@ class App extends StatelessWidget {
   );
 }
 ```
+
+## Configuring the Web Server
 
 Finally, when you deploy your Flutter web app to a web server, it needs to be
 configured such that every URL ends up at your Flutter web app's `index.html`,
