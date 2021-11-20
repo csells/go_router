@@ -142,10 +142,10 @@ parameter with the special name `extra`:
 
 ```dart
 class PersonRouteWithExtra extends MaterialGoRouterData {
-  PersonRouteWithExtra(this.extra);
-  final Person extra;
+  PersonRouteWithExtra(this.$extra);
+  final Person $extra;
 
-  Widget build(BuildContext context) => PersonPage(person: extra); 
+  Widget build(BuildContext context) => PersonPage(person: $extra); 
 }
 ```
 
