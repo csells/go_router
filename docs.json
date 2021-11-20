@@ -30,7 +30,9 @@
         ["Async Data", "/async-data"],
         ["Nested Navigation", "/nested-navigation"],
         ["Navigator Builder", "/navigator-builder"],
-        ["Navigator Integration", "/navigator-integration"]
+        ["Navigator Integration", "/navigator-integration"],
+        ["Type Routing Proposal", "/typed-routing"]
+
       ]
     ]
   ]

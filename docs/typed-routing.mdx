@@ -1,0 +1,231 @@
+# Typed Routing Proposal
+
+*__The following is a proposal for a typed routing system. Some of it is
+implemented in [a PR](https://github.com/csells/go_router/pull/130), but it is
+not done yet nor is it currently available as a supported part of the go_router
+package. I'm writing this down as a way to do what I like doing: focusing on the
+client code I want to write instead of focusing only on the implementation.__*
+
+## Goal
+
+Routing in go_router fundamentally relies on the ability to match a string-based
+location in a URI format into one or more page builders, each that require zero
+or more arguments that are passed as path and query parameters as part of the
+location. The go_router does a good job of making the path and query parameters
+available via the `params` and `queryParams` properties of the `GoRouterState`
+object, but often the page builder must first parse the parameters into types
+that aren't `String`s, e.g.
+
+```dart
+GoRoute(
+  path: ':authorId',
+  pageBuilder: (context, state) {
+    // require the authorId to be present and be an integer
+    final authorId = int.parse(state.params['authorId']!);
+    final selectedAuthor = libraryInstance.allAuthors
+        .firstWhereOrNull((a) => a.id == authorId);
+
+    return MaterialPage<void>(
+      key: state.pageKey,
+      child: AuthorDetailsScreen(author: selectedAuthor),
+    );
+  },
+),
+```
+
+In this example, the `authorId` parameter is a) required and b) must be an
+`int`. However, neither of these requirements are checked until run-time, making
+it easy to write code that is not type-safe, e.g.
+
+```dart
+void _tap() => context.go('/author/a42'); // error: `a42` is not an `int`
+```
+
+Since Dart is a statically typed language, we'd love to have mistakes get caught
+at compile-time instead of waiting until run-time. The goal of the typed routing
+proposal is to provide an optional way to define the required and optional
+parameters that a specific route consumes and to use code generation to take our
+the drudgery of writing a bunch of `go`, `push` and `location` boilerplate code
+implementations ourselves.
+
+The code generator to do this work today in [our experimental
+implementation](https://github.com/csells/go_router/pull/130) is the
+[build_runner](https://pub.dev/packages/build_runner) package but the plan is to
+move to [Dart
+macros](https://github.com/dart-lang/language/blob/master/working/macros/feature-specification.md)
+when they're available.
+
+## Defining a route
+
+Define each route as a class deriving from the base w/ the appropriate
+transition type, i.e. Material, Cupertino or custom. Required parameters are
+pulled from the route's `path` (defined in the [route tree](#route-tree) as
+described below):
+
+```dart
+class PersonRoute extends MaterialGoRouteData {
+  PersonRoute({required this.fid, required this.pid});
+  final String fid;
+  final String pid;
+
+  Widget build(BuildContext context) => PersonPage(fid: fid, pid: pid);
+} 
+```
+
+## Route tree
+
+The tree of routes is defined as an attribute on each of the top-level routes:
+
+```dart
+@TypedGoRoute<HomeRoute>(
+  path: '/',
+  routes: [
+    TypedGoRoute<FamilyRoute>(
+      path: 'family/:fid',
+      routes: [
+        TypedGoRoute<PersonRoute>(
+          path: 'person/:pid', 
+        ),
+      ], 
+    ),
+  ],
+)
+class HomeRoute extends MaterialGoRouteData {...}
+class FamilyRoute extends MaterialGoRouteData {...}
+class PersonRoute extends MaterialGoRouteData {...}
+
+@TypedGoRoute<LoginRoute>(path: '/login')
+class LoginRoute extends MaterialGoRouteData {...}
+```
+
+## `GoRouter` initialization
+
+The code generator aggregates all top-level routes into a single list called
+`appRoutes` for use in initializing the `GoRouter` instance:
+
+```dart
+final _router = GoRouter(routes: appRoutes, errorPageBuilder: ...);
+```
+
+## Navigation
+
+Navigate using the `go` or `push` methods provided by the code generator:
+
+```dart
+void _tap() => PersonRoute(fid: 'f2', pid: 'p1').go(context);
+```
+
+If you get this wrong, the compiler will complain:
+
+```dart
+// error: missing required parameter 'fid'
+void _tap() => PersonRoute(pid: 'p1').go(context);
+```
+
+## Query parameters
+
+Optional parameters indicate query parameters:
+
+```dart
+class LoginRoute extends MaterialGoRouteData {
+  LoginRoute({this.from});
+  final String? from; 
+  
+  Widget build(BuildContext context) => LoginPage(from: from);
+}
+```
+
+## Extra parameters
+
+A route can consume an extra parameter by taking it as a typed constructor
+parameter with the special name `extra`:
+
+```dart
+class PersonRouteWithExtra extends MaterialGoRouterData {
+  PersonRouteWithExtra(this.extra);
+  final Person extra;
+
+  Widget build(BuildContext context) => PersonPage(person: extra); 
+}
+```
+
+Pass the extra param as a typed-object:
+
+```dart
+void _tap() => PersonRouteWithExtra(Person(name: 'Marvin', age: 42)).go(context);
+```
+
+## Redirection
+
+Redirect using the `location` property on a route provided by the code
+generator:
+
+```dart
+redirect: (state) {
+  final loggedIn = loginInfo.loggedIn;
+  final loggingIn = state.subloc == HomeRoute().location;
+  if( !loggedIn && !loggingIn ) return LoginRoute(from: state.subloc).location;
+  if( loggedIn && loggingIn ) return HomeRoute().location;
+  return null; 
+}
+```
+
+## Route-level redirection
+
+Handled route-level redirects by implementing the `redirect` method on the
+route:
+
+```dart
+class HomeRoute extends MaterialGoRouteData {
+  // no need to implement [build] when this [redirect] is unconditional
+  String? redirect(GoRouterState state) => BooksRoute().location;
+} 
+```
+
+## Type conversions
+
+The code generator can convert simple types like `int` and `enum` to/from the
+`String` type of the underlying params:
+
+```dart
+enum BookKind { all, popular, recent }
+
+class BooksRoute extends MaterialGoRouteData {
+  BooksRoute({this.kind = BookKind.popular});
+  final BookKind kind;
+  
+  Widget build(BuildContext context) => BooksPage(kind: kind);
+}
+```
+
+## Override base class parameters
+
+Override common base parameters of the `MaterialGoRouterData`, etc. by passing
+the values to the base class constructor:
+
+```dart
+class MyRouteWithKey extends MaterialGoPageRoute {
+  static final _key = LocalKey('my-route-with-key');
+  MyRouteWithKey() : super(key: _key);
+} 
+```
+
+## Custom transitions
+
+Use custom transitions between pages by extending the `TransitionGoRouteData`
+class and implementing the `transitionsBuilder` method
+
+```dart
+class FancyRoute extends TransitionGoRouterData {
+  Widget build(BuildContext context) => FancyPage();
+
+  Widget transitionsBuilder(
+    BuildContext context,
+    Animation animation,
+    Animation secondaryAnimation,
+    Widget child,
+  ) =>
+    FadeTransition(opacity: animation, child: child),
+} 
+```
+
