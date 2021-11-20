@@ -107,6 +107,28 @@ The code generator aggregates all top-level routes into a single list called
 final _router = GoRouter(routes: $appRoutes, errorPageBuilder: ...);
 ```
 
+## Error page builder
+
+You can use custom routes to provide an error page builder as well:
+
+```dart
+class ErrorRoute extends MaterialGoRouteData {
+  ErrorRoute({required this.error});
+  final Exception error;
+
+  Widget build(BuildContext context) => ErrorPage(error: error);
+}
+```
+
+With this in place, you can provide the `errorPageBuilder` parameter like so:
+
+```dart
+final _router = GoRouter(
+  routes: $appRoutes,
+  errorPageBuilder: (c, s) => ErrorRoute(s.error).buildPage(c),
+);
+```
+
 ## Navigation
 
 Navigate using the `go` or `push` methods provided by the code generator:
@@ -149,7 +171,7 @@ class PersonRouteWithExtra extends MaterialGoRouterData {
 }
 ```
 
-Pass the extra param as a typed-object:
+Pass the extra param as a typed object:
 
 ```dart
 void _tap() => PersonRouteWithExtra(Person(name: 'Marvin', age: 42)).go(context);
