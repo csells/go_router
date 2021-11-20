@@ -101,10 +101,10 @@ class LoginRoute extends MaterialGoRouteData {...}
 ## `GoRouter` initialization
 
 The code generator aggregates all top-level routes into a single list called
-`appRoutes` for use in initializing the `GoRouter` instance:
+`$appRoutes` for use in initializing the `GoRouter` instance:
 
 ```dart
-final _router = GoRouter(routes: appRoutes, errorPageBuilder: ...);
+final _router = GoRouter(routes: $appRoutes, errorPageBuilder: ...);
 ```
 
 ## Navigation
