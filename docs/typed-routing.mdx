@@ -243,7 +243,8 @@ use the `state.pageKey` property to set the `key` property of the page.
 
 If you'd like to change how the page is created, e.g. to use a different page
 type or to pass non-default parameters when creating the page (like a custom
-key), you can override the `buildPage` method of the base class:
+key), you can override the `buildPage` method of the base class instead of the
+`build` method:
 
 ```dart
 class MyMaterialRouteWithKey extends GoRouteData {
