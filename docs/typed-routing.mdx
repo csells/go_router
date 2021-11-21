@@ -60,8 +60,7 @@ when they're available.
 
 ## Defining a route
 
-Define each route as a class extending `GoRouteData`, which provides shared methods to override
-for various scenarios described elsewhere in this proposal.
+Define each route as a class extending `GoRouteData` and overriding the `build` method.
 
 ```dart
 class PersonRoute extends GoRouteData {
