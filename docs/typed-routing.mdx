@@ -189,6 +189,24 @@ void _tap() => PersonRouteWithExtra(Person(name: 'Marvin', age: 42)).go(context)
 The `$extra` parameter is still passed outside of the location, still defeats
 dynamic and deep linking and is still not recommended in general.
 
+## Mixed parameters
+
+You can, of course, combine the use of path, query and $extra parameters:
+
+```dart
+class HotdogRouteWithEverything extends GoRouteData {
+  HotdogRouteWithEverything(this.ketchup, this.mustard, this.$extra);
+  final bool ketchup; // required path parameter
+  final String? mustard; // optional query parameter
+  final Sauce $extra; // special $extra parameter
+
+  @override
+  Widget build(BuildContext context) => HotdogPage(ketchup, mustard, $extra); 
+}
+```
+
+This seems kinda silly, but it works.
+
 ## Redirection
 
 Redirect using the `location` property on a route provided by the code
