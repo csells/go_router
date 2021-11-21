@@ -128,7 +128,7 @@ With this in place, you can provide the `errorPageBuilder` parameter like so:
 ```dart
 final _router = GoRouter(
   routes: $appRoutes,
-  errorPageBuilder: (c, s) => ErrorRoute(s.error).buildPage(c, s),
+  errorPageBuilder: (c, s) => ErrorRoute(s.error!).buildPage(c, s),
 );
 ```
 
