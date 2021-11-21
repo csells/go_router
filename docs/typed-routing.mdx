@@ -61,9 +61,7 @@ when they're available.
 ## Defining a route
 
 Define each route as a class deriving from the base w/ the appropriate
-transition type, i.e. Material, Cupertino or custom. Required parameters are
-pulled from the route's `path` (defined in the [route tree](#route-tree) as
-described below):
+transition type, i.e. Material, Cupertino or custom.
 
 ```dart
 class PersonRoute extends GoRouteData {
@@ -75,6 +73,8 @@ class PersonRoute extends GoRouteData {
   Widget build(BuildContext context) => PersonPage(fid: fid, pid: pid);
 } 
 ```
+
+Required parameters are pulled from the route's `path` defined in the route tree.
 
 ## Route tree
 
