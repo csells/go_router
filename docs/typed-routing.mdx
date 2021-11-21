@@ -71,6 +71,7 @@ class PersonRoute extends GoRouteData {
   final String fid;
   final String pid;
 
+  @override
   Widget build(BuildContext context) => PersonPage(fid: fid, pid: pid);
 } 
 ```
@@ -119,6 +120,7 @@ class ErrorRoute extends GoRouteData {
   ErrorRoute({required this.error});
   final Exception error;
 
+  @override
   Widget build(BuildContext context) => ErrorPage(error: error);
 }
 ```
@@ -156,6 +158,7 @@ class LoginRoute extends GoRouteData {
   LoginRoute({this.from});
   final String? from; 
   
+  @override
   Widget build(BuildContext context) => LoginPage(from: from);
 }
 ```
@@ -170,6 +173,7 @@ class PersonRouteWithExtra extends GoRouteData {
   PersonRouteWithExtra(this.$extra);
   final Person $extra;
 
+  @override
   Widget build(BuildContext context) => PersonPage(person: $extra); 
 }
 ```
@@ -203,6 +207,7 @@ route:
 ```dart
 class HomeRoute extends GoRouteData {
   // no need to implement [build] when this [redirect] is unconditional
+  @override
   String? redirect(GoRouterState state) => BooksRoute().location;
 } 
 ```
@@ -219,6 +224,7 @@ class BooksRoute extends GoRouteData {
   BooksRoute({this.kind = BookKind.popular});
   final BookKind kind;
   
+  @override
   Widget build(BuildContext context) => BooksPage(kind: kind);
 }
 ```
@@ -241,8 +247,10 @@ key), you can override the `buildPage` method of the base class:
 class MyMaterialRouteWithKey extends GoRouteData {
   static final _key = LocalKey('my-route-with-key');
 
+  @override
   Widget build(BuildContext context, GoRouterState state) => MyPage();
   
+  @override
   MaterialPage<void> buildPage(BuildContext context, GoRouterState state) =>
     MaterialPage<void>(
       key: _key,
@@ -257,8 +265,10 @@ Overriding the `buildPage` method is also useful for custom transitions:
 
 ```dart
 class FancyRoute extends GoRouteData {
+  @override
   Widget build(BuildContext context, GoRouterState state) => FancyPage();
 
+  @override
   MaterialPage<void> buildPage(BuildContext context, GoRouterState state) =>
     CustomTransitionPage<void>(
       key: state.pageKey,
