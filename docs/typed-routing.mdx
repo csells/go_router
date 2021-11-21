@@ -6,6 +6,9 @@ not done yet nor is it currently available as a supported part of the go_router
 package. I'm writing this down as a way to do what I like doing: focusing on the
 client code I want to write instead of focusing only on the implementation.__*
 
+*__Note: this proposal assumes the implementation of [this
+feature](https://github.com/csells/go_router/issues/173).__*
+
 ## Goal
 
 Routing in go_router fundamentally relies on the ability to match a string-based
@@ -63,7 +66,7 @@ pulled from the route's `path` (defined in the [route tree](#route-tree) as
 described below):
 
 ```dart
-class PersonRoute extends MaterialGoRouteData {
+class PersonRoute extends GoRouteData {
   PersonRoute({required this.fid, required this.pid});
   final String fid;
   final String pid;
@@ -90,12 +93,12 @@ The tree of routes is defined as an attribute on each of the top-level routes:
     ),
   ],
 )
-class HomeRoute extends MaterialGoRouteData {...}
-class FamilyRoute extends MaterialGoRouteData {...}
-class PersonRoute extends MaterialGoRouteData {...}
+class HomeRoute extends GoRouteData {...}
+class FamilyRoute extends GoRouteData {...}
+class PersonRoute extends GoRouteData {...}
 
 @TypedGoRoute<LoginRoute>(path: '/login')
-class LoginRoute extends MaterialGoRouteData {...}
+class LoginRoute extends GoRouteData {...}
 ```
 
 ## `GoRouter` initialization
@@ -112,7 +115,7 @@ final _router = GoRouter(routes: $appRoutes, errorPageBuilder: ...);
 You can use custom routes to provide an error page builder as well:
 
 ```dart
-class ErrorRoute extends MaterialGoRouteData {
+class ErrorRoute extends GoRouteData {
   ErrorRoute({required this.error});
   final Exception error;
 
@@ -125,7 +128,7 @@ With this in place, you can provide the `errorPageBuilder` parameter like so:
 ```dart
 final _router = GoRouter(
   routes: $appRoutes,
-  errorPageBuilder: (c, s) => ErrorRoute(s.error).buildPage(c),
+  errorPageBuilder: (c, s) => ErrorRoute(s.error).buildPage(c, s),
 );
 ```
 
@@ -149,7 +152,7 @@ void _tap() => PersonRoute(pid: 'p1').go(context);
 Optional parameters indicate query parameters:
 
 ```dart
-class LoginRoute extends MaterialGoRouteData {
+class LoginRoute extends GoRouteData {
   LoginRoute({this.from});
   final String? from; 
   
@@ -163,7 +166,7 @@ A route can consume an extra parameter by taking it as a typed constructor
 parameter with the special name `$extra`:
 
 ```dart
-class PersonRouteWithExtra extends MaterialGoRouterData {
+class PersonRouteWithExtra extends GoRouteData {
   PersonRouteWithExtra(this.$extra);
   final Person $extra;
 
@@ -198,7 +201,7 @@ Handle route-level redirects by implementing the `redirect` method on the
 route:
 
 ```dart
-class HomeRoute extends MaterialGoRouteData {
+class HomeRoute extends GoRouteData {
   // no need to implement [build] when this [redirect] is unconditional
   String? redirect(GoRouterState state) => BooksRoute().location;
 } 
@@ -212,7 +215,7 @@ The code generator can convert simple types like `int` and `enum` to/from the
 ```dart
 enum BookKind { all, popular, recent }
 
-class BooksRoute extends MaterialGoRouteData {
+class BooksRoute extends GoRouteData {
   BooksRoute({this.kind = BookKind.popular});
   final BookKind kind;
   
@@ -220,34 +223,49 @@ class BooksRoute extends MaterialGoRouteData {
 }
 ```
 
-## Override base class parameters
+## Transitions
 
-Override common base parameters of the `MaterialGoRouterData`, etc. by passing
-the values to the base class constructor:
+By default, the `GoRouter` will use the transition associated with the app it
+finds in the widget tree, e.g. `MaterialApp`, `CupertinoApp`, `WidgetApp`, etc.
+and use that the corresponding page type to create the page that wraps the
+`Widget` returned by the route's `build` method, e.g. `MaterialPage`,
+`CupertinoPage`, `Page`, etc. Furthermore,it will use the `state.pageKey`
+property to set the `key` property of the page.
+
+### Transition override
+
+If you'd like to change how the page is created, e.g. to use a different page
+type or to pass non-default parameters when creating the page (like a custom
+key), you can override the `buildPage` method of the base class:
 
 ```dart
-class MyRouteWithKey extends MaterialGoPageRoute {
+class MyMaterialRouteWithKey extends GoRouteData {
   static final _key = LocalKey('my-route-with-key');
-  MyRouteWithKey() : super(key: _key);
+
+  Widget build(BuildContext context, GoRouterState state) => MyPage();
+  
+  MaterialPage<void> buildPage(BuildContext context, GoRouterState state) =>
+    MaterialPage<void>(
+      key: _key,
+      child: build(context, state),
+    );
 } 
 ```
 
-## Custom transitions
+### Custom transitions
 
-Use custom transitions between pages by extending the `TransitionGoRouteData`
-class and implementing the `transitionsBuilder` method
+Overriding the `buildPage` method is also useful for custom transitions:
 
 ```dart
-class FancyRoute extends TransitionGoRouterData {
-  Widget build(BuildContext context) => FancyPage();
+class FancyRoute extends GoRouteData {
+  Widget build(BuildContext context, GoRouterState state) => FancyPage();
 
-  Widget transitionsBuilder(
-    BuildContext context,
-    Animation animation,
-    Animation secondaryAnimation,
-    Widget child,
-  ) =>
-    FadeTransition(opacity: animation, child: child),
+  MaterialPage<void> buildPage(BuildContext context, GoRouterState state) =>
+    CustomTransitionPage<void>(
+      key: state.pageKey,
+      child: build(context, state),
+      transitionsBuilder: (context, animation, animation2, child) =>
+          RotationTransition(turns: animation, child: child),
+    ),
 } 
 ```
-
