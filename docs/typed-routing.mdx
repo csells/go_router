@@ -186,6 +186,9 @@ Pass the extra param as a typed object:
 void _tap() => PersonRouteWithExtra(Person(name: 'Marvin', age: 42)).go(context);
 ```
 
+The `$extra` parameter is still passed outside of the location, still defeats
+dynamic and deep linking and is still not recommended in general.
+
 ## Redirection
 
 Redirect using the `location` property on a route provided by the code
