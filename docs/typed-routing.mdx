@@ -225,12 +225,11 @@ class BooksRoute extends GoRouteData {
 
 ## Transitions
 
-By default, the `GoRouter` will use the transition associated with the app it
-finds in the widget tree, e.g. `MaterialApp`, `CupertinoApp`, `WidgetApp`, etc.
-and use that the corresponding page type to create the page that wraps the
-`Widget` returned by the route's `build` method, e.g. `MaterialPage`,
-`CupertinoPage`, `Page`, etc. Furthermore,it will use the `state.pageKey`
-property to set the `key` property of the page.
+By default, the `GoRouter` will use  the app it finds in the widget tree, e.g.
+`MaterialApp`, `CupertinoApp`, `WidgetApp`, etc. and use  the corresponding page
+type to create the page that wraps the `Widget` returned by the route's `build`
+method, e.g. `MaterialPage`, `CupertinoPage`, `Page`, etc. Furthermore, it will
+use the `state.pageKey` property to set the `key` property of the page.
 
 ### Transition override
 
