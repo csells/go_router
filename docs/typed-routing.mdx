@@ -248,13 +248,10 @@ class MyMaterialRouteWithKey extends GoRouteData {
   static final _key = LocalKey('my-route-with-key');
 
   @override
-  Widget build(BuildContext context, GoRouterState state) => MyPage();
-  
-  @override
   MaterialPage<void> buildPage(BuildContext context, GoRouterState state) =>
     MaterialPage<void>(
       key: _key,
-      child: build(context, state),
+      child: MyPage(),
     );
 } 
 ```
@@ -266,13 +263,10 @@ Overriding the `buildPage` method is also useful for custom transitions:
 ```dart
 class FancyRoute extends GoRouteData {
   @override
-  Widget build(BuildContext context, GoRouterState state) => FancyPage();
-
-  @override
   MaterialPage<void> buildPage(BuildContext context, GoRouterState state) =>
     CustomTransitionPage<void>(
       key: state.pageKey,
-      child: build(context, state),
+      child: FancyPage(),
       transitionsBuilder: (context, animation, animation2, child) =>
           RotationTransition(turns: animation, child: child),
     ),
