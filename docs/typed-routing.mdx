@@ -60,8 +60,8 @@ when they're available.
 
 ## Defining a route
 
-Define each route as a class deriving from the base w/ the appropriate
-transition type, i.e. Material, Cupertino or custom.
+Define each route as a class extending `GoRouteData`, which provides shared methods to override
+for various scenarios described elsewhere in this proposal.
 
 ```dart
 class PersonRoute extends GoRouteData {
