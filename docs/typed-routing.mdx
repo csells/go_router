@@ -215,7 +215,7 @@ generator:
 ```dart
 redirect: (state) {
   final loggedIn = loginInfo.loggedIn;
-  final loggingIn = state.subloc == HomeRoute().location;
+  final loggingIn = state.subloc == LoginRoute().location;
   if( !loggedIn && !loggingIn ) return LoginRoute(from: state.subloc).location;
   if( loggedIn && loggingIn ) return HomeRoute().location;
   return null; 
