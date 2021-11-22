@@ -147,8 +147,6 @@ class PersonPage extends StatelessWidget {
       );
 }
 
-
-
 /// sample error page
 class ErrorPage extends StatelessWidget {
   const ErrorPage(this.error, {Key? key}) : super(key: key);

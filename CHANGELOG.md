@@ -1,5 +1,12 @@
 # Changelog
 
+### 2.2.9
+
+- [Fix 182](https://github.com/csells/go_router/issues/182): fixes a regression
+  in the nested navigation caused by the fix for
+  [#163](https://github.com/csells/go_router/issues/163); thanks to
+  [lulupointu](https://github.com/lulupointu) for the fix!
+
 ### 2.2.8
 
 - reformatted CHANGELOG file; lets see if pub.dev is still ok with it...
