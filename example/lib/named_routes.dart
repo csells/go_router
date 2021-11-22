@@ -91,9 +91,10 @@ class HomeRoute extends GoRouteData {
   path: '/login',
 )
 class LoginRoute extends GoRouteData {
-  const LoginRoute({this.from});
+  const LoginRoute({this.from, this.$extra});
 
   final String? from;
+  final String? $extra;
 
   @override
   Widget build(BuildContext context) => LoginPage(from: from);

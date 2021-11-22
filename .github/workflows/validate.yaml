@@ -17,7 +17,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: "Install Flutter"
-        # Need Dart 2.15 ~ recent-ish for enum features!
+        # Need Dart 2.15 ~ recent-ish for language features!
         run: ./.github/workflows/scripts/install-flutter.sh beta
       - name: "Install Tools"
         run: ./.github/workflows/scripts/install-tools.sh
@@ -36,7 +36,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: "Install Flutter"
-        # Need Dart 2.15 ~ recent-ish for enum features!
+        # Need Dart 2.15 ~ recent-ish for language features!
         run: ./.github/workflows/scripts/install-flutter.sh beta
       - name: "Install Tools"
         run: ./.github/workflows/scripts/install-tools.sh

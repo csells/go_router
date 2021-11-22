@@ -69,13 +69,15 @@ extension $PersonDetailsRouteExtension on PersonDetailsRoute {
       PersonDetailsRoute(
         state.params['fid']!,
         int.parse(state.params['pid']!),
-        PersonDetails.values.byName(state.params['details']!),
+        _$PersonDetailsEnumMap.entries
+            .singleWhere((element) => element.value == state.params['details']!)
+            .key,
       );
 
   String get location => GoRouteData.$location(
         '/family/${Uri.encodeComponent(fid)}'
         '/person/${Uri.encodeComponent(pid.toString())}'
-        '/details/${Uri.encodeComponent(details.name)}',
+        '/details/${Uri.encodeComponent(_$PersonDetailsEnumMap[details]!)}',
       );
 
   /// This *could* be defined in [GoRouteData] – but only if [location] was not
@@ -91,6 +93,7 @@ GoRoute get loginRoute => GoRouteData.$route(
 extension $LoginRouteExtension on LoginRoute {
   static LoginRoute _fromState(GoRouterState state) => LoginRoute(
         from: state.queryParams['from'],
+        $extra: state.extra as String?,
       );
 
   String get location => GoRouteData.$location(
@@ -102,5 +105,12 @@ extension $LoginRouteExtension on LoginRoute {
 
   /// This *could* be defined in [GoRouteData] – but only if [location] was not
   /// also an extension. Can't wait for macros!
-  void go(BuildContext buildContext) => buildContext.go(location);
+  void go(BuildContext buildContext) =>
+      buildContext.go(location, extra: $extra);
 }
+
+const _$PersonDetailsEnumMap = {
+  PersonDetails.hobbies: 'hobbies',
+  PersonDetails.favoriteFood: 'favorite-food',
+  PersonDetails.favoriteSport: 'favorite-sport',
+};
