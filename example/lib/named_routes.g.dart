@@ -2,19 +2,19 @@ part of 'named_routes.dart';
 
 /// Generated name aligns with the element that's annotated.
 /// Since [App] is annotated with [RouteDef] it becomes `appGoRoute`.
-GoRoute get homeRoute => RouteData.$route(
+GoRoute get homeRoute => GoRouteData.$route(
       path: '/',
       factory: $HomeRouteExtension._fromState,
       routes: [
-        RouteData.$route(
+        GoRouteData.$route(
           path: 'family/:fid',
           factory: $FamilyRouteExtension._fromState,
           routes: [
-            RouteData.$route(
+            GoRouteData.$route(
                 path: 'person/:pid',
                 factory: $PersonRouteExtension._fromState,
                 routes: [
-                  RouteData.$route(
+                  GoRouteData.$route(
                     path: 'details/:details',
                     factory: $PersonDetailsRouteExtension._fromState,
                   )
@@ -27,12 +27,12 @@ GoRoute get homeRoute => RouteData.$route(
 extension $HomeRouteExtension on HomeRoute {
   static HomeRoute _fromState(GoRouterState state) => const HomeRoute();
 
-  String location({Map<String, String>? queryParams}) => RouteData.$location(
+  String location({Map<String, String>? queryParams}) => GoRouteData.$location(
         '/',
         queryParams: queryParams,
       );
 
-  /// This *could* be defined in [RouteData] – but only if [location] was not
+  /// This *could* be defined in [GoRouteData] – but only if [location] was not
   /// also an extension. Can't wait for macros!
   void go(
     BuildContext buildContext, {
@@ -48,12 +48,12 @@ extension $FamilyRouteExtension on FamilyRoute {
         state.params['fid']!,
       );
 
-  String location({Map<String, String>? queryParams}) => RouteData.$location(
+  String location({Map<String, String>? queryParams}) => GoRouteData.$location(
         '/family/${Uri.encodeComponent(fid)}',
         queryParams: queryParams,
       );
 
-  /// This *could* be defined in [RouteData] – but only if [location] was not
+  /// This *could* be defined in [GoRouteData] – but only if [location] was not
   /// also an extension. Can't wait for macros!
   void go(
     BuildContext buildContext, {
@@ -70,13 +70,13 @@ extension $PersonRouteExtension on PersonRoute {
         int.parse(state.params['pid']!),
       );
 
-  String location({Map<String, String>? queryParams}) => RouteData.$location(
+  String location({Map<String, String>? queryParams}) => GoRouteData.$location(
         '/family/${Uri.encodeComponent(fid)}'
         '/person/${Uri.encodeComponent(pid.toString())}',
         queryParams: queryParams,
       );
 
-  /// This *could* be defined in [RouteData] – but only if [location] was not
+  /// This *could* be defined in [GoRouteData] – but only if [location] was not
   /// also an extension. Can't wait for macros!
   void go(
     BuildContext buildContext, {
@@ -95,14 +95,14 @@ extension $PersonDetailsRouteExtension on PersonDetailsRoute {
         PersonDetails.values.byName(state.params['details']!),
       );
 
-  String location({Map<String, String>? queryParams}) => RouteData.$location(
+  String location({Map<String, String>? queryParams}) => GoRouteData.$location(
         '/family/${Uri.encodeComponent(fid)}'
         '/person/${Uri.encodeComponent(pid.toString())}'
         '/details/${Uri.encodeComponent(details.name)}',
         queryParams: queryParams,
       );
 
-  /// This *could* be defined in [RouteData] – but only if [location] was not
+  /// This *could* be defined in [GoRouteData] – but only if [location] was not
   /// also an extension. Can't wait for macros!
   void go(
     BuildContext buildContext, {
@@ -113,7 +113,7 @@ extension $PersonDetailsRouteExtension on PersonDetailsRoute {
   }
 }
 
-GoRoute get loginRoute => RouteData.$route(
+GoRoute get loginRoute => GoRouteData.$route(
       path: '/login',
       factory: $LoginRouteExtension._fromState,
     );
@@ -123,7 +123,7 @@ extension $LoginRouteExtension on LoginRoute {
         from: state.queryParams['from'],
       );
 
-  String location({Map<String, String>? queryParams}) => RouteData.$location(
+  String location({Map<String, String>? queryParams}) => GoRouteData.$location(
         '/login',
         queryParams: {
           ...?queryParams,
@@ -133,7 +133,7 @@ extension $LoginRouteExtension on LoginRoute {
         },
       );
 
-  /// This *could* be defined in [RouteData] – but only if [location] was not
+  /// This *could* be defined in [GoRouteData] – but only if [location] was not
   /// also an extension. Can't wait for macros!
   void go(
     BuildContext buildContext, {

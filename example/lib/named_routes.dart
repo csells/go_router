@@ -80,7 +80,7 @@ String _title(BuildContext context) =>
     )
   ],
 )
-class HomeRoute extends MaterialRouteData {
+class HomeRoute extends GoRouteData {
   const HomeRoute();
 
   @override
@@ -90,7 +90,7 @@ class HomeRoute extends MaterialRouteData {
 @RouteDef<LoginRoute>(
   path: '/login',
 )
-class LoginRoute extends MaterialRouteData {
+class LoginRoute extends GoRouteData {
   const LoginRoute({this.from});
 
   final String? from;
@@ -99,7 +99,7 @@ class LoginRoute extends MaterialRouteData {
   Widget build(BuildContext context) => LoginPage(from: from);
 }
 
-class FamilyRoute extends MaterialRouteData {
+class FamilyRoute extends GoRouteData {
   const FamilyRoute(this.fid);
   final String fid;
 
@@ -108,7 +108,7 @@ class FamilyRoute extends MaterialRouteData {
       FamilyPage(family: Families.family(fid));
 }
 
-class PersonRoute extends MaterialRouteData {
+class PersonRoute extends GoRouteData {
   const PersonRoute(this.fid, this.pid);
   final String fid;
   final int pid;
@@ -121,7 +121,7 @@ class PersonRoute extends MaterialRouteData {
   }
 }
 
-class PersonDetailsRoute extends MaterialRouteData {
+class PersonDetailsRoute extends GoRouteData {
   const PersonDetailsRoute(this.fid, this.pid, this.details);
   final String fid;
   final int pid;
