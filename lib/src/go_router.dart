@@ -18,7 +18,8 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
   /// and an error page builder.
   GoRouter({
     required List<GoRoute> routes,
-    required GoRouterPageBuilder errorPageBuilder,
+    GoRouterPageBuilder? errorPageBuilder,
+    GoRouterWidgetBuilder? errorBuilder,
     GoRouterRedirect? redirect,
     Listenable? refreshListenable,
     int redirectLimit = 5,
@@ -34,6 +35,7 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
     routerDelegate = GoRouterDelegate(
       routes: routes,
       errorPageBuilder: errorPageBuilder,
+      errorBuilder: errorBuilder,
       topRedirect: redirect ?? (_) => null,
       redirectLimit: redirectLimit,
       refreshListenable: refreshListenable,

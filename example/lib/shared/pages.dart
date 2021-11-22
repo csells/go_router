@@ -249,29 +249,6 @@ class _FamilyViewState extends State<FamilyView>
   }
 }
 
-/// sample error page
-class ErrorPage extends StatelessWidget {
-  const ErrorPage(this.error, {Key? key}) : super(key: key);
-  final Exception? error;
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('Page Not Found')),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(error?.toString() ?? 'page not found'),
-              TextButton(
-                onPressed: () => context.go('/'),
-                child: const Text('Home'),
-              ),
-            ],
-          ),
-        ),
-      );
-}
-
 /// sample login page
 class LoginPage extends StatelessWidget {
   const LoginPage({this.from, Key? key}) : super(key: key);

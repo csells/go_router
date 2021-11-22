@@ -25,12 +25,10 @@ GoRoute(
   pageBuilder: (context, state) {
     // require the authorId to be present and be an integer
     final authorId = int.parse(state.params['authorId']!);
-    final selectedAuthor = libraryInstance.allAuthors
-        .firstWhereOrNull((a) => a.id == authorId);
 
     return MaterialPage<void>(
       key: state.pageKey,
-      child: AuthorDetailsScreen(author: selectedAuthor),
+      child: AuthorDetailsScreen(authorId: authorId),
     );
   },
 ),
