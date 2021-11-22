@@ -27,20 +27,11 @@ GoRoute get homeRoute => GoRouteData.$route(
 extension $HomeRouteExtension on HomeRoute {
   static HomeRoute _fromState(GoRouterState state) => const HomeRoute();
 
-  String location({Map<String, String>? queryParams}) => GoRouteData.$location(
-        '/',
-        queryParams: queryParams,
-      );
+  String get location => GoRouteData.$location('/');
 
   /// This *could* be defined in [GoRouteData] – but only if [location] was not
   /// also an extension. Can't wait for macros!
-  void go(
-    BuildContext buildContext, {
-    Map<String, String>? queryParams,
-    Object? extra,
-  }) {
-    buildContext.go(location(queryParams: queryParams), extra: extra);
-  }
+  void go(BuildContext buildContext) => buildContext.go(location);
 }
 
 extension $FamilyRouteExtension on FamilyRoute {
@@ -48,20 +39,13 @@ extension $FamilyRouteExtension on FamilyRoute {
         state.params['fid']!,
       );
 
-  String location({Map<String, String>? queryParams}) => GoRouteData.$location(
+  String get location => GoRouteData.$location(
         '/family/${Uri.encodeComponent(fid)}',
-        queryParams: queryParams,
       );
 
   /// This *could* be defined in [GoRouteData] – but only if [location] was not
   /// also an extension. Can't wait for macros!
-  void go(
-    BuildContext buildContext, {
-    Map<String, String>? queryParams,
-    Object? extra,
-  }) {
-    buildContext.go(location(queryParams: queryParams), extra: extra);
-  }
+  void go(BuildContext buildContext) => buildContext.go(location);
 }
 
 extension $PersonRouteExtension on PersonRoute {
@@ -70,21 +54,14 @@ extension $PersonRouteExtension on PersonRoute {
         int.parse(state.params['pid']!),
       );
 
-  String location({Map<String, String>? queryParams}) => GoRouteData.$location(
+  String get location => GoRouteData.$location(
         '/family/${Uri.encodeComponent(fid)}'
         '/person/${Uri.encodeComponent(pid.toString())}',
-        queryParams: queryParams,
       );
 
   /// This *could* be defined in [GoRouteData] – but only if [location] was not
   /// also an extension. Can't wait for macros!
-  void go(
-    BuildContext buildContext, {
-    Map<String, String>? queryParams,
-    Object? extra,
-  }) {
-    buildContext.go(location(queryParams: queryParams), extra: extra);
-  }
+  void go(BuildContext buildContext) => buildContext.go(location);
 }
 
 extension $PersonDetailsRouteExtension on PersonDetailsRoute {
@@ -95,22 +72,15 @@ extension $PersonDetailsRouteExtension on PersonDetailsRoute {
         PersonDetails.values.byName(state.params['details']!),
       );
 
-  String location({Map<String, String>? queryParams}) => GoRouteData.$location(
+  String get location => GoRouteData.$location(
         '/family/${Uri.encodeComponent(fid)}'
         '/person/${Uri.encodeComponent(pid.toString())}'
         '/details/${Uri.encodeComponent(details.name)}',
-        queryParams: queryParams,
       );
 
   /// This *could* be defined in [GoRouteData] – but only if [location] was not
   /// also an extension. Can't wait for macros!
-  void go(
-    BuildContext buildContext, {
-    Map<String, String>? queryParams,
-    Object? extra,
-  }) {
-    buildContext.go(location(queryParams: queryParams), extra: extra);
-  }
+  void go(BuildContext buildContext) => buildContext.go(location);
 }
 
 GoRoute get loginRoute => GoRouteData.$route(
@@ -123,23 +93,14 @@ extension $LoginRouteExtension on LoginRoute {
         from: state.queryParams['from'],
       );
 
-  String location({Map<String, String>? queryParams}) => GoRouteData.$location(
+  String get location => GoRouteData.$location(
         '/login',
         queryParams: {
-          ...?queryParams,
-          // QUESTION: should user-provided query params "win" here?
-          // Or should we throw an exception if there's a conflict?
           if (from != null) 'from': from!,
         },
       );
 
   /// This *could* be defined in [GoRouteData] – but only if [location] was not
   /// also an extension. Can't wait for macros!
-  void go(
-    BuildContext buildContext, {
-    Map<String, String>? queryParams,
-    Object? extra,
-  }) {
-    buildContext.go(location(queryParams: queryParams), extra: extra);
-  }
+  void go(BuildContext buildContext) => buildContext.go(location);
 }

@@ -41,16 +41,16 @@ class App extends StatelessWidget {
       final loggedIn = loginInfo.loggedIn;
 
       // check just the subloc in case there are query parameters
-      final loginLoc = const LoginRoute().location();
+      final loginLoc = const LoginRoute().location;
       final goingToLogin = state.subloc == loginLoc;
 
       // the user is not logged in and not headed to /login, they need to login
       if (!loggedIn && !goingToLogin) {
-        return LoginRoute(from: state.subloc).location();
+        return LoginRoute(from: state.subloc).location;
       }
 
       // the user is logged in and headed to /login, no need to login again
-      if (loggedIn && goingToLogin) return const HomeRoute().location();
+      if (loggedIn && goingToLogin) return const HomeRoute().location;
 
       // no need to redirect at all
       return null;
