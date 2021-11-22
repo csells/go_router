@@ -17,7 +17,7 @@ abstract class GoRouteData {
   Widget build(BuildContext context) =>
       throw UnsupportedError('Should be overridden in subclass.');
 
-  Page<dynamic> createPage(
+  Page<dynamic> buildPage(
     BuildContext context,
     GoRouterState state,
   ) {
@@ -62,7 +62,7 @@ abstract class GoRouteData {
   ) =>
       (context, state) {
         final data = factory(state);
-        return data.createPage(context, state);
+        return data.buildPage(context, state);
       };
 
   static String? Function(GoRouterState) _createRedirectHelper(
