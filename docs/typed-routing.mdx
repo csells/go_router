@@ -231,7 +231,7 @@ route:
 class HomeRoute extends GoRouteData {
   // no need to implement [build] when this [redirect] is unconditional
   @override
-  String? redirect(GoRouterState state) => BooksRoute().location;
+  String? redirect() => BooksRoute().location;
 } 
 ```
 
