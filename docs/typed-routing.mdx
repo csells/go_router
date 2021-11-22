@@ -297,3 +297,26 @@ class FancyRoute extends GoRouteData {
     ),
 }
 ```
+
+## Implementation notes
+
+1. The `@TypedGoRoute` annotation:
+   - It's only valid to annotate implementations of `GoRouteData`.
+     - May want to expand this pretty soon, to include Widgets? Libraries?
+       Should discuss.
+   - The type parameter MUST be provided.
+   - The root `@TypedGoRoute` type param must match the annotated class.
+2. `GoRouteData` implementations
+   - Must have a default constructor (or factory).
+   - All constructor parameters must map 1-to-1 name and type to fields or
+     getters on the type.
+     - Question: do we want to support read/write fields and getter/seter pairs?
+   - Only fields that align getters with constructor parameters or setters will
+     be used for serialization.
+   - It is valid to have a `const` constructor. In the case of a no-param
+     constructor, `const` will be used to initailze the type.
+   - Valid parameter/field/property types:
+     - `String`: as-is
+     - `num`, `int`, `bool`, `DateTime`, `Duration`, `BigInt`, `double`, `Uri`:
+       encoded with `toString`
+     - `Enum`: encoded using kebab cased names.
