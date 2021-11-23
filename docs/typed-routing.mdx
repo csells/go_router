@@ -51,16 +51,17 @@ a specific route consumes and to use code generation to take out the drudgery of
 writing a bunch of `go`, `push` and `location` boilerplate code implementations
 ourselves.
 
-The code generator to do this work today in [our experimental
-implementation](https://github.com/csells/go_router/pull/130) is the
-[build_runner](https://pub.dev/packages/build_runner) package but the plan is to
-move to [Dart
-macros](https://github.com/dart-lang/language/blob/master/working/macros/feature-specification.md)
+The code generator to do this work today in
+[our experimental implementation](https://github.com/csells/go_router/pull/130)
+is the [build_runner](https://pub.dev/packages/build_runner) package but the
+plan is to move to
+[Dart macros](https://github.com/dart-lang/language/blob/master/working/macros/feature-specification.md)
 when they're available.
 
 ## Defining a route
 
-Define each route as a class extending `GoRouteData` and overriding the `build` method.
+Define each route as a class extending `GoRouteData` and overriding the `build`
+method.
 
 ```dart
 class PersonRoute extends GoRouteData {
@@ -70,10 +71,11 @@ class PersonRoute extends GoRouteData {
 
   @override
   Widget build(BuildContext context) => PersonPage(fid: fid, pid: pid);
-} 
+}
 ```
 
-Required parameters are pulled from the route's `path` defined in the route tree.
+Required parameters are pulled from the route's `path` defined in the route
+tree.
 
 ## Route tree
 
@@ -87,9 +89,9 @@ The tree of routes is defined as an attribute on each of the top-level routes:
       path: 'family/:fid',
       routes: [
         TypedGoRoute<PersonRoute>(
-          path: 'person/:pid', 
+          path: 'person/:pid',
         ),
-      ], 
+      ],
     ),
   ],
 )
@@ -148,8 +150,8 @@ If you get this wrong, the compiler will complain:
 void _tap() => PersonRoute(pid: 'p1').go(context);
 ```
 
-This, of course, is the whole point of typed routing; the compiler can let
-us known when we get it wrong.
+This, of course, is the whole point of typed routing; the compiler can let us
+known when we get it wrong.
 
 ## Query parameters
 
@@ -158,8 +160,8 @@ Optional parameters indicate query parameters:
 ```dart
 class LoginRoute extends GoRouteData {
   LoginRoute({this.from});
-  final String? from; 
-  
+  final String? from;
+
   @override
   Widget build(BuildContext context) => LoginPage(from: from);
 }
@@ -176,7 +178,7 @@ class PersonRouteWithExtra extends GoRouteData {
   final Person $extra;
 
   @override
-  Widget build(BuildContext context) => PersonPage(person: $extra); 
+  Widget build(BuildContext context) => PersonPage(person: $extra);
 }
 ```
 
@@ -201,7 +203,7 @@ class HotdogRouteWithEverything extends GoRouteData {
   final Sauce $extra; // special $extra parameter
 
   @override
-  Widget build(BuildContext context) => HotdogPage(ketchup, mustard, $extra); 
+  Widget build(BuildContext context) => HotdogPage(ketchup, mustard, $extra);
 }
 ```
 
@@ -218,21 +220,20 @@ redirect: (state) {
   final loggingIn = state.subloc == LoginRoute().location;
   if( !loggedIn && !loggingIn ) return LoginRoute(from: state.subloc).location;
   if( loggedIn && loggingIn ) return HomeRoute().location;
-  return null; 
+  return null;
 }
 ```
 
 ## Route-level redirection
 
-Handle route-level redirects by implementing the `redirect` method on the
-route:
+Handle route-level redirects by implementing the `redirect` method on the route:
 
 ```dart
 class HomeRoute extends GoRouteData {
   // no need to implement [build] when this [redirect] is unconditional
   @override
   String? redirect() => BooksRoute().location;
-} 
+}
 ```
 
 ## Type conversions
@@ -246,7 +247,7 @@ enum BookKind { all, popular, recent }
 class BooksRoute extends GoRouteData {
   BooksRoute({this.kind = BookKind.popular});
   final BookKind kind;
-  
+
   @override
   Widget build(BuildContext context) => BooksPage(kind: kind);
 }
@@ -254,8 +255,8 @@ class BooksRoute extends GoRouteData {
 
 ## Transitions
 
-By default, the `GoRouter` will use  the app it finds in the widget tree, e.g.
-`MaterialApp`, `CupertinoApp`, `WidgetApp`, etc. and use  the corresponding page
+By default, the `GoRouter` will use the app it finds in the widget tree, e.g.
+`MaterialApp`, `CupertinoApp`, `WidgetApp`, etc. and use the corresponding page
 type to create the page that wraps the `Widget` returned by the route's `build`
 method, e.g. `MaterialPage`, `CupertinoPage`, `Page`, etc. Furthermore, it will
 use the `state.pageKey` property to set the `key` property of the page.
@@ -263,9 +264,9 @@ use the `state.pageKey` property to set the `key` property of the page.
 ### Transition override
 
 If you'd like to change how the page is created, e.g. to use a different page
-type, pass non-default parameters when creating the page (like a custom
-key) or access the `GoRouteState` object, you can override the `buildPage` method
-of the base class instead of the `build` method:
+type, pass non-default parameters when creating the page (like a custom key) or
+access the `GoRouteState` object, you can override the `buildPage` method of the
+base class instead of the `build` method:
 
 ```dart
 class MyMaterialRouteWithKey extends GoRouteData {
@@ -277,7 +278,7 @@ class MyMaterialRouteWithKey extends GoRouteData {
       key: _key,
       child: MyPage(),
     );
-} 
+}
 ```
 
 ### Custom transitions
@@ -294,5 +295,28 @@ class FancyRoute extends GoRouteData {
       transitionsBuilder: (context, animation, animation2, child) =>
           RotationTransition(turns: animation, child: child),
     ),
-} 
+}
 ```
+
+## Implementation notes
+
+1. The `@TypedGoRoute` annotation:
+   - It's only valid to annotate implementations of `GoRouteData`.
+     - May want to expand this pretty soon, to include Widgets? Libraries?
+       Should discuss.
+   - The type parameter MUST be provided.
+   - The root `@TypedGoRoute` type param must match the annotated class.
+2. `GoRouteData` implementations
+   - Must have a default constructor (or factory).
+   - All constructor parameters must map 1-to-1 name and type to fields or
+     getters on the type.
+     - Question: do we want to support read/write fields and getter/seter pairs?
+   - Only fields that align getters with constructor parameters or setters will
+     be used for serialization.
+   - It is valid to have a `const` constructor. In the case of a no-param
+     constructor, `const` will be used to initailze the type.
+   - Valid parameter/field/property types:
+     - `String`: as-is
+     - `num`, `int`, `bool`, `DateTime`, `Duration`, `BigInt`, `double`, `Uri`:
+       encoded with `toString`
+     - `Enum`: encoded using kebab cased names.
