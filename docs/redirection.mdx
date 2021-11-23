@@ -198,6 +198,46 @@ the last sub-route matched, so you can't have to worry about redirecting in the
 middle of a location being parsed when you're already on your way to another
 page anyway.
 
+### Route-level redirection considerations
+
+There are a couple of subtleties to consider when using route-level redirection.
+If you have a route that has a `redirect` function that only redirects under
+certain conditions, you will still need to provide a `pageBuilder` function,
+e.g.
+
+```dart
+GoRoute(
+  path: '/',
+  redirect: (_) => kGoElsewhere ? '/elsewhere' : null,
+  pageBuilder: (context, state) => ..., // need this if kGoElsewhere == false
+)
+```
+
+The `pageBuilder` function will be called when the redirect condition is false.
+
+Also, if the `redirect` function is part of a sub-route, you will need to
+provide a `pageBuilder` function, e.g.
+
+```dart
+GoRoute(
+  path: '/',
+  redirect: (_) => '/elsewhere', // only called when going to /
+  pageBuilder: (context, state) => ..., // need this to build /somewhere stack
+  routes: [
+    GoRoute(
+      path: 'somewhere',
+      pageBuilder: ...,
+    ),
+  ],
+)
+```
+
+The `redirect` function will only be called when it's the top-most route of a 
+stack of matched routes.
+
+Of course, in you don't have a route-level `redirect` function at all, you will
+need a `pageBuilder` function in that case as well.
+
 ## Parameterized redirection
 
 In some cases, a path is parameterized, and you'd like to redirect with those
