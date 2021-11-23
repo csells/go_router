@@ -97,7 +97,8 @@ shout out to the go_router contributors!
   navigationBuilder feature](#navigator-builder) and updates to [state
   restoration](https://github.com/csells/go_router/blob/master/example/lib/state_restoration.dart).
 - [lulupointu](https://github.com/lulupointu) for deep link fixes that keep
-  pages from flashing willy-nilly.
+  pages from flashing willy-nilly and for the nested navigation fixes; happy to
+  have your help on go_router!
 
 # Changelog
 
@@ -1188,8 +1189,8 @@ class _FamilyTabsPageState extends State<FamilyTabsPage>
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void didUpdateWidget(FamilyTabsPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
     _controller.index = widget.index;
   }
 
@@ -1223,9 +1224,9 @@ to set the currently selected tab. However, instead of switching the currently
 selected tab to whatever the user clicks on, it uses navigation to get to that
 index instead. It's the use of navigation that changes the address in the
 address bar. And, the way that the tab index is switched is via the call to
-`didChangeDependencies`. Because the `FamilyTabsPage` is a stateful widget, the
+`didUpdateWidget`. Because the `FamilyTabsPage` is a stateful widget, the
 widget itself can be changed but the state is kept. When that happens, the call
-to `didChangeDependencies` will change the index of the `TabController` to match
+to `didUpdateWidget` will change the index of the `TabController` to match
 the new navigation location.
 
 To implement the navigation part of this example, we need a route that
@@ -1280,7 +1281,7 @@ page you create in your page builder to support nested navigation:
    passing in new data, e.g. which tab is currently selected. Because you're
    using a widget with the same key, Flutter will keep the state but swap out the
    widget wrapping w/ the new data as constructor args. When that new widget wrapper is
-   in place, Flutter will call `didChangeDependencies` so that you can use the new
+   in place, Flutter will call `didUpdateWidget` so that you can use the new
    data to update the existing widgets, e.g. the selected tab.
 
 This example shows off the selected tab on a `TabView` but you can use it for
