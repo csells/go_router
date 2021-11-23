@@ -13,7 +13,7 @@ class GoRoute {
   GoRoute({
     required this.path,
     this.name,
-    this.pageBuilder = _builder,
+    this.pageBuilder = _pageBuilder,
     this.routes = const [],
     this.redirect = _redirect,
   }) {
@@ -179,6 +179,9 @@ class GoRoute {
 
   static String? _redirect(GoRouterState state) => null;
 
-  static Page<dynamic> _builder(BuildContext context, GoRouterState state) =>
-      throw Exception('GoRoute builder parameter not set');
+  static Page<dynamic> _pageBuilder(
+          BuildContext context, GoRouterState state) =>
+      // ignore: leading_newlines_in_multiline_strings
+      throw Exception('GoRoute pageBuilder parameter not set.\n'
+          'See gorouter.dev/redirection#considerations for details');
 }

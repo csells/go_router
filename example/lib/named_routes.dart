@@ -196,7 +196,7 @@ class ErrorPage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(error?.toString() ?? 'page not found'),
+              SelectableText(error?.toString() ?? 'page not found'),
               TextButton(
                 onPressed: () => context.goNamed('home'),
                 child: const Text('Home'),
