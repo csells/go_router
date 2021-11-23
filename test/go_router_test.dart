@@ -1054,6 +1054,42 @@ void main() {
       expect((router.pageFor(matches[0]) as ErrorPage).ex, isNotNull);
       dump((router.pageFor(matches[0]) as ErrorPage).ex);
     });
+
+    test('use locator in redirect', () {
+      final routes = [
+        GoRoute(
+          path: '/',
+          pageBuilder: (builder, state) => HomePage(),
+        ),
+      ];
+
+      final dependencies = <Type, Object>{
+        int: 42,
+        String: 'Flutter Rocks',
+      };
+
+      T get<T>() {
+        return dependencies[T] as T;
+      }
+
+      final results = <Object>[];
+
+      final router = GoRouter(
+        routes: routes,
+        errorPageBuilder: _dummy,
+        locator: get,
+        redirect: (state) {
+          final locator = state.locator;
+          if (locator != null) {
+            results.add(locator<int>());
+            results.add(locator<String>());
+          }
+          return null;
+        },
+      );
+      expect(router.location, '/');
+      expect(results, [42, 'Flutter Rocks']);
+    });
   });
 
   group('initial location', () {

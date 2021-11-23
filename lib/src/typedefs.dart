@@ -23,3 +23,6 @@ typedef GoRouterPageBuilder = Page<dynamic> Function(
 
 /// The signature of the redirect callback.
 typedef GoRouterRedirect = String? Function(GoRouterState state);
+
+/// Signature of function that serves as a service locator.
+typedef GoRouterLocator = T Function<T>();

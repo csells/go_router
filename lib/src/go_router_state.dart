@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import 'go_router_delegate.dart';
+import 'typedefs.dart';
 
 /// The route state during routing.
 class GoRouterState {
@@ -17,6 +18,7 @@ class GoRouterState {
     this.extra,
     this.error,
     ValueKey<String>? pageKey,
+    this.locator,
   })  : pageKey = pageKey ??
             ValueKey(error != null
                 ? 'error'
@@ -56,6 +58,10 @@ class GoRouterState {
 
   /// A unique string key for this sub-route, e.g. ValueKey('/family/:fid')
   final ValueKey<String> pageKey;
+
+  /// A function used to get dependencies.
+  /// It can be used for example in the redirect function.
+  final GoRouterLocator? locator;
 
   /// Get a location from route name and parameters.
   /// This is useful for redirecting to a named location.

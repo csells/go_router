@@ -28,6 +28,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     required this.observers,
     required this.debugLogDiagnostics,
     this.restorationScopeId,
+    this.locator,
   }) {
     // check top-level route paths are valid
     for (final route in routes) {
@@ -78,6 +79,10 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   /// Restoration ID to save and restore the state of the navigator, including
   /// its history.
   final String? restorationScopeId;
+
+  /// Function that can be used to get dependencies and which is passed to the
+  /// [GoRouterState] during redirection.
+  final GoRouterLocator? locator;
 
   final _key = GlobalKey<NavigatorState>();
   final List<GoRouteMatch> _matches = [];
@@ -329,6 +334,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
               subloc: uri.path,
               // pass along the query params 'cuz that's all we have right now
               queryParams: uri.queryParameters,
+              locator: locator,
             ),
           ),
         )) continue;
@@ -357,6 +363,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
               params: params,
               queryParams: top.queryParams,
               extra: extra,
+              locator: locator,
             ),
           ),
         )) continue;
@@ -400,6 +407,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
                 params: state.params,
                 queryParams: state.queryParams,
                 extra: state.extra,
+                locator: locator,
               ),
             ),
           ),
@@ -626,6 +634,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
             name: null,
             queryParams: uri.queryParameters,
             error: err is Exception ? err : Exception(err),
+            locator: locator,
           ),
         ),
       ];
@@ -708,6 +717,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
           queryParams: match.queryParams,
           extra: match.extra,
           pageKey: match.pageKey, // push() remaps the page key for uniqueness
+          locator: locator,
         ),
       );
     }
