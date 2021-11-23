@@ -749,6 +749,28 @@ by setting the `redirectLimit` argument to the `GoRouter` constructor.
 
 The other trouble you need worry about is getting into a loop, e.g. `/ => /foo => /`. If that happens, you'll get an exception.
 
+## Retrieve a dependency in the redirect function
+
+It can be useful to be able to request a part of the app's state inside the `redirect` function.
+To be able to do it, you can pass a `locator` function to `GoRouter` which will serves as a service locator and available in all `GoRouterState` objects.
+
+For example, if you use [the provider package](https://pub.dev/packages/provider), you can create the `GoRouter` instance in the `State` of a `StatefulWidget` like this:
+
+```dart
+late final _router = GoRouter(
+  locator: context.read,
+  routes: ...,
+  errorPageBuilder: ...,
+  redirect: (state) {
+    final locator = state.locator;
+    if (locator != null) {
+      // To retrieve a dependency, we just have to call the locator.
+      final myDependency = locator<MyDependency>();
+    }
+  },
+);
+```
+
 # Query Parameters
 
 Sometimes you're doing [deep linking](#deep-linking) and you'd like a user to
