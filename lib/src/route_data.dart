@@ -34,7 +34,7 @@ abstract class GoRouteData {
     );
   }
 
-  String? redirect(GoRouterState state) => null;
+  String? redirect() => null;
 
   static String $location(String path, {Map<String, String>? queryParams}) =>
       Uri.parse(path)
@@ -68,7 +68,7 @@ abstract class GoRouteData {
   static String? Function(GoRouterState) _createRedirectHelper(
     GoRouteData Function(GoRouterState) factory,
   ) =>
-      (state) => factory(state).redirect(state);
+      (state) => factory(state).redirect();
 }
 
 /// The annotation we use! Annotating the source library seems to be a good
