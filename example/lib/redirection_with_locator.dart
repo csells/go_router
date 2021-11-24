@@ -7,6 +7,26 @@ import 'shared/pages.dart';
 
 final loginInfo = LoginInfo();
 
+// The redirect function can be global or outside of a StatefulWidget and we
+// are able to get our dependency in the function.
+String? _redirect(GoRouterState state) {
+  final locator = state.locator;
+  if (locator != null) {
+    final loginInfo = locator<LoginInfo>();
+    final loggedIn = loginInfo.loggedIn;
+    final goingToLogin = state.location == '/login';
+
+    // the user is not logged in and not headed to /login, they need to login
+    if (!loggedIn && !goingToLogin) return '/login';
+
+    // the user is logged in and headed to /login, no need to login again
+    if (loggedIn && goingToLogin) return '/';
+
+    // no need to redirect at all
+    return null;
+  }
+}
+
 void main() => runApp(
       ChangeNotifierProvider.value(
         value: loginInfo,
@@ -74,31 +94,14 @@ class _AppState extends State<App> {
         ),
       ),
     ],
-
     errorPageBuilder: (context, state) => MaterialPage<void>(
       key: state.pageKey,
       child: ErrorPage(state.error),
     ),
-
-    // redirect to the login page if the user is not logged in
-    redirect: (state) {
-      final locator = state.locator;
-      if (locator != null) {
-        final loginInfo = locator<LoginInfo>();
-        final loggedIn = loginInfo.loggedIn;
-        final goingToLogin = state.location == '/login';
-
-        // the user is not logged in and not headed to /login, they need to login
-        if (!loggedIn && !goingToLogin) return '/login';
-
-        // the user is logged in and headed to /login, no need to login again
-        if (loggedIn && goingToLogin) return '/';
-
-        // no need to redirect at all
-        return null;
-      }
-    },
-
+    // redirect to the login page if the user is not logged in and using a
+    // top-level function to demonstrate how to get dependency through the
+    // locator without being able to get the context.
+    redirect: _redirect,
     // changes on the listenable will cause the router to refresh it's route
     refreshListenable: loginInfo,
   );
