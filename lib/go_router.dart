@@ -49,6 +49,10 @@ extension GoRouterHelper on BuildContext {
   void push(String location, {Object? extra}) =>
       GoRouter.of(this).push(location, extra: extra);
 
+  /// Replace the top page in the stack by the given location. 
+  void pushReplacement(String location, {Object? extra}) =>
+      GoRouter.of(this).pushReplacement(location, extra: extra);
+
   /// Navigate to a named route onto the page stack.
   void pushNamed(
     String name, {
@@ -63,6 +67,20 @@ extension GoRouterHelper on BuildContext {
         extra: extra,
       );
 
+  /// Replace the top page in the stack by the given named route. 
+  void pushReplacementNamed(
+    String name, {
+    Map<String, String> params = const {},
+    Map<String, String> queryParams = const {},
+    Object? extra,
+  }) =>
+      GoRouter.of(this).pushReplacementNamed(
+        name,
+        params: params,
+        queryParams: queryParams,
+        extra: extra,
+      );
+  
   /// Pop the top page off the Navigator's page stack by calling
   /// [Navigator.pop].
   void pop() => GoRouter.of(this).pop(this);

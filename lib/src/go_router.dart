@@ -98,6 +98,10 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
   void push(String location, {Object? extra}) =>
       routerDelegate.push(location, extra: extra);
 
+  /// Replaces the top page in the stack by the given URI location.
+  void pushReplacement(String location, {Object? extra}) =>
+      routerDelegate.pushReplacement(location, extra: extra);
+
   /// Push a named route onto the page stack w/ optional parameters, e.g.
   /// name='person', params={'fid': 'f2', 'pid': 'p1'}
   void pushNamed(
@@ -111,6 +115,18 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
         extra: extra,
       );
 
+  /// Replaces the top page in the stack by the given named route.
+  void pushReplacementNamed(
+    String name, {
+    Map<String, String> params = const {},
+    Map<String, String> queryParams = const {},
+    Object? extra,
+  }) =>
+      routerDelegate.pushReplacement(
+        namedLocation(name, params: params, queryParams: queryParams),
+        extra: extra,
+      );
+  
   /// Pop the top page off the Navigator's page stack by calling
   /// [Navigator.pop].
   void pop(BuildContext context) => Navigator.pop(context);
