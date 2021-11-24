@@ -1,5 +1,10 @@
 # Changelog
 
+### 2.3.1
+
+- [fix 191](https://github.com/csells/go_router/issues/191): handle several
+  kinds of trailing / in the location, e.g. `/foo/` should be the same as `/foo`
+
 ### 2.3.0
 
 - fix a misleading error message when using redirect functions with sub-routes
