@@ -6,7 +6,7 @@ void main() => runApp(App());
 class App extends StatelessWidget {
   App({Key? key}) : super(key: key);
 
-  static const title = 'GoRouter Example: Custom Error Page';
+  static const title = 'GoRouter Example: Custom Error Screen';
 
   @override
   Widget build(BuildContext context) => MaterialApp.router(

@@ -9,6 +9,13 @@
       "program": "lib/main.dart"
     },
     {
+      "name": "Custom Error Screen",
+      "type": "dart",
+      "request": "launch",
+      "cwd": "example",
+      "program": "lib/error_screen.dart"
+    },
+    {
       "name": "Initial Location",
       "request": "launch",
       "type": "dart",
