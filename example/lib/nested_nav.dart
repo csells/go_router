@@ -25,7 +25,7 @@ class App extends StatelessWidget {
       ),
       GoRoute(
         path: '/family/:fid',
-        builder: (context, state) => FamilyTabsPage(
+        builder: (context, state) => FamilyTabsScreen(
           key: state.pageKey,
           selectedFamily: Families.family(state.params['fid']!),
         ),
@@ -36,7 +36,7 @@ class App extends StatelessWidget {
               final family = Families.family(state.params['fid']!);
               final person = family.person(state.params['pid']!);
 
-              return PersonPage(family: family, person: person);
+              return PersonScreen(family: family, person: person);
             },
           ),
         ],
@@ -60,8 +60,8 @@ class App extends StatelessWidget {
   );
 }
 
-class FamilyTabsPage extends StatefulWidget {
-  FamilyTabsPage({required Family selectedFamily, Key? key})
+class FamilyTabsScreen extends StatefulWidget {
+  FamilyTabsScreen({required Family selectedFamily, Key? key})
       : index = Families.data.indexWhere((f) => f.id == selectedFamily.id),
         super(key: key) {
     assert(index != -1);
@@ -70,10 +70,10 @@ class FamilyTabsPage extends StatefulWidget {
   final int index;
 
   @override
-  _FamilyTabsPageState createState() => _FamilyTabsPageState();
+  _FamilyTabsScreenState createState() => _FamilyTabsScreenState();
 }
 
-class _FamilyTabsPageState extends State<FamilyTabsPage>
+class _FamilyTabsScreenState extends State<FamilyTabsScreen>
     with TickerProviderStateMixin {
   late final TabController _controller;
 
@@ -94,7 +94,7 @@ class _FamilyTabsPageState extends State<FamilyTabsPage>
   }
 
   @override
-  void didUpdateWidget(covariant FamilyTabsPage oldWidget) {
+  void didUpdateWidget(covariant FamilyTabsScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
     _controller.index = widget.index;
   }
@@ -159,8 +159,8 @@ class _FamilyViewState extends State<FamilyView>
   }
 }
 
-class PersonPage extends StatelessWidget {
-  const PersonPage({required this.family, required this.person, Key? key})
+class PersonScreen extends StatelessWidget {
+  const PersonScreen({required this.family, required this.person, Key? key})
       : super(key: key);
 
   final Family family;

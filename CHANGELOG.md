@@ -8,11 +8,14 @@
   simpler way to build error pages via the `GoRouter.errorBuilder` method
 - provide default implementation of `GoRouter.errorBuilder` to provide an error
   page without the need to implement a custom error page builder
-- TODO: new [Migrating to 2.5 section](TODO) in the docs to show how to take
-  advantage of the new `builder` and default error page builder
+- TODO: new [Migrating to 2.5 section](https://gorouter.dev/migrating-to-20) in
+  the docs to show how to take advantage of the new `builder` and default error
+  page builder
 - TODO: updated docs to take new `builder` into account
-- TODO: updated README to point to new docs site
-- fix a problem with `extra` param not being available when going back
+- TODO: updated docs to be careful about the use of "screen" vs "page" in the
+  class names
+- updated README to point to new docs site: [gorouter.dev](https://gorouter.dev)
+- TODO: fix a problem with `extra` param not being available when going back
 
 ### 2.2.8
 
@@ -118,7 +121,7 @@
 
 - BREAKING CHANGE and [fix #50](https://github.com/csells/go_router/issues/50):
   split `params` into `params` and `queryParams`; see the [Migrating to 2.0
-  section of the docs](https://gorouter.dev/migrating#migrating-to-20)
+  section of the docs](https://gorouter.dev/migrating-to-20)
   for instructions on how to migrate your code from 1.x to 2.0
 - [fix 69](https://github.com/csells/go_router/issues/69): exposed named
   location lookup for redirection

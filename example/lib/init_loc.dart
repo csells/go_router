@@ -20,22 +20,22 @@ class App extends StatelessWidget {
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => const Page1Page(),
+        builder: (context, state) => const Page1Screen(),
       ),
       GoRoute(
         path: '/page2',
-        builder: (context, state) => const Page2Page(),
+        builder: (context, state) => const Page2Screen(),
       ),
       GoRoute(
         path: '/page3',
-        builder: (context, state) => const Page3Page(),
+        builder: (context, state) => const Page3Screen(),
       ),
     ],
   );
 }
 
-class Page1Page extends StatelessWidget {
-  const Page1Page({Key? key}) : super(key: key);
+class Page1Screen extends StatelessWidget {
+  const Page1Screen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -54,8 +54,8 @@ class Page1Page extends StatelessWidget {
       );
 }
 
-class Page2Page extends StatelessWidget {
-  const Page2Page({Key? key}) : super(key: key);
+class Page2Screen extends StatelessWidget {
+  const Page2Screen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -74,8 +74,8 @@ class Page2Page extends StatelessWidget {
       );
 }
 
-class Page3Page extends StatelessWidget {
-  const Page3Page({Key? key}) : super(key: key);
+class Page3Screen extends StatelessWidget {
+  const Page3Screen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) => Scaffold(

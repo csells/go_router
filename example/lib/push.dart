@@ -19,11 +19,11 @@ class App extends StatelessWidget {
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => const Page1PageWithPush(),
+        builder: (context, state) => const Page1ScreenWithPush(),
       ),
       GoRoute(
         path: '/page2',
-        builder: (context, state) => Page2PageWithPush(
+        builder: (context, state) => Page2ScreenWithPush(
           int.parse(state.queryParams['push-count']!),
         ),
       ),
@@ -31,8 +31,8 @@ class App extends StatelessWidget {
   );
 }
 
-class Page1PageWithPush extends StatelessWidget {
-  const Page1PageWithPush({Key? key}) : super(key: key);
+class Page1ScreenWithPush extends StatelessWidget {
+  const Page1ScreenWithPush({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -51,8 +51,8 @@ class Page1PageWithPush extends StatelessWidget {
       );
 }
 
-class Page2PageWithPush extends StatelessWidget {
-  const Page2PageWithPush(this.pushCount, {Key? key}) : super(key: key);
+class Page2ScreenWithPush extends StatelessWidget {
+  const Page2ScreenWithPush(this.pushCount, {Key? key}) : super(key: key);
   final int pushCount;
 
   @override

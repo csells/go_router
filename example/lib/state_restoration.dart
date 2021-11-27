@@ -38,7 +38,7 @@ class _AppState extends State<App> with RestorationMixin {
         pageBuilder: (context, state) => MaterialPage<void>(
           restorationId: state.pageKey.value,
           key: state.pageKey,
-          child: const Page1Page(),
+          child: const Page1Screen(),
         ),
       ),
       GoRoute(
@@ -46,7 +46,7 @@ class _AppState extends State<App> with RestorationMixin {
         pageBuilder: (context, state) => MaterialPage<void>(
           restorationId: state.pageKey.value,
           key: state.pageKey,
-          child: const Page2Page(),
+          child: const Page2Screen(),
         ),
       ),
     ],
@@ -54,8 +54,8 @@ class _AppState extends State<App> with RestorationMixin {
   );
 }
 
-class Page1Page extends StatelessWidget {
-  const Page1Page({Key? key}) : super(key: key);
+class Page1Screen extends StatelessWidget {
+  const Page1Screen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -74,8 +74,8 @@ class Page1Page extends StatelessWidget {
       );
 }
 
-class Page2Page extends StatelessWidget {
-  const Page2Page({Key? key}) : super(key: key);
+class Page2Screen extends StatelessWidget {
+  const Page2Screen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) => Scaffold(

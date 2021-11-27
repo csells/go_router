@@ -19,19 +19,19 @@ class App extends StatelessWidget {
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => const Page1Page(),
+        builder: (context, state) => const Page1Screen(),
       ),
       GoRoute(
         path: '/page2',
-        builder: (context, state) => const Page2Page(),
+        builder: (context, state) => const Page2Screen(),
       ),
     ],
-    errorBuilder: (context, state) => ErrorPage(state.error!),
+    errorBuilder: (context, state) => ErrorScreen(state.error!),
   );
 }
 
-class Page1Page extends StatelessWidget {
-  const Page1Page({Key? key}) : super(key: key);
+class Page1Screen extends StatelessWidget {
+  const Page1Screen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -50,8 +50,8 @@ class Page1Page extends StatelessWidget {
       );
 }
 
-class Page2Page extends StatelessWidget {
-  const Page2Page({Key? key}) : super(key: key);
+class Page2Screen extends StatelessWidget {
+  const Page2Screen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -70,8 +70,8 @@ class Page2Page extends StatelessWidget {
       );
 }
 
-class ErrorPage extends StatelessWidget {
-  const ErrorPage(this.error, {Key? key}) : super(key: key);
+class ErrorScreen extends StatelessWidget {
+  const ErrorScreen(this.error, {Key? key}) : super(key: key);
   final Exception error;
 
   @override

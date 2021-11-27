@@ -12,9 +12,9 @@ CupertinoPage<void> pageBuilderForCupertinoApp(LocalKey key, Widget child) =>
     CupertinoPage<void>(key: key, child: child);
 
 /// Default error page implementation for Cupertino.
-class GoRouterCupertinoErrorPage extends StatelessWidget {
+class GoRouterCupertinoErrorScreen extends StatelessWidget {
   /// Provide an exception to this page for it to be displayed.
-  const GoRouterCupertinoErrorPage(this.error, {Key? key}) : super(key: key);
+  const GoRouterCupertinoErrorScreen(this.error, {Key? key}) : super(key: key);
 
   /// The exception to be displayed.
   final Exception? error;

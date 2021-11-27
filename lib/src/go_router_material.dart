@@ -12,9 +12,9 @@ MaterialPage<void> pageBuilderForMaterialApp(LocalKey key, Widget child) =>
     MaterialPage<void>(key: key, child: child);
 
 /// Default error page implementation for Material.
-class GoRouterMaterialErrorPage extends StatelessWidget {
+class GoRouterMaterialErrorScreen extends StatelessWidget {
   /// Provide an exception to this page for it to be displayed.
-  const GoRouterMaterialErrorPage(this.error, {Key? key}) : super(key: key);
+  const GoRouterMaterialErrorScreen(this.error, {Key? key}) : super(key: key);
 
   /// The exception to be displayed.
   final Exception? error;

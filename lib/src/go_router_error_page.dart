@@ -4,9 +4,9 @@ import 'package:flutter/widgets.dart';
 import '../go_router.dart';
 
 /// Default error page implementation for Material.
-class GoRouterErrorPage extends StatelessWidget {
+class GoRouterErrorScreen extends StatelessWidget {
   /// Provide an exception to this page for it to be displayed.
-  const GoRouterErrorPage(this.error, {Key? key}) : super(key: key);
+  const GoRouterErrorScreen(this.error, {Key? key}) : super(key: key);
 
   /// The exception to be displayed.
   final Exception? error;

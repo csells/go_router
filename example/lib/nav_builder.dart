@@ -25,14 +25,15 @@ class App extends StatelessWidget {
       GoRoute(
         name: 'home',
         path: '/',
-        builder: (context, state) => HomePageNoLogout(families: Families.data),
+        builder: (context, state) =>
+            HomeScreenNoLogout(families: Families.data),
         routes: [
           GoRoute(
             name: 'family',
             path: 'family/:fid',
             builder: (context, state) {
               final family = Families.family(state.params['fid']!);
-              return FamilyPage(family: family);
+              return FamilyScreen(family: family);
             },
             routes: [
               GoRoute(
@@ -43,7 +44,7 @@ class App extends StatelessWidget {
                   final person = family.person(state.params['pid']!);
                   return MaterialPage<void>(
                     key: state.pageKey,
-                    child: PersonPage(family: family, person: person),
+                    child: PersonScreen(family: family, person: person),
                   );
                 },
               ),
@@ -56,7 +57,7 @@ class App extends StatelessWidget {
         path: '/login',
         builder: (context, state) =>
             // pass the original location to the LoginPage (if there is one)
-            LoginPage(from: state.queryParams['from']),
+            LoginScreen(from: state.queryParams['from']),
       ),
     ],
 
@@ -132,8 +133,9 @@ class AuthOverlay extends StatelessWidget {
       );
 }
 
-class HomePageNoLogout extends StatelessWidget {
-  const HomePageNoLogout({required this.families, Key? key}) : super(key: key);
+class HomeScreenNoLogout extends StatelessWidget {
+  const HomeScreenNoLogout({required this.families, Key? key})
+      : super(key: key);
   final List<Family> families;
 
   @override
@@ -151,8 +153,8 @@ class HomePageNoLogout extends StatelessWidget {
       );
 }
 
-class FamilyPage extends StatelessWidget {
-  const FamilyPage({required this.family, Key? key}) : super(key: key);
+class FamilyScreen extends StatelessWidget {
+  const FamilyScreen({required this.family, Key? key}) : super(key: key);
   final Family family;
 
   @override
@@ -170,8 +172,8 @@ class FamilyPage extends StatelessWidget {
       );
 }
 
-class PersonPage extends StatelessWidget {
-  const PersonPage({required this.family, required this.person, Key? key})
+class PersonScreen extends StatelessWidget {
+  const PersonScreen({required this.family, required this.person, Key? key})
       : super(key: key);
 
   final Family family;
@@ -184,8 +186,8 @@ class PersonPage extends StatelessWidget {
       );
 }
 
-class LoginPage extends StatelessWidget {
-  const LoginPage({this.from, Key? key}) : super(key: key);
+class LoginScreen extends StatelessWidget {
+  const LoginScreen({this.from, Key? key}) : super(key: key);
   final String? from;
 
   @override

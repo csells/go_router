@@ -25,7 +25,8 @@ class App extends StatelessWidget {
         path: '/fade',
         pageBuilder: (context, state) => CustomTransitionPage<void>(
           key: state.pageKey,
-          child: const ExampleTransitionsPage(kind: 'fade', color: Colors.red),
+          child:
+              const ExampleTransitionsScreen(kind: 'fade', color: Colors.red),
           transitionsBuilder: (context, animation, secondaryAnimation, child) =>
               FadeTransition(opacity: animation, child: child),
         ),
@@ -34,8 +35,8 @@ class App extends StatelessWidget {
         path: '/scale',
         pageBuilder: (context, state) => CustomTransitionPage<void>(
           key: state.pageKey,
-          child:
-              const ExampleTransitionsPage(kind: 'scale', color: Colors.green),
+          child: const ExampleTransitionsScreen(
+              kind: 'scale', color: Colors.green),
           transitionsBuilder: (context, animation, secondaryAnimation, child) =>
               ScaleTransition(scale: animation, child: child),
         ),
@@ -44,8 +45,8 @@ class App extends StatelessWidget {
         path: '/slide',
         pageBuilder: (context, state) => CustomTransitionPage<void>(
           key: state.pageKey,
-          child:
-              const ExampleTransitionsPage(kind: 'slide', color: Colors.yellow),
+          child: const ExampleTransitionsScreen(
+              kind: 'slide', color: Colors.yellow),
           transitionsBuilder: (context, animation, secondaryAnimation, child) =>
               SlideTransition(
                   position: animation.drive(
@@ -61,7 +62,7 @@ class App extends StatelessWidget {
         path: '/rotation',
         pageBuilder: (context, state) => CustomTransitionPage<void>(
           key: state.pageKey,
-          child: const ExampleTransitionsPage(
+          child: const ExampleTransitionsScreen(
               kind: 'rotation', color: Colors.purple),
           transitionsBuilder: (context, animation, secondaryAnimation, child) =>
               RotationTransition(turns: animation, child: child),
@@ -72,15 +73,15 @@ class App extends StatelessWidget {
         pageBuilder: (context, state) => NoTransitionPage<void>(
           key: state.pageKey,
           child:
-              const ExampleTransitionsPage(kind: 'none', color: Colors.white),
+              const ExampleTransitionsScreen(kind: 'none', color: Colors.white),
         ),
       ),
     ],
   );
 }
 
-class ExampleTransitionsPage extends StatelessWidget {
-  const ExampleTransitionsPage({
+class ExampleTransitionsScreen extends StatelessWidget {
+  const ExampleTransitionsScreen({
     required this.color,
     required this.kind,
     Key? key,

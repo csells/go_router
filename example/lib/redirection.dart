@@ -27,11 +27,11 @@ class App extends StatelessWidget {
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => HomePage(families: Families.data),
+        builder: (context, state) => HomeScreen(families: Families.data),
         routes: [
           GoRoute(
             path: 'family/:fid',
-            builder: (context, state) => FamilyPage(
+            builder: (context, state) => FamilyScreen(
               family: Families.family(state.params['fid']!),
             ),
             routes: [
@@ -40,7 +40,7 @@ class App extends StatelessWidget {
                 builder: (context, state) {
                   final family = Families.family(state.params['fid']!);
                   final person = family.person(state.params['pid']!);
-                  return PersonPage(family: family, person: person);
+                  return PersonScreen(family: family, person: person);
                 },
               ),
             ],
@@ -49,7 +49,7 @@ class App extends StatelessWidget {
       ),
       GoRoute(
         path: '/login',
-        builder: (context, state) => const LoginPage(),
+        builder: (context, state) => const LoginScreen(),
       ),
     ],
 
@@ -73,8 +73,8 @@ class App extends StatelessWidget {
   );
 }
 
-class HomePage extends StatelessWidget {
-  const HomePage({required this.families, Key? key}) : super(key: key);
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({required this.families, Key? key}) : super(key: key);
   final List<Family> families;
 
   @override
@@ -105,8 +105,8 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class FamilyPage extends StatelessWidget {
-  const FamilyPage({required this.family, Key? key}) : super(key: key);
+class FamilyScreen extends StatelessWidget {
+  const FamilyScreen({required this.family, Key? key}) : super(key: key);
   final Family family;
 
   @override
@@ -124,8 +124,8 @@ class FamilyPage extends StatelessWidget {
       );
 }
 
-class PersonPage extends StatelessWidget {
-  const PersonPage({required this.family, required this.person, Key? key})
+class PersonScreen extends StatelessWidget {
+  const PersonScreen({required this.family, required this.person, Key? key})
       : super(key: key);
 
   final Family family;
@@ -138,8 +138,8 @@ class PersonPage extends StatelessWidget {
       );
 }
 
-class LoginPage extends StatelessWidget {
-  const LoginPage({Key? key}) : super(key: key);
+class LoginScreen extends StatelessWidget {
+  const LoginScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) => Scaffold(

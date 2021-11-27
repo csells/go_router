@@ -718,15 +718,15 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       if (isMaterialApp(elem)) {
         _log('found MaterialApp');
         _pageBuilderForAppType = pageBuilderForMaterialApp;
-        _errorBuilderForAppType = (c, s) => GoRouterMaterialErrorPage(s.error);
+        _errorBuilderForAppType = (c, s) => GoRouterMaterialErrorScreen(s.error);
       } else if (isCupertinoApp(elem)) {
         _log('found CupertinoApp');
         _pageBuilderForAppType = pageBuilderForCupertinoApp;
-        _errorBuilderForAppType = (c, s) => GoRouterCupertinoErrorPage(s.error);
+        _errorBuilderForAppType = (c, s) => GoRouterCupertinoErrorScreen(s.error);
       } else {
         _log('assuming WidgetsApp');
         _pageBuilderForAppType = pageBuilderForWidgetApp;
-        _errorBuilderForAppType = (c, s) => GoRouterErrorPage(s.error);
+        _errorBuilderForAppType = (c, s) => GoRouterErrorScreen(s.error);
       }
     }
 

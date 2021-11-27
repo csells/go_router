@@ -11,14 +11,14 @@ void main() {
   group('path routes', () {
     test('match home route', () {
       final routes = [
-        GoRoute(path: '/', pageBuilder: (builder, state) => HomePage()),
+        GoRoute(path: '/', pageBuilder: (builder, state) => HomeScreen()),
       ];
 
       final router = _router(routes);
       final matches = router.routerDelegate.matches;
       expect(matches.length, 1);
       expect(matches[0].fullpath, '/');
-      expect(router.pageFor(matches[0]).runtimeType, HomePage);
+      expect(router.pageFor(matches[0]).runtimeType, HomeScreen);
     });
 
     test('match too many routes', () {
@@ -32,7 +32,7 @@ void main() {
       final matches = router.routerDelegate.matches;
       expect(matches.length, 1);
       expect(matches[0].fullpath, '/');
-      expect(router.pageFor(matches[0]).runtimeType, ErrorPage);
+      expect(router.pageFor(matches[0]).runtimeType, ErrorScreen);
     });
 
     test('empty path', () {
@@ -107,13 +107,13 @@ void main() {
       router.go('/foo');
       final matches = router.routerDelegate.matches;
       expect(matches.length, 1);
-      expect(router.pageFor(matches[0]).runtimeType, ErrorPage);
+      expect(router.pageFor(matches[0]).runtimeType, ErrorScreen);
     });
 
     test('match 2nd top level route', () {
       final routes = [
-        GoRoute(path: '/', pageBuilder: (builder, state) => HomePage()),
-        GoRoute(path: '/login', pageBuilder: (builder, state) => LoginPage()),
+        GoRoute(path: '/', pageBuilder: (builder, state) => HomeScreen()),
+        GoRoute(path: '/login', pageBuilder: (builder, state) => LoginScreen()),
       ];
 
       final router = _router(routes);
@@ -121,18 +121,18 @@ void main() {
       final matches = router.routerDelegate.matches;
       expect(matches.length, 1);
       expect(matches[0].subloc, '/login');
-      expect(router.pageFor(matches[0]).runtimeType, LoginPage);
+      expect(router.pageFor(matches[0]).runtimeType, LoginScreen);
     });
 
     test('match sub-route', () {
       final routes = [
         GoRoute(
           path: '/',
-          pageBuilder: (builder, state) => HomePage(),
+          pageBuilder: (builder, state) => HomeScreen(),
           routes: [
             GoRoute(
               path: 'login',
-              pageBuilder: (builder, state) => LoginPage(),
+              pageBuilder: (builder, state) => LoginScreen(),
             ),
           ],
         ),
@@ -143,30 +143,31 @@ void main() {
       final matches = router.routerDelegate.matches;
       expect(matches.length, 2);
       expect(matches[0].subloc, '/');
-      expect(router.pageFor(matches[0]).runtimeType, HomePage);
+      expect(router.pageFor(matches[0]).runtimeType, HomeScreen);
       expect(matches[1].subloc, '/login');
-      expect(router.pageFor(matches[1]).runtimeType, LoginPage);
+      expect(router.pageFor(matches[1]).runtimeType, LoginScreen);
     });
 
     test('match sub-routes', () {
       final routes = [
         GoRoute(
           path: '/',
-          pageBuilder: (context, state) => HomePage(),
+          pageBuilder: (context, state) => HomeScreen(),
           routes: [
             GoRoute(
               path: 'family/:fid',
-              pageBuilder: (context, state) => FamilyPage('dummy'),
+              pageBuilder: (context, state) => FamilyScreen('dummy'),
               routes: [
                 GoRoute(
                   path: 'person/:pid',
-                  pageBuilder: (context, state) => PersonPage('dummy', 'dummy'),
+                  pageBuilder: (context, state) =>
+                      PersonScreen('dummy', 'dummy'),
                 ),
               ],
             ),
             GoRoute(
               path: 'login',
-              pageBuilder: (context, state) => LoginPage(),
+              pageBuilder: (context, state) => LoginScreen(),
             ),
           ],
         ),
@@ -177,7 +178,7 @@ void main() {
         final matches = router.routerDelegate.matches;
         expect(matches.length, 1);
         expect(matches[0].fullpath, '/');
-        expect(router.pageFor(matches[0]).runtimeType, HomePage);
+        expect(router.pageFor(matches[0]).runtimeType, HomeScreen);
       }
 
       router.go('/login');
@@ -185,9 +186,9 @@ void main() {
         final matches = router.routerDelegate.matches;
         expect(matches.length, 2);
         expect(matches[0].subloc, '/');
-        expect(router.pageFor(matches[0]).runtimeType, HomePage);
+        expect(router.pageFor(matches[0]).runtimeType, HomeScreen);
         expect(matches[1].subloc, '/login');
-        expect(router.pageFor(matches[1]).runtimeType, LoginPage);
+        expect(router.pageFor(matches[1]).runtimeType, LoginScreen);
       }
 
       router.go('/family/f2');
@@ -195,9 +196,9 @@ void main() {
         final matches = router.routerDelegate.matches;
         expect(matches.length, 2);
         expect(matches[0].subloc, '/');
-        expect(router.pageFor(matches[0]).runtimeType, HomePage);
+        expect(router.pageFor(matches[0]).runtimeType, HomeScreen);
         expect(matches[1].subloc, '/family/f2');
-        expect(router.pageFor(matches[1]).runtimeType, FamilyPage);
+        expect(router.pageFor(matches[1]).runtimeType, FamilyScreen);
       }
 
       router.go('/family/f2/person/p1');
@@ -205,11 +206,11 @@ void main() {
         final matches = router.routerDelegate.matches;
         expect(matches.length, 3);
         expect(matches[0].subloc, '/');
-        expect(router.pageFor(matches[0]).runtimeType, HomePage);
+        expect(router.pageFor(matches[0]).runtimeType, HomeScreen);
         expect(matches[1].subloc, '/family/f2');
-        expect(router.pageFor(matches[1]).runtimeType, FamilyPage);
+        expect(router.pageFor(matches[1]).runtimeType, FamilyScreen);
         expect(matches[2].subloc, '/family/f2/person/p1');
-        expect(router.pageFor(matches[2]).runtimeType, PersonPage);
+        expect(router.pageFor(matches[2]).runtimeType, PersonScreen);
       }
     });
 
@@ -241,7 +242,7 @@ void main() {
       router.go('/foo/bar');
       final matches = router.routerDelegate.matches;
       expect(matches.length, 1);
-      expect(router.pageFor(matches[0]).runtimeType, ErrorPage);
+      expect(router.pageFor(matches[0]).runtimeType, ErrorScreen);
     });
 
     test('router state', () {
@@ -261,7 +262,7 @@ void main() {
             expect(state.params, <String, String>{});
             expect(state.error, null);
             expect(state.extra! as int, 1);
-            return HomePage();
+            return HomeScreen();
           },
           routes: [
             GoRoute(
@@ -276,7 +277,7 @@ void main() {
                 expect(state.params, <String, String>{});
                 expect(state.error, null);
                 expect(state.extra! as int, 2);
-                return LoginPage();
+                return LoginScreen();
               },
             ),
             GoRoute(
@@ -294,7 +295,7 @@ void main() {
                 expect(state.params, <String, String>{'fid': 'f2'});
                 expect(state.error, null);
                 expect(state.extra! as int, 3);
-                return FamilyPage(state.params['fid']!);
+                return FamilyScreen(state.params['fid']!);
               },
               routes: [
                 GoRoute(
@@ -312,7 +313,7 @@ void main() {
                     );
                     expect(state.error, null);
                     expect(state.extra! as int, 4);
-                    return PersonPage(
+                    return PersonScreen(
                         state.params['fid']!, state.params['pid']!);
                   },
                 ),
@@ -333,11 +334,11 @@ void main() {
       final routes = [
         GoRoute(
           path: '/',
-          pageBuilder: (builder, state) => HomePage(),
+          pageBuilder: (builder, state) => HomeScreen(),
         ),
         GoRoute(
           path: '/family/:fid',
-          pageBuilder: (builder, state) => FamilyPage(state.params['fid']!),
+          pageBuilder: (builder, state) => FamilyScreen(state.params['fid']!),
         ),
       ];
 
@@ -352,7 +353,7 @@ void main() {
       expect(router.location.toLowerCase(), loc.toLowerCase());
 
       expect(matches.length, 1);
-      expect(router.pageFor(matches[0]).runtimeType, FamilyPage);
+      expect(router.pageFor(matches[0]).runtimeType, FamilyScreen);
     });
 
     test('match too many routes, ignoring case', () {
@@ -365,7 +366,7 @@ void main() {
       router.go('/PAGE1');
       final matches = router.routerDelegate.matches;
       expect(matches.length, 1);
-      expect(router.pageFor(matches[0]).runtimeType, ErrorPage);
+      expect(router.pageFor(matches[0]).runtimeType, ErrorScreen);
     });
   });
 
@@ -375,7 +376,7 @@ void main() {
         GoRoute(
             name: 'home',
             path: '/',
-            pageBuilder: (builder, state) => HomePage()),
+            pageBuilder: (builder, state) => HomeScreen()),
       ];
 
       final router = _router(routes);
@@ -424,12 +425,12 @@ void main() {
         GoRoute(
           name: 'home',
           path: '/',
-          pageBuilder: (builder, state) => HomePage(),
+          pageBuilder: (builder, state) => HomeScreen(),
         ),
         GoRoute(
           name: 'login',
           path: '/login',
-          pageBuilder: (builder, state) => LoginPage(),
+          pageBuilder: (builder, state) => LoginScreen(),
         ),
       ];
 
@@ -442,12 +443,12 @@ void main() {
         GoRoute(
           name: 'home',
           path: '/',
-          pageBuilder: (builder, state) => HomePage(),
+          pageBuilder: (builder, state) => HomeScreen(),
           routes: [
             GoRoute(
               name: 'login',
               path: 'login',
-              pageBuilder: (builder, state) => LoginPage(),
+              pageBuilder: (builder, state) => LoginScreen(),
             ),
           ],
         ),
@@ -462,17 +463,17 @@ void main() {
         GoRoute(
           name: 'home',
           path: '/',
-          pageBuilder: (builder, state) => HomePage(),
+          pageBuilder: (builder, state) => HomeScreen(),
           routes: [
             GoRoute(
               name: 'page1',
               path: 'page1',
-              pageBuilder: (builder, state) => Page1Page(),
+              pageBuilder: (builder, state) => Page1Screen(),
             ),
             GoRoute(
               name: 'page2',
               path: 'Page2',
-              pageBuilder: (builder, state) => Page2Page(),
+              pageBuilder: (builder, state) => Page2Screen(),
             ),
           ],
         ),
@@ -488,19 +489,19 @@ void main() {
         GoRoute(
           name: 'home',
           path: '/',
-          pageBuilder: (context, state) => HomePage(),
+          pageBuilder: (context, state) => HomeScreen(),
           routes: [
             GoRoute(
               name: 'family',
               path: 'family/:fid',
-              pageBuilder: (context, state) => FamilyPage('dummy'),
+              pageBuilder: (context, state) => FamilyScreen('dummy'),
               routes: [
                 GoRoute(
                   name: 'person',
                   path: 'person/:pid',
                   pageBuilder: (context, state) {
                     expect(state.params, {'fid': 'f2', 'pid': 'p1'});
-                    return PersonPage('dummy', 'dummy');
+                    return PersonScreen('dummy', 'dummy');
                   },
                 ),
               ],
@@ -518,17 +519,18 @@ void main() {
         GoRoute(
           name: 'home',
           path: '/',
-          pageBuilder: (context, state) => HomePage(),
+          pageBuilder: (context, state) => HomeScreen(),
           routes: [
             GoRoute(
               name: 'family',
               path: 'family/:fid',
-              pageBuilder: (context, state) => FamilyPage('dummy'),
+              pageBuilder: (context, state) => FamilyScreen('dummy'),
               routes: [
                 GoRoute(
                   name: 'person',
                   path: 'person/:pid',
-                  pageBuilder: (context, state) => PersonPage('dummy', 'dummy'),
+                  pageBuilder: (context, state) =>
+                      PersonScreen('dummy', 'dummy'),
                 ),
               ],
             ),
@@ -550,19 +552,19 @@ void main() {
         GoRoute(
           name: 'home',
           path: '/',
-          pageBuilder: (context, state) => HomePage(),
+          pageBuilder: (context, state) => HomeScreen(),
           routes: [
             GoRoute(
               name: 'family',
               path: 'family/:fid',
-              pageBuilder: (context, state) => FamilyPage('dummy'),
+              pageBuilder: (context, state) => FamilyScreen('dummy'),
               routes: [
                 GoRoute(
                   name: 'PeRsOn',
                   path: 'person/:pid',
                   pageBuilder: (context, state) {
                     expect(state.params, {'fid': 'f2', 'pid': 'p1'});
-                    return PersonPage('dummy', 'dummy');
+                    return PersonScreen('dummy', 'dummy');
                   },
                 ),
               ],
@@ -580,7 +582,7 @@ void main() {
         GoRoute(
           name: 'family',
           path: '/family/:fid',
-          pageBuilder: (context, state) => FamilyPage('dummy'),
+          pageBuilder: (context, state) => FamilyScreen('dummy'),
         ),
       ];
 
@@ -598,7 +600,7 @@ void main() {
         GoRoute(
           name: 'family',
           path: '/family/:fid',
-          pageBuilder: (context, state) => FamilyPage('dummy'),
+          pageBuilder: (context, state) => FamilyScreen('dummy'),
         ),
       ];
 
@@ -619,14 +621,14 @@ void main() {
           routes: [
             GoRoute(
               path: 'family/:fid',
-              pageBuilder: (context, state) => FamilyPage(
+              pageBuilder: (context, state) => FamilyScreen(
                 state.params['fid']!,
               ),
               routes: [
                 GoRoute(
                   name: 'person',
                   path: 'person:pid',
-                  pageBuilder: (context, state) => PersonPage(
+                  pageBuilder: (context, state) => PersonScreen(
                     state.params['fid']!,
                     state.params['pid']!,
                   ),
@@ -653,7 +655,7 @@ void main() {
           path: '/page1/:param1',
           pageBuilder: (c, s) {
             expect(s.params['param1'], param1);
-            return DummyPage();
+            return DummyScreen();
           },
         ),
       ];
@@ -665,7 +667,7 @@ void main() {
 
       final matches = router.routerDelegate.matches;
       dump('param1= ${matches[0].decodedParams['param1']}');
-      expect(router.pageFor(matches[0]).runtimeType, DummyPage);
+      expect(router.pageFor(matches[0]).runtimeType, DummyScreen);
       expect(matches[0].decodedParams['param1'], param1);
     });
 
@@ -677,7 +679,7 @@ void main() {
           path: '/page1',
           pageBuilder: (c, s) {
             expect(s.queryParams['param1'], param1);
-            return DummyPage();
+            return DummyScreen();
           },
         ),
       ];
@@ -690,7 +692,7 @@ void main() {
 
       final matches = router.routerDelegate.matches;
       dump('param1= ${matches[0].queryParams['param1']}');
-      expect(router.pageFor(matches[0]).runtimeType, DummyPage);
+      expect(router.pageFor(matches[0]).runtimeType, DummyScreen);
       expect(matches[0].queryParams['param1'], param1);
     });
   });
@@ -700,12 +702,12 @@ void main() {
       final routes = [
         GoRoute(
           path: '/',
-          pageBuilder: (builder, state) => HomePage(),
+          pageBuilder: (builder, state) => HomeScreen(),
           routes: [
             GoRoute(
-                path: 'dummy', pageBuilder: (builder, state) => DummyPage()),
+                path: 'dummy', pageBuilder: (builder, state) => DummyScreen()),
             GoRoute(
-                path: 'login', pageBuilder: (builder, state) => LoginPage()),
+                path: 'login', pageBuilder: (builder, state) => LoginScreen()),
           ],
         ),
       ];
@@ -723,17 +725,17 @@ void main() {
         GoRoute(
           name: 'home',
           path: '/',
-          pageBuilder: (builder, state) => HomePage(),
+          pageBuilder: (builder, state) => HomeScreen(),
           routes: [
             GoRoute(
               name: 'dummy',
               path: 'dummy',
-              pageBuilder: (builder, state) => DummyPage(),
+              pageBuilder: (builder, state) => DummyScreen(),
             ),
             GoRoute(
               name: 'login',
               path: 'login',
-              pageBuilder: (builder, state) => LoginPage(),
+              pageBuilder: (builder, state) => LoginScreen(),
             ),
           ],
         ),
@@ -753,16 +755,16 @@ void main() {
       final routes = [
         GoRoute(
           path: '/',
-          pageBuilder: (builder, state) => HomePage(),
+          pageBuilder: (builder, state) => HomeScreen(),
           routes: [
             GoRoute(
               path: 'dummy',
-              pageBuilder: (builder, state) => DummyPage(),
+              pageBuilder: (builder, state) => DummyScreen(),
               redirect: (state) => '/login',
             ),
             GoRoute(
               path: 'login',
-              pageBuilder: (builder, state) => LoginPage(),
+              pageBuilder: (builder, state) => LoginScreen(),
             ),
           ],
         ),
@@ -781,18 +783,18 @@ void main() {
         GoRoute(
           name: 'home',
           path: '/',
-          pageBuilder: (builder, state) => HomePage(),
+          pageBuilder: (builder, state) => HomeScreen(),
           routes: [
             GoRoute(
               name: 'dummy',
               path: 'dummy',
-              pageBuilder: (builder, state) => DummyPage(),
+              pageBuilder: (builder, state) => DummyScreen(),
               redirect: (state) => state.namedLocation('login'),
             ),
             GoRoute(
               name: 'login',
               path: 'login',
-              pageBuilder: (builder, state) => LoginPage(),
+              pageBuilder: (builder, state) => LoginScreen(),
             ),
           ],
         ),
@@ -810,15 +812,15 @@ void main() {
       final routes = [
         GoRoute(
           path: '/',
-          pageBuilder: (builder, state) => HomePage(),
+          pageBuilder: (builder, state) => HomeScreen(),
           routes: [
             GoRoute(
               path: 'dummy1',
-              pageBuilder: (builder, state) => DummyPage(),
+              pageBuilder: (builder, state) => DummyScreen(),
             ),
             GoRoute(
               path: 'dummy2',
-              pageBuilder: (builder, state) => DummyPage(),
+              pageBuilder: (builder, state) => DummyScreen(),
               redirect: (state) => '/',
             ),
           ],
@@ -837,7 +839,7 @@ void main() {
     test('top-level redirect loop', () {
       final router = GoRouter(
         routes: [],
-        errorPageBuilder: (context, state) => ErrorPage(state.error!),
+        errorPageBuilder: (context, state) => ErrorScreen(state.error!),
         redirect: (state) => state.subloc == '/'
             ? '/login'
             : state.subloc == '/login'
@@ -847,9 +849,9 @@ void main() {
 
       final matches = router.routerDelegate.matches;
       expect(matches.length, 1);
-      expect(router.pageFor(matches[0]).runtimeType, ErrorPage);
-      expect((router.pageFor(matches[0]) as ErrorPage).ex, isNotNull);
-      dump((router.pageFor(matches[0]) as ErrorPage).ex);
+      expect(router.pageFor(matches[0]).runtimeType, ErrorScreen);
+      expect((router.pageFor(matches[0]) as ErrorScreen).ex, isNotNull);
+      dump((router.pageFor(matches[0]) as ErrorScreen).ex);
     });
 
     test('route-level redirect loop', () {
@@ -864,14 +866,14 @@ void main() {
             redirect: (state) => '/',
           ),
         ],
-        errorPageBuilder: (context, state) => ErrorPage(state.error!),
+        errorPageBuilder: (context, state) => ErrorScreen(state.error!),
       );
 
       final matches = router.routerDelegate.matches;
       expect(matches.length, 1);
-      expect(router.pageFor(matches[0]).runtimeType, ErrorPage);
-      expect((router.pageFor(matches[0]) as ErrorPage).ex, isNotNull);
-      dump((router.pageFor(matches[0]) as ErrorPage).ex);
+      expect(router.pageFor(matches[0]).runtimeType, ErrorScreen);
+      expect((router.pageFor(matches[0]) as ErrorScreen).ex, isNotNull);
+      dump((router.pageFor(matches[0]) as ErrorScreen).ex);
     });
 
     test('mixed redirect loop', () {
@@ -882,21 +884,21 @@ void main() {
             redirect: (state) => '/',
           ),
         ],
-        errorPageBuilder: (context, state) => ErrorPage(state.error!),
+        errorPageBuilder: (context, state) => ErrorScreen(state.error!),
         redirect: (state) => state.subloc == '/' ? '/login' : null,
       );
 
       final matches = router.routerDelegate.matches;
       expect(matches.length, 1);
-      expect(router.pageFor(matches[0]).runtimeType, ErrorPage);
-      expect((router.pageFor(matches[0]) as ErrorPage).ex, isNotNull);
-      dump((router.pageFor(matches[0]) as ErrorPage).ex);
+      expect(router.pageFor(matches[0]).runtimeType, ErrorScreen);
+      expect((router.pageFor(matches[0]) as ErrorScreen).ex, isNotNull);
+      dump((router.pageFor(matches[0]) as ErrorScreen).ex);
     });
 
     test('top-level redirect loop w/ query params', () {
       final router = GoRouter(
         routes: [],
-        errorPageBuilder: (context, state) => ErrorPage(state.error!),
+        errorPageBuilder: (context, state) => ErrorScreen(state.error!),
         redirect: (state) => state.subloc == '/'
             ? '/login?from=${state.location}'
             : state.subloc == '/login'
@@ -906,16 +908,16 @@ void main() {
 
       final matches = router.routerDelegate.matches;
       expect(matches.length, 1);
-      expect(router.pageFor(matches[0]).runtimeType, ErrorPage);
-      expect((router.pageFor(matches[0]) as ErrorPage).ex, isNotNull);
-      dump((router.pageFor(matches[0]) as ErrorPage).ex);
+      expect(router.pageFor(matches[0]).runtimeType, ErrorScreen);
+      expect((router.pageFor(matches[0]) as ErrorScreen).ex, isNotNull);
+      dump((router.pageFor(matches[0]) as ErrorScreen).ex);
     });
 
     test('expect null path/fullpath on top-level redirect', () {
       final routes = [
         GoRoute(
           path: '/',
-          pageBuilder: (builder, state) => HomePage(),
+          pageBuilder: (builder, state) => HomeScreen(),
         ),
         GoRoute(
           path: '/dummy',
@@ -935,11 +937,11 @@ void main() {
       final routes = [
         GoRoute(
           path: '/',
-          pageBuilder: (builder, state) => HomePage(),
+          pageBuilder: (builder, state) => HomeScreen(),
         ),
         GoRoute(
           path: '/login',
-          pageBuilder: (builder, state) => LoginPage(),
+          pageBuilder: (builder, state) => LoginScreen(),
         ),
       ];
 
@@ -962,7 +964,7 @@ void main() {
 
       final matches = router.routerDelegate.matches;
       expect(matches.length, 1);
-      expect(router.pageFor(matches[0]).runtimeType, LoginPage);
+      expect(router.pageFor(matches[0]).runtimeType, LoginScreen);
     });
 
     test('route-level redirect state', () {
@@ -979,7 +981,7 @@ void main() {
             expect(state.queryParams.length, 0);
             return null;
           },
-          pageBuilder: (c, s) => HomePage(),
+          pageBuilder: (c, s) => HomeScreen(),
         ),
       ];
 
@@ -992,18 +994,18 @@ void main() {
 
       final matches = router.routerDelegate.matches;
       expect(matches.length, 1);
-      expect(router.pageFor(matches[0]).runtimeType, HomePage);
+      expect(router.pageFor(matches[0]).runtimeType, HomeScreen);
     });
 
     test('sub-sub-route-level redirect params', () {
       final routes = [
         GoRoute(
           path: '/',
-          pageBuilder: (c, s) => HomePage(),
+          pageBuilder: (c, s) => HomeScreen(),
           routes: [
             GoRoute(
               path: 'family/:fid',
-              pageBuilder: (c, s) => FamilyPage(s.params['fid']!),
+              pageBuilder: (c, s) => FamilyScreen(s.params['fid']!),
               routes: [
                 GoRoute(
                   path: 'person/:pid',
@@ -1012,7 +1014,7 @@ void main() {
                     expect(s.params['pid'], 'p1');
                     return null;
                   },
-                  pageBuilder: (c, s) => PersonPage(
+                  pageBuilder: (c, s) => PersonScreen(
                     s.params['fid']!,
                     s.params['pid']!,
                   ),
@@ -1032,9 +1034,9 @@ void main() {
 
       final matches = router.routerDelegate.matches;
       expect(matches.length, 3);
-      expect(router.pageFor(matches[0]).runtimeType, HomePage);
-      expect(router.pageFor(matches[1]).runtimeType, FamilyPage);
-      final page = router.pageFor(matches[2]) as PersonPage;
+      expect(router.pageFor(matches[0]).runtimeType, HomeScreen);
+      expect(router.pageFor(matches[1]).runtimeType, FamilyScreen);
+      final page = router.pageFor(matches[2]) as PersonScreen;
       expect(page.fid, 'f2');
       expect(page.pid, 'p1');
     });
@@ -1042,7 +1044,7 @@ void main() {
     test('redirect limit', () {
       final router = GoRouter(
         routes: [],
-        errorPageBuilder: (context, state) => ErrorPage(state.error!),
+        errorPageBuilder: (context, state) => ErrorScreen(state.error!),
         debugLogDiagnostics: true,
         redirect: (state) => '${state.location}+',
         redirectLimit: 10,
@@ -1050,9 +1052,9 @@ void main() {
 
       final matches = router.routerDelegate.matches;
       expect(matches.length, 1);
-      expect(router.pageFor(matches[0]).runtimeType, ErrorPage);
-      expect((router.pageFor(matches[0]) as ErrorPage).ex, isNotNull);
-      dump((router.pageFor(matches[0]) as ErrorPage).ex);
+      expect(router.pageFor(matches[0]).runtimeType, ErrorScreen);
+      expect((router.pageFor(matches[0]) as ErrorScreen).ex, isNotNull);
+      dump((router.pageFor(matches[0]) as ErrorScreen).ex);
     });
   });
 
@@ -1061,11 +1063,11 @@ void main() {
       final routes = [
         GoRoute(
           path: '/',
-          pageBuilder: (builder, state) => HomePage(),
+          pageBuilder: (builder, state) => HomeScreen(),
           routes: [
             GoRoute(
               path: 'dummy',
-              pageBuilder: (builder, state) => DummyPage(),
+              pageBuilder: (builder, state) => DummyScreen(),
             ),
           ],
         ),
@@ -1083,7 +1085,7 @@ void main() {
       final routes = [
         GoRoute(
           path: '/',
-          pageBuilder: (builder, state) => HomePage(),
+          pageBuilder: (builder, state) => HomeScreen(),
         ),
         GoRoute(
           path: '/dummy',
@@ -1105,11 +1107,11 @@ void main() {
       final routes = [
         GoRoute(
           path: '/',
-          pageBuilder: (builder, state) => HomePage(),
+          pageBuilder: (builder, state) => HomeScreen(),
         ),
         GoRoute(
           path: '/family/:fid',
-          pageBuilder: (builder, state) => FamilyPage(state.params['fid']!),
+          pageBuilder: (builder, state) => FamilyScreen(state.params['fid']!),
         ),
       ];
 
@@ -1121,7 +1123,7 @@ void main() {
 
         expect(router.location, loc);
         expect(matches.length, 1);
-        expect(router.pageFor(matches[0]).runtimeType, FamilyPage);
+        expect(router.pageFor(matches[0]).runtimeType, FamilyScreen);
         expect(matches[0].decodedParams['fid'], fid);
       }
     });
@@ -1130,11 +1132,11 @@ void main() {
       final routes = [
         GoRoute(
           path: '/',
-          pageBuilder: (builder, state) => HomePage(),
+          pageBuilder: (builder, state) => HomeScreen(),
         ),
         GoRoute(
           path: '/family',
-          pageBuilder: (builder, state) => FamilyPage(
+          pageBuilder: (builder, state) => FamilyScreen(
             state.queryParams['fid']!,
           ),
         ),
@@ -1148,7 +1150,7 @@ void main() {
 
         expect(router.location, loc);
         expect(matches.length, 1);
-        expect(router.pageFor(matches[0]).runtimeType, FamilyPage);
+        expect(router.pageFor(matches[0]).runtimeType, FamilyScreen);
         expect(matches[0].queryParams['fid'], fid);
       }
     });
@@ -1160,7 +1162,7 @@ void main() {
           path: '/page1/:param1',
           pageBuilder: (c, s) {
             expect(s.params['param1'], param1);
-            return DummyPage();
+            return DummyScreen();
           },
         ),
       ];
@@ -1171,7 +1173,7 @@ void main() {
 
       final matches = router.routerDelegate.matches;
       dump('param1= ${matches[0].decodedParams['param1']}');
-      expect(router.pageFor(matches[0]).runtimeType, DummyPage);
+      expect(router.pageFor(matches[0]).runtimeType, DummyScreen);
       expect(matches[0].decodedParams['param1'], param1);
     });
 
@@ -1182,7 +1184,7 @@ void main() {
           path: '/page1',
           pageBuilder: (c, s) {
             expect(s.queryParams['param1'], param1);
-            return DummyPage();
+            return DummyScreen();
           },
         ),
       ];
@@ -1191,14 +1193,14 @@ void main() {
       router.go('/page1?param1=$param1');
 
       final matches = router.routerDelegate.matches;
-      expect(router.pageFor(matches[0]).runtimeType, DummyPage);
+      expect(router.pageFor(matches[0]).runtimeType, DummyScreen);
       expect(matches[0].queryParams['param1'], param1);
 
       final loc = '/page1?param1=${Uri.encodeQueryComponent(param1)}';
       router.go(loc);
 
       final matches2 = router.routerDelegate.matches;
-      expect(router.pageFor(matches2[0]).runtimeType, DummyPage);
+      expect(router.pageFor(matches2[0]).runtimeType, DummyScreen);
       expect(matches2[0].queryParams['param1'], param1);
     });
 
@@ -1211,7 +1213,7 @@ void main() {
               pageBuilder: _dummy,
             ),
           ],
-          errorPageBuilder: (context, state) => ErrorPage(state.error!),
+          errorPageBuilder: (context, state) => ErrorScreen(state.error!),
           initialLocation: '/0/1/2/0/1',
         );
         expect(false, true);
@@ -1230,18 +1232,18 @@ void main() {
               expect(state.params.length, 0);
               expect(state.queryParams.length, 1);
               expect(state.queryParams['id'], anyOf('0', '1'));
-              return HomePage();
+              return HomeScreen();
             },
           ),
         ],
-        errorPageBuilder: (context, state) => ErrorPage(state.error!),
+        errorPageBuilder: (context, state) => ErrorScreen(state.error!),
       );
 
       router.go('/?id=0&id=1');
       final matches = router.routerDelegate.matches;
       expect(matches.length, 1);
       expect(matches[0].fullpath, '/');
-      expect(router.pageFor(matches[0]).runtimeType, HomePage);
+      expect(router.pageFor(matches[0]).runtimeType, HomeScreen);
     });
 
     test('duplicate path + query param', () {
@@ -1252,7 +1254,7 @@ void main() {
             pageBuilder: (context, state) {
               expect(state.params, {'id': '0'});
               expect(state.queryParams, {'id': '1'});
-              return HomePage();
+              return HomeScreen();
             },
           ),
         ],
@@ -1263,7 +1265,7 @@ void main() {
       final matches = router.routerDelegate.matches;
       expect(matches.length, 1);
       expect(matches[0].fullpath, '/:id');
-      expect(router.pageFor(matches[0]).runtimeType, HomePage);
+      expect(router.pageFor(matches[0]).runtimeType, HomeScreen);
     });
 
     test('push + query param', () {
@@ -1272,13 +1274,13 @@ void main() {
           GoRoute(path: '/', pageBuilder: _dummy),
           GoRoute(
             path: '/family',
-            pageBuilder: (context, state) => FamilyPage(
+            pageBuilder: (context, state) => FamilyScreen(
               state.queryParams['fid']!,
             ),
           ),
           GoRoute(
             path: '/person',
-            pageBuilder: (context, state) => PersonPage(
+            pageBuilder: (context, state) => PersonScreen(
               state.queryParams['fid']!,
               state.queryParams['pid']!,
             ),
@@ -1290,11 +1292,11 @@ void main() {
       router.go('/family?fid=f2');
       router.push('/person?fid=f2&pid=p1');
       final page1 =
-          router.pageFor(router.routerDelegate.matches[0]) as FamilyPage;
+          router.pageFor(router.routerDelegate.matches[0]) as FamilyScreen;
       expect(page1.fid, 'f2');
 
       final page2 =
-          router.pageFor(router.routerDelegate.matches[1]) as PersonPage;
+          router.pageFor(router.routerDelegate.matches[1]) as PersonScreen;
       expect(page2.fid, 'f2');
       expect(page2.pid, 'p1');
     });
@@ -1305,13 +1307,13 @@ void main() {
           GoRoute(path: '/', pageBuilder: _dummy),
           GoRoute(
             path: '/family',
-            pageBuilder: (context, state) => FamilyPage(
+            pageBuilder: (context, state) => FamilyScreen(
               (state.extra! as Map<String, String>)['fid']!,
             ),
           ),
           GoRoute(
             path: '/person',
-            pageBuilder: (context, state) => PersonPage(
+            pageBuilder: (context, state) => PersonScreen(
               (state.extra! as Map<String, String>)['fid']!,
               (state.extra! as Map<String, String>)['pid']!,
             ),
@@ -1323,11 +1325,11 @@ void main() {
       router.go('/family', extra: {'fid': 'f2'});
       router.push('/person', extra: {'fid': 'f2', 'pid': 'p1'});
       final page1 =
-          router.pageFor(router.routerDelegate.matches[0]) as FamilyPage;
+          router.pageFor(router.routerDelegate.matches[0]) as FamilyScreen;
       expect(page1.fid, 'f2');
 
       final page2 =
-          router.pageFor(router.routerDelegate.matches[1]) as PersonPage;
+          router.pageFor(router.routerDelegate.matches[1]) as PersonScreen;
       expect(page2.fid, 'f2');
       expect(page2.pid, 'p1');
     });
@@ -1336,45 +1338,46 @@ void main() {
 
 GoRouter _router(List<GoRoute> routes) => GoRouter(
       routes: routes,
-      errorPageBuilder: (context, state) => ErrorPage(state.error!),
+      errorPageBuilder: (context, state) => ErrorScreen(state.error!),
       debugLogDiagnostics: true,
     );
 
-class ErrorPage extends DummyPage {
-  ErrorPage(this.ex);
+class ErrorScreen extends DummyScreen {
+  ErrorScreen(this.ex);
   final Exception ex;
 }
 
-class HomePage extends DummyPage {}
+class HomeScreen extends DummyScreen {}
 
-class Page1Page extends DummyPage {}
+class Page1Screen extends DummyScreen {}
 
-class Page2Page extends DummyPage {}
+class Page2Screen extends DummyScreen {}
 
-class LoginPage extends DummyPage {}
+class LoginScreen extends DummyScreen {}
 
-class FamilyPage extends DummyPage {
-  FamilyPage(this.fid);
+class FamilyScreen extends DummyScreen {
+  FamilyScreen(this.fid);
   final String fid;
 }
 
-class FamiliesPage extends DummyPage {
-  FamiliesPage({required this.selectedFid});
+class FamiliesScreen extends DummyScreen {
+  FamiliesScreen({required this.selectedFid});
   final String selectedFid;
 }
 
-class PersonPage extends DummyPage {
-  PersonPage(this.fid, this.pid);
+class PersonScreen extends DummyScreen {
+  PersonScreen(this.fid, this.pid);
   final String fid;
   final String pid;
 }
 
-class DummyPage extends Page<dynamic> {
+class DummyScreen extends Page<dynamic> {
   @override
   Route createRoute(BuildContext context) => throw UnimplementedError();
 }
 
-Page<dynamic> _dummy(BuildContext context, GoRouterState state) => DummyPage();
+Page<dynamic> _dummy(BuildContext context, GoRouterState state) =>
+    DummyScreen();
 
 extension on GoRouter {
   Page<dynamic> pageFor(GoRouteMatch match) {

@@ -9,7 +9,8 @@
         ["Overview", "/"],
         ["Contributors", "/contributors"],
         ["Changelog", "/changelog"],
-        ["Migrating to the Latest Version", "/migrating"]
+        ["Migrating to 2.5", "/migrating-to-25"],
+        ["Migrating to 2.0", "/migrating-to-20"]
       ]
     ],
     ["Getting Started", "/getting-started"],

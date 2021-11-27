@@ -34,7 +34,7 @@ class App extends StatelessWidget {
               }
 
               if (snapshot.hasData) {
-                return HomePage(families: snapshot.data!);
+                return HomeScreen(families: snapshot.data!);
               }
 
               return const Center(child: CircularProgressIndicator());
@@ -56,7 +56,7 @@ class App extends StatelessWidget {
                   }
 
                   if (snapshot.hasData) {
-                    return FamilyPage(family: snapshot.data!);
+                    return FamilyScreen(family: snapshot.data!);
                   }
 
                   return const Center(child: CircularProgressIndicator());
@@ -81,7 +81,7 @@ class App extends StatelessWidget {
                       }
 
                       if (snapshot.hasData) {
-                        return PersonPage(
+                        return PersonScreen(
                             family: snapshot.data!.family,
                             person: snapshot.data!.person);
                       }
@@ -99,8 +99,8 @@ class App extends StatelessWidget {
   );
 }
 
-class HomePage extends StatelessWidget {
-  const HomePage({required this.families, Key? key}) : super(key: key);
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({required this.families, Key? key}) : super(key: key);
   final List<Family> families;
 
   @override
@@ -118,8 +118,8 @@ class HomePage extends StatelessWidget {
       );
 }
 
-class FamilyPage extends StatelessWidget {
-  const FamilyPage({required this.family, Key? key}) : super(key: key);
+class FamilyScreen extends StatelessWidget {
+  const FamilyScreen({required this.family, Key? key}) : super(key: key);
   final Family family;
 
   @override
@@ -137,8 +137,8 @@ class FamilyPage extends StatelessWidget {
       );
 }
 
-class PersonPage extends StatelessWidget {
-  const PersonPage({required this.family, required this.person, Key? key})
+class PersonScreen extends StatelessWidget {
+  const PersonScreen({required this.family, required this.person, Key? key})
       : super(key: key);
 
   final Family family;
