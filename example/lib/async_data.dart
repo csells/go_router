@@ -28,9 +28,7 @@ class App extends StatelessWidget {
             future: repo.getFamilies(),
             builder: (context, snapshot) {
               if (snapshot.hasError) {
-                throw snapshot.error! is Exception
-                    ? snapshot.error! as Exception
-                    : Exception(snapshot.error);
+                return SnapshotErrorScreen(snapshot.error!);
               }
 
               if (snapshot.hasData) {
@@ -50,9 +48,7 @@ class App extends StatelessWidget {
                 future: repo.getFamily(state.params['fid']!),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
-                    throw snapshot.error! is Exception
-                        ? snapshot.error! as Exception
-                        : Exception(snapshot.error);
+                    return SnapshotErrorScreen(snapshot.error!);
                   }
 
                   if (snapshot.hasData) {
@@ -75,9 +71,7 @@ class App extends StatelessWidget {
                     ),
                     builder: (context, snapshot) {
                       if (snapshot.hasError) {
-                        throw snapshot.error! is Exception
-                            ? snapshot.error! as Exception
-                            : Exception(snapshot.error);
+                        return SnapshotErrorScreen(snapshot.error!);
                       }
 
                       if (snapshot.hasData) {
@@ -148,5 +142,29 @@ class PersonScreen extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: Text(person.name)),
         body: Text('${person.name} ${family.name} is ${person.age} years old'),
+      );
+}
+
+class SnapshotErrorScreen extends StatelessWidget {
+  SnapshotErrorScreen(Object error, {Key? key})
+      : error = error is Exception ? error : Exception(error),
+        super(key: key);
+  final Exception error;
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: const Text('Page Not Found')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SelectableText(error.toString()),
+              TextButton(
+                onPressed: () => context.go('/'),
+                child: const Text('Home'),
+              ),
+            ],
+          ),
+        ),
       );
 }

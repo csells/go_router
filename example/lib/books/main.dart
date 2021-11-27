@@ -72,15 +72,12 @@ class Bookstore extends StatelessWidget {
         routes: [
           GoRoute(
             path: ':bookId',
-            pageBuilder: (context, state) {
+            builder: (context, state) {
               final bookId = state.params['bookId']!;
               final selectedBook = libraryInstance.allBooks
                   .firstWhereOrNull((b) => b.id.toString() == bookId);
 
-              return MaterialPage<void>(
-                key: state.pageKey,
-                child: BookDetailsScreen(book: selectedBook),
-              );
+              return BookDetailsScreen(book: selectedBook);
             },
           ),
         ],

@@ -710,21 +710,26 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   Widget Function(BuildContext context, GoRouterState state)?
       _errorBuilderForAppType;
 
-  void _cacheAppType(Element elem) {
+  void _cacheAppType(BuildContext context) {
     // cache app type-specific page and error builders
     if (_pageBuilderForAppType == null) {
       assert(_errorBuilderForAppType == null);
 
-      if (isMaterialApp(elem)) {
-        _log('found MaterialApp');
+      // can be null during testing
+      final elem = context is Element ? context : null;
+
+      if (elem != null && isMaterialApp(elem)) {
+        _log('MaterialApp found');
         _pageBuilderForAppType = pageBuilderForMaterialApp;
-        _errorBuilderForAppType = (c, s) => GoRouterMaterialErrorScreen(s.error);
-      } else if (isCupertinoApp(elem)) {
-        _log('found CupertinoApp');
+        _errorBuilderForAppType =
+            (c, s) => GoRouterMaterialErrorScreen(s.error);
+      } else if (elem != null && isCupertinoApp(elem)) {
+        _log('CupertinoApp found');
         _pageBuilderForAppType = pageBuilderForCupertinoApp;
-        _errorBuilderForAppType = (c, s) => GoRouterCupertinoErrorScreen(s.error);
+        _errorBuilderForAppType =
+            (c, s) => GoRouterCupertinoErrorScreen(s.error);
       } else {
-        _log('assuming WidgetsApp');
+        _log('WidgetsApp assumed');
         _pageBuilderForAppType = pageBuilderForWidgetApp;
         _errorBuilderForAppType = (c, s) => GoRouterErrorScreen(s.error);
       }
@@ -741,7 +746,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     GoRouterWidgetBuilder builder,
   ) {
     // build the page based on app type
-    _cacheAppType(context as Element);
+    _cacheAppType(context);
     return _pageBuilderForAppType!(state.pageKey, builder(context, state));
   }
 
@@ -758,7 +763,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     // MaterialPage; finally, if nothing is provided, use a default error page
     // wrapped in the app-specific page, e.g.
     // MaterialPage(GoRouterMaterialErrorPage(...))
-    _cacheAppType(context as Element);
+    _cacheAppType(context);
     return errorPageBuilder != null
         ? errorPageBuilder!(context, state)
         : _pageBuilder(

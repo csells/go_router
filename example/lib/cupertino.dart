@@ -17,14 +17,8 @@ class App extends StatelessWidget {
 
   final _router = GoRouter(
     routes: [
-      GoRoute(
-        path: '/',
-        builder: (context, state) => const Page1Screen(),
-      ),
-      GoRoute(
-        path: '/page2',
-        builder: (context, state) => const Page2Screen(),
-      ),
+      GoRoute(path: '/', builder: (context, state) => const Page1Screen()),
+      GoRoute(path: '/page2', builder: (context, state) => const Page2Screen()),
     ],
   );
 }

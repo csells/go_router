@@ -8,16 +8,17 @@
   simpler way to build error pages via the `GoRouter.errorBuilder` method
 - provide default implementation of `GoRouter.errorBuilder` to provide an error
   page without the need to implement a custom error page builder
-- TODO: added a new `NoTransitionPage`
-- TODO: added a [new `custom_error_screen` sample]()
 - TODO: new [Migrating to 2.5 section](https://gorouter.dev/migrating-to-20) in
   the docs to show how to take advantage of the new `builder` and default error
   page builder
+- TODO: added a new `NoTransitionPage`
+- added a [new custom error screen
+  sample](https://github.com/csells/go_router/blob/master/example/lib/error_screen.dart)
 - TODO: updated docs to take new `builder` into account
 - TODO: updated docs to be careful about the use of "screen" vs "page" in the
   class names
+- TODO: fixed a problem with `extra` param not being available when going back
 - updated README to point to new docs site: [gorouter.dev](https://gorouter.dev)
-- TODO: fix a problem with `extra` param not being available when going back
 
 ### 2.2.8
 

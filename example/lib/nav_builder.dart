@@ -39,13 +39,10 @@ class App extends StatelessWidget {
               GoRoute(
                 name: 'person',
                 path: 'person/:pid',
-                pageBuilder: (context, state) {
+                builder: (context, state) {
                   final family = Families.family(state.params['fid']!);
                   final person = family.person(state.params['pid']!);
-                  return MaterialPage<void>(
-                    key: state.pageKey,
-                    child: PersonScreen(family: family, person: person),
-                  );
+                  return PersonScreen(family: family, person: person);
                 },
               ),
             ],
