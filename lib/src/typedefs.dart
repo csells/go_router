@@ -16,7 +16,7 @@ typedef GoRouterBuilderWithNav = Widget Function(
 );
 
 /// The signature of the page builder callback for a matched GoRoute.
-typedef GoRouterPageBuilder = Page<dynamic> Function(
+typedef GoRouterPageBuilder = Page<void> Function(
   BuildContext context,
   GoRouterState state,
 );

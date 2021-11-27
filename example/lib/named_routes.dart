@@ -10,6 +10,7 @@ class App extends StatelessWidget {
   App({Key? key}) : super(key: key);
 
   final loginInfo = LoginInfo();
+  static const title = 'GoRouter Example: Named Routes';
 
   @override
   Widget build(BuildContext context) => ChangeNotifierProvider<LoginInfo>.value(
@@ -17,7 +18,7 @@ class App extends StatelessWidget {
         child: MaterialApp.router(
           routeInformationParser: _router.routeInformationParser,
           routerDelegate: _router.routerDelegate,
-          title: 'GoRouter Example: Named Routes',
+          title: title,
           debugShowCheckedModeBanner: false,
         ),
       );
@@ -28,32 +29,22 @@ class App extends StatelessWidget {
       GoRoute(
         name: 'home',
         path: '/',
-        pageBuilder: (context, state) => MaterialPage<void>(
-          key: state.pageKey,
-          child: HomePage(families: Families.data),
-        ),
+        builder: (context, state) => HomePage(families: Families.data),
         routes: [
           GoRoute(
             name: 'family',
             path: 'family/:fid',
-            pageBuilder: (context, state) {
-              final family = Families.family(state.params['fid']!);
-              return MaterialPage<void>(
-                key: state.pageKey,
-                child: FamilyPage(family: family),
-              );
-            },
+            builder: (context, state) => FamilyPage(
+              family: Families.family(state.params['fid']!),
+            ),
             routes: [
               GoRoute(
                 name: 'person',
                 path: 'person/:pid',
-                pageBuilder: (context, state) {
+                builder: (context, state) {
                   final family = Families.family(state.params['fid']!);
                   final person = family.person(state.params['pid']!);
-                  return MaterialPage<void>(
-                    key: state.pageKey,
-                    child: PersonPage(family: family, person: person),
-                  );
+                  return PersonPage(family: family, person: person);
                 },
               ),
             ],
@@ -63,18 +54,11 @@ class App extends StatelessWidget {
       GoRoute(
         name: 'login',
         path: '/login',
-        pageBuilder: (context, state) => MaterialPage<void>(
-          key: state.pageKey,
-          // pass the original location to the LoginPage (if there is one)
-          child: LoginPage(from: state.queryParams['from']),
-        ),
+        builder: (context, state) =>
+            // pass the original location to the LoginPage (if there is one)
+            LoginPage(from: state.queryParams['from']),
       ),
     ],
-
-    errorPageBuilder: (context, state) => MaterialPage<void>(
-      key: state.pageKey,
-      child: ErrorPage(state.error),
-    ),
 
     // redirect to the login page if the user is not logged in
     redirect: (state) {
@@ -104,27 +88,23 @@ class App extends StatelessWidget {
   );
 }
 
-String _title(BuildContext context) =>
-    (context as Element).findAncestorWidgetOfExactType<MaterialApp>()!.title;
-
 class HomePage extends StatelessWidget {
   const HomePage({required this.families, Key? key}) : super(key: key);
   final List<Family> families;
 
   @override
   Widget build(BuildContext context) {
-    final info = _info(context);
+    final info = context.read<LoginInfo>();
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_title(context)),
+        title: const Text(App.title),
         actions: [
-          if (info != null)
-            IconButton(
-              onPressed: info.logout,
-              tooltip: 'Logout: ${info.userName}',
-              icon: const Icon(Icons.logout),
-            )
+          IconButton(
+            onPressed: info.logout,
+            tooltip: 'Logout: ${info.userName}',
+            icon: const Icon(Icons.logout),
+          )
         ],
       ),
       body: ListView(
@@ -137,14 +117,6 @@ class HomePage extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  LoginInfo? _info(BuildContext context) {
-    try {
-      return context.read<LoginInfo>();
-    } on Exception catch (_) {
-      return null;
-    }
   }
 }
 
@@ -185,35 +157,13 @@ class PersonPage extends StatelessWidget {
       );
 }
 
-class ErrorPage extends StatelessWidget {
-  const ErrorPage(this.error, {Key? key}) : super(key: key);
-  final Exception? error;
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('Page Not Found')),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(error?.toString() ?? 'page not found'),
-              TextButton(
-                onPressed: () => context.goNamed('home'),
-                child: const Text('Home'),
-              ),
-            ],
-          ),
-        ),
-      );
-}
-
 class LoginPage extends StatelessWidget {
   const LoginPage({this.from, Key? key}) : super(key: key);
   final String? from;
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: Text(_title(context))),
+        appBar: AppBar(title: const Text(App.title)),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

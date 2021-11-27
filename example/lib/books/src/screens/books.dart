@@ -28,8 +28,8 @@ class _BooksScreenState extends State<BooksScreen>
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
+  void didUpdateWidget(covariant BooksScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
 
     switch (widget.kind) {
       case 'popular':

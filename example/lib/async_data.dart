@@ -2,20 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'shared/data.dart';
-import 'shared/pages.dart';
 
 void main() => runApp(App());
 
 class App extends StatelessWidget {
   App({Key? key}) : super(key: key);
 
+  static const title = 'GoRouter Example: Async Data';
   final repo = Repository();
 
   @override
   Widget build(BuildContext context) => MaterialApp.router(
         routeInformationParser: _router.routeInformationParser,
         routerDelegate: _router.routerDelegate,
-        title: 'GoRouter Example: Async Data',
+        title: title,
       );
 
   late final _router = GoRouter(
@@ -28,7 +28,9 @@ class App extends StatelessWidget {
             future: repo.getFamilies(),
             builder: (context, snapshot) {
               if (snapshot.hasError) {
-                return ErrorPage(snapshot.error as Exception?);
+                throw snapshot.error! is Exception
+                    ? snapshot.error! as Exception
+                    : Exception(snapshot.error);
               }
 
               if (snapshot.hasData) {
@@ -48,7 +50,9 @@ class App extends StatelessWidget {
                 future: repo.getFamily(state.params['fid']!),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
-                    return ErrorPage(snapshot.error as Exception?);
+                    throw snapshot.error! is Exception
+                        ? snapshot.error! as Exception
+                        : Exception(snapshot.error);
                   }
 
                   if (snapshot.hasData) {
@@ -71,7 +75,9 @@ class App extends StatelessWidget {
                     ),
                     builder: (context, snapshot) {
                       if (snapshot.hasError) {
-                        return ErrorPage(snapshot.error as Exception?);
+                        throw snapshot.error! is Exception
+                            ? snapshot.error! as Exception
+                            : Exception(snapshot.error);
                       }
 
                       if (snapshot.hasData) {
@@ -90,21 +96,57 @@ class App extends StatelessWidget {
         ],
       ),
     ],
-    errorPageBuilder: (context, state) => MaterialPage<void>(
-      key: state.pageKey,
-      child: ErrorPage(state.error),
-    ),
   );
 }
 
-class NoTransitionPage<T> extends CustomTransitionPage<T> {
-  const NoTransitionPage({required Widget child, LocalKey? key})
-      : super(transitionsBuilder: _transitionsBuilder, child: child, key: key);
+class HomePage extends StatelessWidget {
+  const HomePage({required this.families, Key? key}) : super(key: key);
+  final List<Family> families;
 
-  static Widget _transitionsBuilder(
-          BuildContext context,
-          Animation<double> animation,
-          Animation<double> secondaryAnimation,
-          Widget child) =>
-      child;
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: const Text(App.title)),
+        body: ListView(
+          children: [
+            for (final f in families)
+              ListTile(
+                title: Text(f.name),
+                onTap: () => context.go('/family/${f.id}'),
+              )
+          ],
+        ),
+      );
+}
+
+class FamilyPage extends StatelessWidget {
+  const FamilyPage({required this.family, Key? key}) : super(key: key);
+  final Family family;
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: Text(family.name)),
+        body: ListView(
+          children: [
+            for (final p in family.people)
+              ListTile(
+                title: Text(p.name),
+                onTap: () => context.go('/family/${family.id}/person/${p.id}'),
+              ),
+          ],
+        ),
+      );
+}
+
+class PersonPage extends StatelessWidget {
+  const PersonPage({required this.family, required this.person, Key? key})
+      : super(key: key);
+
+  final Family family;
+  final Person person;
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: Text(person.name)),
+        body: Text('${person.name} ${family.name} is ${person.age} years old'),
+      );
 }
