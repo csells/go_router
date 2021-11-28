@@ -127,8 +127,14 @@ void main() {
 
     test('match top level route when location has trailing /', () {
       final routes = [
-        GoRoute(path: '/', pageBuilder: (builder, state) => HomePage()),
-        GoRoute(path: '/login', pageBuilder: (builder, state) => LoginPage()),
+        GoRoute(
+          path: '/',
+          builder: (builder, state) => const HomeScreen(),
+        ),
+        GoRoute(
+          path: '/login',
+          builder: (builder, state) => const LoginScreen(),
+        ),
       ];
 
       final router = _router(routes);
@@ -136,13 +142,13 @@ void main() {
       final matches = router.routerDelegate.matches;
       expect(matches.length, 1);
       expect(matches[0].subloc, '/login');
-      expect(router.pageFor(matches[0]).runtimeType, LoginPage);
+      expect(router.screenFor(matches[0]).runtimeType, LoginScreen);
     });
 
     test('match top level route when location has trailing / (2)', () {
       final routes = [
         GoRoute(path: '/profile', redirect: (_) => '/profile/foo'),
-        GoRoute(path: '/profile/:kind', pageBuilder: _dummy),
+        GoRoute(path: '/profile/:kind', builder: _dummy),
       ];
 
       final router = _router(routes);
@@ -150,13 +156,13 @@ void main() {
       final matches = router.routerDelegate.matches;
       expect(matches.length, 1);
       expect(matches[0].subloc, '/profile/foo');
-      expect(router.pageFor(matches[0]).runtimeType, DummyPage);
+      expect(router.screenFor(matches[0]).runtimeType, DummyScreen);
     });
 
     test('match top level route when location has trailing / (3)', () {
       final routes = [
         GoRoute(path: '/profile', redirect: (_) => '/profile/foo'),
-        GoRoute(path: '/profile/:kind', pageBuilder: _dummy),
+        GoRoute(path: '/profile/:kind', builder: _dummy),
       ];
 
       final router = _router(routes);
@@ -164,7 +170,7 @@ void main() {
       final matches = router.routerDelegate.matches;
       expect(matches.length, 1);
       expect(matches[0].subloc, '/profile/foo');
-      expect(router.pageFor(matches[0]).runtimeType, DummyPage);
+      expect(router.screenFor(matches[0]).runtimeType, DummyScreen);
     });
 
     test('match sub-route', () {
