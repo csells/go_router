@@ -94,7 +94,7 @@ class _FamilyTabsScreenState extends State<FamilyTabsScreen>
   }
 
   @override
-  void didUpdateWidget(covariant FamilyTabsScreen oldWidget) {
+  void didUpdateWidget(FamilyTabsScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
     _controller.index = widget.index;
   }

@@ -28,7 +28,7 @@ class _BooksScreenState extends State<BooksScreen>
   }
 
   @override
-  void didUpdateWidget(covariant BooksScreen oldWidget) {
+  void didUpdateWidget(BooksScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     switch (widget.kind) {

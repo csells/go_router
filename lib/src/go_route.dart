@@ -194,5 +194,6 @@ class GoRoute {
   static String? _redirect(GoRouterState state) => null;
 
   static Widget _builder(BuildContext context, GoRouterState state) =>
-      throw Exception('GoRoute builder parameter not set');
+      throw Exception('GoRoute builder parameter not set\n'
+          'See gorouter.dev/redirection#considerations for details');
 }

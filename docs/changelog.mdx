@@ -8,6 +8,7 @@
   simpler way to build error pages via the `GoRouter.errorBuilder` method
 - provide default implementation of `GoRouter.errorBuilder` to provide an error
   page without the need to implement a custom error page builder
+- TODO: updated docs to take new `builder` into account
 - TODO: new [Migrating to 2.5 section](https://gorouter.dev/migrating-to-20) in
   the docs to show how to take advantage of the new `builder` and default error
   page builder
@@ -16,11 +17,26 @@
 - added a [new custom error screen
   sample](https://github.com/csells/go_router/blob/master/example/lib/error_screen.dart)
 - TODO: added a new `NoTransitionPage`
-- TODO: updated docs to take new `builder` into account
 - TODO: updated docs to be careful about the use of "screen" vs "page" in the
   class names
 - TODO: fixed a problem with `extra` param not being available when going back
 - updated README to point to new docs site: [gorouter.dev](https://gorouter.dev)
+
+### 2.3.1
+
+- [fix 191](https://github.com/csells/go_router/issues/191): handle several
+  kinds of trailing / in the location, e.g. `/foo/` should be the same as `/foo`
+
+### 2.3.0
+
+- fix a misleading error message when using redirect functions with sub-routes
+
+### 2.2.9
+
+- [fix 182](https://github.com/csells/go_router/issues/182): fixes a regression
+  in the nested navigation caused by the fix for
+  [#163](https://github.com/csells/go_router/issues/163); thanks to
+  [lulupointu](https://github.com/lulupointu) for the fix!
 
 ### 2.2.8
 
@@ -241,7 +257,7 @@
 
 ### 0.8.3
 
-- Changed `debugOutputFullPaths` to `debugLogDiagnostics` and added add'l
+- changed `debugOutputFullPaths` to `debugLogDiagnostics` and added add'l
   debugging logging
 - parameterized redirect
 

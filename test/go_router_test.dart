@@ -125,6 +125,48 @@ void main() {
       expect(router.screenFor(matches[0]).runtimeType, LoginScreen);
     });
 
+    test('match top level route when location has trailing /', () {
+      final routes = [
+        GoRoute(path: '/', pageBuilder: (builder, state) => HomePage()),
+        GoRoute(path: '/login', pageBuilder: (builder, state) => LoginPage()),
+      ];
+
+      final router = _router(routes);
+      router.go('/login/');
+      final matches = router.routerDelegate.matches;
+      expect(matches.length, 1);
+      expect(matches[0].subloc, '/login');
+      expect(router.pageFor(matches[0]).runtimeType, LoginPage);
+    });
+
+    test('match top level route when location has trailing / (2)', () {
+      final routes = [
+        GoRoute(path: '/profile', redirect: (_) => '/profile/foo'),
+        GoRoute(path: '/profile/:kind', pageBuilder: _dummy),
+      ];
+
+      final router = _router(routes);
+      router.go('/profile/');
+      final matches = router.routerDelegate.matches;
+      expect(matches.length, 1);
+      expect(matches[0].subloc, '/profile/foo');
+      expect(router.pageFor(matches[0]).runtimeType, DummyPage);
+    });
+
+    test('match top level route when location has trailing / (3)', () {
+      final routes = [
+        GoRoute(path: '/profile', redirect: (_) => '/profile/foo'),
+        GoRoute(path: '/profile/:kind', pageBuilder: _dummy),
+      ];
+
+      final router = _router(routes);
+      router.go('/profile/?bar=baz');
+      final matches = router.routerDelegate.matches;
+      expect(matches.length, 1);
+      expect(matches[0].subloc, '/profile/foo');
+      expect(router.pageFor(matches[0]).runtimeType, DummyPage);
+    });
+
     test('match sub-route', () {
       final routes = [
         GoRoute(

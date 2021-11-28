@@ -801,8 +801,22 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   }
 
   static String _canonicalUri(String loc) {
-    final canon = Uri.parse(loc).toString();
-    return canon.endsWith('?') ? canon.substring(0, canon.length - 1) : canon;
+    var canon = Uri.parse(loc).toString();
+    canon = canon.endsWith('?') ? canon.substring(0, canon.length - 1) : canon;
+
+    // remove trailing slash except for when you shouldn't, e.g.
+    // /profile/ => /profile
+    // / => /
+    // /login?from=/ => login?from=/
+    canon = canon.endsWith('/') && canon != '/' && !canon.contains('?')
+        ? canon.substring(0, canon.length - 1)
+        : canon;
+
+    // /login/?from=/ => /login?from=/
+    // /?from=/ => /?from=/
+    canon = canon.replaceFirst('/?', '?', 1);
+
+    return canon;
   }
 
   static String _addQueryParams(String loc, Map<String, String> queryParams) {
