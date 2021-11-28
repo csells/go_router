@@ -3,7 +3,7 @@
 import 'package:flutter/widgets.dart';
 import '../go_router.dart';
 
-/// Default error page implementation for Material.
+/// Default error page implementation for WidgetsApp.
 class GoRouterErrorScreen extends StatelessWidget {
   /// Provide an exception to this page for it to be displayed.
   const GoRouterErrorScreen(this.error, {Key? key}) : super(key: key);
@@ -57,8 +57,8 @@ class _ButtonState extends State<_Button> {
   late final Color _color;
 
   @override
-  void didUpdateWidget(covariant _Button oldWidget) {
-    super.didUpdateWidget(oldWidget);
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     _color = (context as Element)
             .findAncestorWidgetOfExactType<WidgetsApp>()
             ?.color ??

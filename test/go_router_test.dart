@@ -1372,12 +1372,12 @@ class FamilyScreen extends DummyScreen {
 }
 
 class FamiliesScreen extends DummyScreen {
-  const FamiliesScreen({Key? key, required this.selectedFid}) : super(key: key);
+  const FamiliesScreen({required this.selectedFid, Key? key}) : super(key: key);
   final String selectedFid;
 }
 
 class PersonScreen extends DummyScreen {
-  const PersonScreen(this.fid, this.pid);
+  const PersonScreen(this.fid, this.pid, {Key? key}) : super(key: key);
   final String fid;
   final String pid;
 }

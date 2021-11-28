@@ -24,8 +24,14 @@ class App extends StatelessWidget {
   final _router = GoRouter(
     debugLogDiagnostics: true,
     routes: [
-      GoRoute(path: '/', builder: (context, state) => const Page1Screen()),
-      GoRoute(path: '/page2', builder: (context, state) => const Page2Screen()),
+      GoRoute(
+        path: '/',
+        builder: (context, state) => const Page1Screen(),
+      ),
+      GoRoute(
+        path: '/page2',
+        builder: (context, state) => const Page2Screen(),
+      ),
     ],
   );
 }
@@ -45,7 +51,7 @@ class Page1Screen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Button(
-                onPressed: () => context.go('/page3'),
+                onPressed: () => context.go('/page2'),
                 child: const Text(
                   'Go to page 2',
                   style: TextStyle(color: white),

@@ -156,7 +156,12 @@ class _CustomTransitionPageRoute<T> extends PageRoute<T> {
 class NoTransitionPage<T> extends CustomTransitionPage<T> {
   /// Constructor for a page with no transition functionality.
   const NoTransitionPage({required Widget child, LocalKey? key})
-      : super(transitionsBuilder: _transitionsBuilder, child: child, key: key);
+      : super(
+          transitionsBuilder: _transitionsBuilder,
+          transitionDuration: Duration.zero,
+          child: child,
+          key: key,
+        );
 
   static Widget _transitionsBuilder(
           BuildContext context,

@@ -74,9 +74,8 @@ class Page2ScreenWithPush extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(8),
                 child: ElevatedButton(
-                  onPressed: () => context.pushNamed(
-                    'page2',
-                    queryParams: {'push-count': (pushCount + 1).toString()},
+                  onPressed: () => context.push(
+                    '/page2?push-count=${pushCount + 1}',
                   ),
                   child: const Text('Push page 2 (again)'),
                 ),

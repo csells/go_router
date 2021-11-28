@@ -11,9 +11,11 @@
 - TODO: new [Migrating to 2.5 section](https://gorouter.dev/migrating-to-20) in
   the docs to show how to take advantage of the new `builder` and default error
   page builder
-- TODO: added a new `NoTransitionPage`
+- removed `launch.json` as VSCode-centric and unnecessary for discovery or easy
+  launching
 - added a [new custom error screen
   sample](https://github.com/csells/go_router/blob/master/example/lib/error_screen.dart)
+- TODO: added a new `NoTransitionPage`
 - TODO: updated docs to take new `builder` into account
 - TODO: updated docs to be careful about the use of "screen" vs "page" in the
   class names
