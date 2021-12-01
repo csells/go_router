@@ -18,10 +18,10 @@ GoRoute(
 This method came with a lot of boilerplate code if you were using the default
 transitions provided with the `MaterialApp` (or `CupertinoApp`) since you were
 forced to build up a `MaterialPage` (or `CupertinoPage`) for every route.
-Furthermore, assuming you wanted to let go_router pick the `key` and
-`restorationId` for each of your pages instead of managing them yourself, you
-still had to manually pass those parameters to each `MaterialPage` instance (or
-`CupertinoPage` instance).
+Furthermore, assuming you wanted to let go_router pick the key for each of your
+pages instead of managing that yourself, you still had to manually pass the key
+to each `MaterialPage` instance (or `CupertinoPage` instance). And finally, you
+had to pass in a `restorationId` value by hand as well.
 
 ## builder instead of pageBuilder
 
@@ -39,9 +39,9 @@ GoRoute(
 ```
 
 This code removes the boilerplate and gives you the default implementation of
-the `pageBuilder` that you expect. You can continue to use the `pageBuilder` if
-you want to specify the key or some other parameter to the page-type you're
-creating:
+the `pageBuilder` that you expect (in fact, it looks just like the `pageBuilder`
+snippet above). You can continue to use the `pageBuilder` if you want to specify
+the key or some other parameter to the page-type you're creating:
 
 ```dart
 GoRoute(

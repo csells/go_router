@@ -17,7 +17,6 @@ class App extends StatelessWidget {
         builder: (context, state) => const Page2Screen(),
       ),
     ],
-  ...
   );
 }
 ```
@@ -29,41 +28,18 @@ doesn't matter in which order you list your routes). The `path` will be matched
 in a case-insensitive way, although the case for [parameters](/parameters) will
 be preserved.
 
-## builder and pageBuilder
-
 In addition to the `path`, each route will typically have a `builder` function,
 which is responsible for building the `Widget` that is to take up the entire
 screen of your app. The default [transition](/transitions) will be used between
 pages depending on the type of app you've put at the top of your widget tree,
-i.e. the use of `MaterialApp` will cause go_router to wrap your screen widget in
-the `MaterialPage` object and `CupertinoApp` will use `CupertinoPage`. Each page
-must have a unique key, so go_router will use the key passed in via the `state`
-object passed to the `builder` function (and described below).
-
-If you'd like to use create the app-type-appropriate page yourself, perhaps to
-use a custom key or to control the other default parameters of the page, you can
-implement the `pageBuilder` function instead, e.g.
-
-```dart
-GoRoute(
-  path: '/page2',
-  pageBuilder: (context, state) => MaterialPage<void>(
-    key: state.pageKey,
-    restorationId: state.pageKey.value,
-    child: const Page2Screen(),
-  ),
-),
-```
-
-In fact, this implementation of `pageBuilder` is just what you'll get if you use
-the `builder`. The `pageBuilder` function is also useful if you'd like to [set a
-custom transition](/transition) for a particular route.
+e.g. the use of `MaterialApp` will cause go_router to use the `MaterialPage`
+transitions.
 
 ## Router state
 
-Both the `builder` and `pageBuilder` function are passed a `state` object,
-which is an instance of the `GoRouterState` class that contains some useful
-information:
+While it's not used in the snippet above, the `builder` function are passed a
+`state` object, which is an instance of the `GoRouterState` class that contains
+some useful information:
 
 | `GoRouterState` property | description                                        | example 1                | example 2                  |
 | ------------------------ | -------------------------------------------------- | ------------------------ | -------------------------- |
@@ -78,23 +54,17 @@ information:
 | `error`                  | `Exception` associated with this sub-route, if any | `Exception('404')`       | ...                        |
 | `pageKey`                | unique key for this sub-route                      | `ValueKey('/login')`     | `ValueKey('/family/:fid')` |
 
-You can read more about [sub-routes](/sub-routes) and
-[parameterized routes](/parameters) but the `pageBuilder` snippet code above
-uses the `pageKey` property. The `pageKey` is used to create a unique key for
-the `MaterialPage` or `CupertinoPage` based on the current path for that page in
-the [stack of pages](/sub-routes), so it will uniquely identify the page w/o
-having to hardcode a key or come up with one yourself.
-
-Not all of the state parameters will be set every time. In general, the state is
+The `state` object is useful for passing parameters to [parameterized
+routes](/parameters) and for [redirection](/redirection). In fact, not all of
+the state parameters will be set every time. In general, `GoRouterState` defines
 a superset of the potential current state of a `GoRouter` instance. For example,
-the `error` parameter will only be set of there's an error, the `params` won't
-be set during top-level redirection because there's no `path` to match yet, etc.
+the `error` parameter will only be set of there's an error.
 
 ## Initialization
 
-With just a list of routes, you can create an instance of a `GoRouter`, which
-itself provides the objects you need to call the `MaterialApp.router`
-constructor (or the `CupertinoApp` equivalent):
+With a list of routes, you can create an instance of a `GoRouter`, which itself
+provides the objects you need to call the `MaterialApp.router` constructor (or
+the `CupertinoApp.router` constructor):
 
 ```dart
 class App extends StatelessWidget {
@@ -126,23 +96,6 @@ class App extends StatelessWidget {
   final _router = GoRouter(
     ...
     errorBuilder: (context, state) => ErrorScreen(state.error),
-  );
-}
-```
-
-In the same way that you can use a `pageBuilder` instead of a `builder` if you'd
-like to have full control of the page that's being created, you can use the 
-`errorPageBuilder` instead of the `errorBuilder`:
-
-```dart
-class App extends StatelessWidget {
-  ...
-  final _router = GoRouter(
-    ...
-    errorPageBuilder: (context, state) => MaterialPage<void>(
-      key: state.pageKey,
-      child: ErrorScreen(state.error),
-    ),
   );
 }
 ```

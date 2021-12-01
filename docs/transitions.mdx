@@ -1,5 +1,69 @@
 # Transitions
 
+TODO:
+
+ wrap your screen widget in
+the `MaterialPage` object and `CupertinoApp` will use `CupertinoPage`. Each page
+must have a unique key, so go_router will use the key passed in via the `state`
+object passed to the `builder` function (and described below).
+
+If you'd like to use create the app-type-appropriate page yourself, perhaps to
+use a custom key or to control the other default parameters of the page, you can
+implement the `pageBuilder` function instead, e.g.
+
+```dart
+GoRoute(
+  path: '/page2',
+  pageBuilder: (context, state) => MaterialPage<void>(
+    key: state.pageKey,
+    restorationId: state.pageKey.value,
+    child: const Page2Screen(),
+  ),
+),
+```
+
+In fact, this implementation of `pageBuilder` is just what you'll get if you use
+the `builder`. The `pageBuilder` function is also useful if you'd like to [set a
+custom transition](/transitions) for a particular route.
+
+
+TODO:
+
+
+You can read more about [sub-routes](/sub-routes) and
+ but the `pageBuilder` snippet code above
+uses the `pageKey` property. The `pageKey` is used to create a unique key for
+the `MaterialPage` or `CupertinoPage` based on the current path for that page in
+the [stack of pages](/sub-routes), so it will uniquely identify the page w/o
+having to hardcode a key or come up with one yourself.
+
+
+TODO:
+
+
+In the same way that you can use a `pageBuilder` instead of a `builder` if you'd
+like to have full control of the page that's being created, you can use the 
+`errorPageBuilder` instead of the `errorBuilder`:
+
+```dart
+class App extends StatelessWidget {
+  ...
+  final _router = GoRouter(
+    ...
+    errorPageBuilder: (context, state) => MaterialPage<void>(
+      key: state.pageKey,
+      child: ErrorScreen(state.error),
+    ),
+  );
+}
+```
+
+
+
+
+
+
+
 As you transition between routes, you get transitions based on whether
 you're using `MaterialPage` or `CupertinoPage`; each of them implements the
 transitions as defined by the underlying platform. However, if you'd like to
