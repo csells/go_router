@@ -22,11 +22,11 @@ class App extends StatelessWidget {
 ```
 
 In this case, we've defined two routes. Each route `path` will be matched
-against the location to which the user is navigating. Only a single path can be
-matched, specifically the one that matches the entire location (and so it
-doesn't matter in which order you list your routes). The `path` will be matched
-in a case-insensitive way, although the case for [parameters](/parameters) will
-be preserved.
+against the location to which the user is navigating. Only a single route can be
+matched, specifically the one whose `path` matches the entire location (and so
+it doesn't matter in which order you list your routes). The `path` will be
+matched in a case-insensitive way, although the case for
+[parameters](/parameters) will be preserved.
 
 In addition to the `path`, each route will typically have a `builder` function,
 which is responsible for building the `Widget` that is to take up the entire
@@ -45,8 +45,8 @@ some useful information:
 | ------------------------ | -------------------------------------------------- | ------------------------ | -------------------------- |
 | `location`               | location of the full route, including query params | `/login?from=/family/f2` | `/family/f2/person/p1`     |
 | `subloc`                 | location of this sub-route w/o query params        | `/login`                 | `/family/f2`               |
-| `name`                   | the `GoRoute` name                                 | `login`                  | `family`                   |
-| `path`                   | the `GoRoute` path                                 | `/login`                 | `family/:fid`              |
+| `name`                   | route name                                         | `login`                  | `family`                   |
+| `path`                   | route path                                         | `/login`                 | `family/:fid`              |
 | `fullpath`               | full path to this sub-route                        | `/login`                 | `/family/:fid`             |
 | `params`                 | params extracted from the location                 | `{}`                     | `{'fid': 'f2'}`            |
 | `queryParams`            | optional params from the end of the location       | `{'from': '/family/f1'}` | `{}`                       |
@@ -102,7 +102,7 @@ class App extends StatelessWidget {
 
 The error screen, whether it's provided by you or go_router, will be used in
 case a location doesn't match a route, more than one route is found for a given
-location or if any of the page builder functions throws an exception.
+location or if any of the builder functions throws an exception.
 
 ## Deep Linking
 

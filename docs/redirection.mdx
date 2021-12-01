@@ -72,7 +72,7 @@ path, we redirect to `/login`. Likewise, if the user _is_ logged in but going to
 `null`. The `redirect` function will be called again until `null` is returned to
 enable [multiple redirects](#multiple-redirections).
 
-To make it easy to access this info wherever it's need in the app, consider
+To make it easy to access this info wherever it's needed in the app, consider
 using a state management option like
 [provider](https://pub.dev/packages/provider) to put the login info into the
 widget tree:
@@ -228,7 +228,7 @@ stack above.
 
 In fact, you probably don't want to have a `redirect` in the middle of your
 stack of pages anyway. You probably want the `redirect` function on a stack all
-itself, redirecting to another top-level route:
+by itself, redirecting to another top-level route:
 
 ```dart
 GoRoute(
