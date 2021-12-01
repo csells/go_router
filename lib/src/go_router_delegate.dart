@@ -706,7 +706,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     }
   }
 
-  Page<void> Function(LocalKey key, Widget child)? _pageBuilderForAppType;
+  Page<void> Function(LocalKey key, String restorationId, Widget child)?
+      _pageBuilderForAppType;
   Widget Function(BuildContext context, GoRouterState state)?
       _errorBuilderForAppType;
 
@@ -747,12 +748,24 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   ) {
     // build the page based on app type
     _cacheAppType(context);
-    return _pageBuilderForAppType!(state.pageKey, builder(context, state));
+    return _pageBuilderForAppType!(
+      state.pageKey,
+      state.pageKey.value,
+      builder(context, state),
+    );
   }
 
   /// Builds a page without any transitions.
-  Page<void> pageBuilderForWidgetApp(LocalKey key, Widget child) =>
-      NoTransitionPage<void>(key: key, child: child);
+  Page<void> pageBuilderForWidgetApp(
+    LocalKey key,
+    String restorationId,
+    Widget child,
+  ) =>
+      NoTransitionPage<void>(
+        key: key,
+        restorationId: restorationId,
+        child: child,
+      );
 
   Page<void> _errorPageBuilder(
     BuildContext context,

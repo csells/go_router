@@ -33,21 +33,16 @@ class _AppState extends State<App> with RestorationMixin {
 
   final _router = GoRouter(
     routes: [
+      // restorationId set for the route automatically
       GoRoute(
         path: '/',
-        pageBuilder: (context, state) => MaterialPage<void>(
-          restorationId: state.pageKey.value,
-          key: state.pageKey,
-          child: const Page1Screen(),
-        ),
+        builder: (context, state) => const Page1Screen(),
       ),
+
+      // restorationId set for the route automatically
       GoRoute(
         path: '/page2',
-        pageBuilder: (context, state) => MaterialPage<void>(
-          restorationId: state.pageKey.value,
-          key: state.pageKey,
-          child: const Page2Screen(),
-        ),
+        builder: (context, state) => const Page2Screen(),
       ),
     ],
     restorationScopeId: 'router',

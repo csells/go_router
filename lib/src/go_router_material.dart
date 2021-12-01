@@ -8,8 +8,16 @@ bool isMaterialApp(Element elem) =>
     elem.findAncestorWidgetOfExactType<MaterialApp>() != null;
 
 /// Builds a Cupertino page.
-MaterialPage<void> pageBuilderForMaterialApp(LocalKey key, Widget child) =>
-    MaterialPage<void>(key: key, child: child);
+MaterialPage<void> pageBuilderForMaterialApp(
+  LocalKey key,
+  String restorationId,
+  Widget child,
+) =>
+    MaterialPage<void>(
+      key: key,
+      restorationId: restorationId,
+      child: child,
+    );
 
 /// Default error page implementation for Material.
 class GoRouterMaterialErrorScreen extends StatelessWidget {

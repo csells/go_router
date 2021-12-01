@@ -8,8 +8,16 @@ bool isCupertinoApp(Element elem) =>
     elem.findAncestorWidgetOfExactType<CupertinoApp>() != null;
 
 /// Builds a Cupertino page.
-CupertinoPage<void> pageBuilderForCupertinoApp(LocalKey key, Widget child) =>
-    CupertinoPage<void>(key: key, child: child);
+CupertinoPage<void> pageBuilderForCupertinoApp(
+  LocalKey key,
+  String restorationId,
+  Widget child,
+) =>
+    CupertinoPage<void>(
+      key: key,
+      restorationId: restorationId,
+      child: child,
+    );
 
 /// Default error page implementation for Cupertino.
 class GoRouterCupertinoErrorScreen extends StatelessWidget {
