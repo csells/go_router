@@ -6,15 +6,12 @@ not done yet nor is it currently available as a supported part of the go_router
 package. I'm writing this down as a way to do what I like doing: focusing on the
 client code I want to write instead of focusing only on the implementation.__*
 
-*__Note: this proposal assumes the implementation of [this
-feature](https://github.com/csells/go_router/issues/173).__*
-
 ## Goal
 
 Routing in go_router fundamentally relies on the ability to match a string-based
 location in a URI format into one or more page builders, each that require zero
 or more arguments that are passed as path and query parameters as part of the
-location. The go_router does a good job of making the path and query parameters
+location. go_router does a good job of making the path and query parameters
 available via the `params` and `queryParams` properties of the `GoRouterState`
 object, but often the page builder must first parse the parameters into types
 that aren't `String`s, e.g.
@@ -22,14 +19,10 @@ that aren't `String`s, e.g.
 ```dart
 GoRoute(
   path: ':authorId',
-  pageBuilder: (context, state) {
+  builder: (context, state) {
     // require the authorId to be present and be an integer
     final authorId = int.parse(state.params['authorId']!);
-
-    return MaterialPage<void>(
-      key: state.pageKey,
-      child: AuthorDetailsScreen(authorId: authorId),
-    );
+    return AuthorDetailsScreen(authorId: authorId);
   },
 ),
 ```
@@ -68,7 +61,7 @@ class PersonRoute extends GoRouteData {
   final String pid;
 
   @override
-  Widget build(BuildContext context) => PersonPage(fid: fid, pid: pid);
+  Widget build(BuildContext context) => PersonScreen(fid: fid, pid: pid);
 }
 ```
 
@@ -107,12 +100,12 @@ The code generator aggregates all top-level routes into a single list called
 `$appRoutes` for use in initializing the `GoRouter` instance:
 
 ```dart
-final _router = GoRouter(routes: $appRoutes, errorPageBuilder: ...);
+final _router = GoRouter(routes: $appRoutes);
 ```
 
-## Error page builder
+## Error builder
 
-You can use typed routes to provide an error page builder as well:
+You can use typed routes to provide an error builder as well:
 
 ```dart
 class ErrorRoute extends GoRouteData {
@@ -120,16 +113,16 @@ class ErrorRoute extends GoRouteData {
   final Exception error;
 
   @override
-  Widget build(BuildContext context) => ErrorPage(error: error);
+  Widget build(BuildContext context) => ErrorScreen(error: error);
 }
 ```
 
-With this in place, you can provide the `errorPageBuilder` parameter like so:
+With this in place, you can provide the `errorBuilder` parameter like so:
 
 ```dart
 final _router = GoRouter(
   routes: $appRoutes,
-  errorPageBuilder: (c, s) => ErrorRoute(s.error!).buildPage(c, s),
+  errorBuilder: (c, s) => ErrorRoute(s.error!).build(c),
 );
 ```
 
@@ -161,7 +154,7 @@ class LoginRoute extends GoRouteData {
   final String? from;
 
   @override
-  Widget build(BuildContext context) => LoginPage(from: from);
+  Widget build(BuildContext context) => LoginScreen(from: from);
 }
 ```
 
@@ -176,7 +169,7 @@ class PersonRouteWithExtra extends GoRouteData {
   final Person $extra;
 
   @override
-  Widget build(BuildContext context) => PersonPage(person: $extra);
+  Widget build(BuildContext context) => PersonScreen(person: $extra);
 }
 ```
 
@@ -187,7 +180,8 @@ void _tap() => PersonRouteWithExtra(Person(name: 'Marvin', age: 42)).go(context)
 ```
 
 The `$extra` parameter is still passed outside of the location, still defeats
-dynamic and deep linking and is still not recommended in general.
+dynamic and deep linking (including the brower's Back button) and is still not
+recommended when targeting Flutter web.
 
 ## Mixed parameters
 
@@ -247,7 +241,7 @@ class BooksRoute extends GoRouteData {
   final BookKind kind;
 
   @override
-  Widget build(BuildContext context) => BooksPage(kind: kind);
+  Widget build(BuildContext context) => BooksScreen(kind: kind);
 }
 ```
 
@@ -256,8 +250,9 @@ class BooksRoute extends GoRouteData {
 By default, the `GoRouter` will use the app it finds in the widget tree, e.g.
 `MaterialApp`, `CupertinoApp`, `WidgetApp`, etc. and use the corresponding page
 type to create the page that wraps the `Widget` returned by the route's `build`
-method, e.g. `MaterialPage`, `CupertinoPage`, `Page`, etc. Furthermore, it will
-use the `state.pageKey` property to set the `key` property of the page.
+method, e.g. `MaterialPage`, `CupertinoPage`, `NoTransitionPage`, etc.
+Furthermore, it will use the `state.pageKey` property to set the `key` property
+of the page and the `restorationId` of the page.
 
 ### Transition override
 

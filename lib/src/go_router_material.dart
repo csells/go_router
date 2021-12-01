@@ -7,7 +7,7 @@ import '../go_router.dart';
 bool isMaterialApp(Element elem) =>
     elem.findAncestorWidgetOfExactType<MaterialApp>() != null;
 
-/// Builds a Cupertino page.
+/// Builds a Material page.
 MaterialPage<void> pageBuilderForMaterialApp(
   LocalKey key,
   String restorationId,
