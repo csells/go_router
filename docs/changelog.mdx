@@ -8,21 +8,19 @@
   simpler way to build error pages via the `GoRouter.errorBuilder` method
 - provide default implementation of `GoRouter.errorBuilder` to provide an error
   page without the need to implement a custom error page builder
-- TODO: updated docs to take new `builder` into account
-    - including relative images, e.g. async.mdx
-- TODO: new [Migrating to 2.5 section](https://gorouter.dev/migrating-to-20) in
+- updated docs to take new `builder` into account
+    - TODO: including relative images, e.g. async.mdx
+- new [Migrating to 2.5 section](https://gorouter.dev/migrating-to-25) in
   the docs to show how to take advantage of the new `builder` and default error
   page builder
 - removed `launch.json` as VSCode-centric and unnecessary for discovery or easy
   launching
-- TODO: added a [new custom error screen
+- added a [new custom error screen
   sample](https://github.com/csells/go_router/blob/master/example/lib/error_screen.dart)
-- TODO: added a [new WidgetsApp
+- added a [new WidgetsApp
   sample](https://github.com/csells/go_router/blob/master/example/lib/widgets_app.dart)
-- TODO: added a new `NoTransitionPage` class
-- TODO: updated docs to be careful about the use of "screen" vs "page" in the
-  class names
-- TODO: updated docs to explain why the browser's Back button doesn't work
+- added a new `NoTransitionPage` class
+- updated docs to explain why the browser's Back button doesn't work
   with the `extra` param
 - updated README to point to new docs site: [gorouter.dev](https://gorouter.dev)
 
