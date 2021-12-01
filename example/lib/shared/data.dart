@@ -108,7 +108,7 @@ class Repository {
     await Future<void>.delayed(const Duration(seconds: 1));
 
     // simulate error
-    if (rnd.nextBool()) throw Exception('error fetching families');
+    // if (rnd.nextBool()) throw Exception('error fetching families');
 
     // return data "fetched over the network"
     return Families.data;

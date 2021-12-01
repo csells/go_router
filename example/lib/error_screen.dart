@@ -76,7 +76,7 @@ class ErrorScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text('Page Not Found')),
+        appBar: AppBar(title: const Text('My "Page Not Found" Screen')),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -8,15 +9,20 @@ void main() => runApp(App());
 class App extends StatelessWidget {
   App({Key? key}) : super(key: key);
 
-  // TODO: doesn't work w/ the back button : (
   static const title = 'GoRouter Example: Extra Parameter';
+  static const alertOnWeb = true;
 
   @override
-  Widget build(BuildContext context) => MaterialApp.router(
-        routeInformationParser: _router.routeInformationParser,
-        routerDelegate: _router.routerDelegate,
-        title: title,
-      );
+  Widget build(BuildContext context) => alertOnWeb && kIsWeb
+      ? const MaterialApp(
+          title: title,
+          home: NoExtraParamOnWebScreen(),
+        )
+      : MaterialApp.router(
+          routeInformationParser: _router.routeInformationParser,
+          routerDelegate: _router.routerDelegate,
+          title: title,
+        );
 
   late final _router = GoRouter(
     routes: [
@@ -104,5 +110,24 @@ class PersonScreen extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: Text(person.name)),
         body: Text('${person.name} ${family.name} is ${person.age} years old'),
+      );
+}
+
+class NoExtraParamOnWebScreen extends StatelessWidget {
+  const NoExtraParamOnWebScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: const Text(App.title)),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Text("The `extra` param doesn't mix with the web:"),
+              Text("There's no support for the brower's Back button or"
+                  ' deep linking'),
+            ],
+          ),
+        ),
       );
 }

@@ -14,12 +14,15 @@
   page builder
 - removed `launch.json` as VSCode-centric and unnecessary for discovery or easy
   launching
-- added a [new custom error screen
+- TODO: added a [new custom error screen
   sample](https://github.com/csells/go_router/blob/master/example/lib/error_screen.dart)
-- TODO: added a new `NoTransitionPage`
+- TODO: added a [new WidgetsApp
+  sample](https://github.com/csells/go_router/blob/master/example/lib/widgets_app.dart)
+- TODO: added a new `NoTransitionPage` class
 - TODO: updated docs to be careful about the use of "screen" vs "page" in the
   class names
-- TODO: fixed a problem with `extra` param not being available when going back
+- TODO: updated docs to explain why the browser's Back button doesn't work
+  with the `extra` param
 - updated README to point to new docs site: [gorouter.dev](https://gorouter.dev)
 
 ### 2.3.1

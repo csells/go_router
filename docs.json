@@ -27,7 +27,7 @@
     [
       "Advanced Routing",
       [
-        ["Custom Transitions", "/custom-transitions"],
+        ["Transitions", "/transitions"],
         ["Async Data", "/async-data"],
         ["Nested Navigation", "/nested-navigation"],
         ["Navigator Builder", "/navigator-builder"],
