@@ -9,6 +9,7 @@
 - provide default implementation of `GoRouter.errorBuilder` to provide an error
   page without the need to implement a custom error page builder
 - TODO: updated docs to take new `builder` into account
+    - including relative images, e.g. async.mdx
 - TODO: new [Migrating to 2.5 section](https://gorouter.dev/migrating-to-20) in
   the docs to show how to take advantage of the new `builder` and default error
   page builder
