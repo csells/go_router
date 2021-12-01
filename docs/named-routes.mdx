@@ -1,4 +1,5 @@
 # Named Routes
+
 When you're navigating to a route with a location, you're hardcoding the URI
 construction into your app, e.g.
 
@@ -13,6 +14,7 @@ really want various versions of your location URIs lying  around willy-nilly in
 your code? 
 
 ## Navigating to Named Routes
+
 The idea of named routes is to make it easy to navigate to a route w/o knowing
 or caring what the URI format is. You can add a unique name to your route using
 the `GoRoute.name` parameter:
@@ -23,17 +25,17 @@ final _router = GoRouter(
     GoRoute(
       name: 'home',
       path: '/',
-      pageBuilder: ...,
+      builder: ...,
       routes: [
         GoRoute(
           name: 'family',
           path: 'family/:fid',
-          pageBuilder: ...,
+          builder: ...,
           routes: [
             GoRoute(
               name: 'person',
               path: 'person/:pid',
-              pageBuilder: ...,
+              builder: ...,
             ),
           ],
         ),
@@ -42,7 +44,7 @@ final _router = GoRouter(
     GoRoute(
       name: 'login',
       path: '/login',
-      pageBuilder: ...,
+      builder: ...,
     ),
   ],
 ```
@@ -72,6 +74,7 @@ top page off of the generated match stack and push that onto the existing stack
 of pages.
 
 ## Redirecting to Named Routes
+
 In addition to navigation, you may also want to be able to redirect to a named
 route, which you can also do using the `namedLocation` method of either
 `GoRouter` or `GoRouterState`:

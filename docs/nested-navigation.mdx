@@ -1,40 +1,41 @@
 # Nested Navigation
 
 Sometimes you want to choose a page based on a route as well as the state of
-that page, e.g. the currently selected tab. In that case, you want to choose not
-just the page from a route but also the widgets nested inside the page. That's
-called "nested navigation". The key differentiator for "nested" navigation is
-that there's no transition on the part of the page that stays the same, e.g. the
-app bar stays the same as you navigate to different tabs on this `TabView`:
+that screen, e.g. the currently selected tab. In that case, you want to choose
+not just the screen from a route but also the widgets nested inside the screen.
+That's called "nested navigation". The key differentiator for "nested"
+navigation is that there's no transition on the part of the page that stays the
+same, e.g. the app bar stays the same as you navigate to different tabs on this
+`TabView`:
 
-![nested navigation example](https://raw.githubusercontent.com/csells/go_router/master/readme/nested-nav.gif)
+![nested navigation example](images/nested-nav.gif)
 
 Of course, you can easily do this using the `TabView` widget, but what makes
-this nested "navigation" is that the location of the page changes, i.e. notice
-the address bar as the user transitions from tab to tab. This makes it easy for
-the user to capture a [dynamic link](/parameters/#dynamic-linking) for any object in the app,
-enabling [deep linking](/declarative-routing#deep-linking).
+this nested "navigation" is that the location changes, i.e. notice the address
+bar as the user transitions from tab to tab. This makes it easy for the user to
+capture a [dynamic link](/parameters/#dynamic-linking) for any object in the
+app, enabling [deep linking](/declarative-routing#deep-linking).
 
 To use nested navigation using go_router, you can simply navigate to the same
-page via different paths or to the same path with different parameters, with
-the differences dictating the different state of the page. For example, to
-implement that page with the `TabView` above, you need a widget that changes the
+page via different paths or to the same path with different parameters, with the
+differences dictating the different state of the page. For example, to implement
+that screen with the `TabView` above, you need a widget that changes the
 selected tab via a parameter:
 
 ```dart
-class FamilyTabsPage extends StatefulWidget {
+class FamilyTabsScreen extends StatefulWidget {
   final int index;
-  FamilyTabsPage({required Family currentFamily, Key? key})
+  FamilyTabsScreen({required Family currentFamily, Key? key})
       : index = Families.data.indexWhere((f) => f.id == currentFamily.id),
         super(key: key) {
     assert(index != -1);
   }
 
   @override
-  _FamilyTabsPageState createState() => _FamilyTabsPageState();
+  _FamilyTabsScreenState createState() => _FamilyTabsScreenState();
 }
 
-class _FamilyTabsPageState extends State<FamilyTabsPage>
+class _FamilyTabsScreenState extends State<FamilyTabsScreen>
     with TickerProviderStateMixin {
   late final TabController _controller;
 
@@ -55,7 +56,7 @@ class _FamilyTabsPageState extends State<FamilyTabsPage>
   }
 
   @override
-  void didUpdateWidget(FamilyTabsPage oldWidget) {
+  void didUpdateWidget(FamilyTabsScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
     _controller.index = widget.index;
   }
@@ -84,20 +85,20 @@ class _FamilyTabsPageState extends State<FamilyTabsPage>
 }
 ```
 
-The `FamilyTabsPage` is a stateful widget that takes the currently selected
+The `FamilyTabsScreen` is a stateful widget that takes the currently selected
 family as a parameter. It uses the index of that family in the list of families
 to set the currently selected tab. However, instead of switching the currently
 selected tab to whatever the user clicks on, it uses navigation to get to that
 index instead. It's the use of navigation that changes the address in the
 address bar. And, the way that the tab index is switched is via the call to
-`didUpdateWidget`. Because the `FamilyTabsPage` is a stateful widget, the
+`didUpdateWidget`. Because the `FamilyTabsScreen` is a stateful widget, the
 widget itself can be changed but the state is kept. When that happens, the call
-to `didUpdateWidget` will change the index of the `TabController` to match
-the new navigation location.
+to `didUpdateWidget` will change the index of the `TabController` to match the
+new navigation location.
 
 To implement the navigation part of this example, we need a route that
-translates the location into an instance of `FamilyTabsPage` parameterized with
-the currently selected family:
+translates the location into an instance of `FamilyTabsScreen` parameterized
+with the currently selected family:
 
 ```dart
 final _router = GoRouter(
@@ -108,47 +109,37 @@ final _router = GoRouter(
     ),
     GoRoute(
       path: '/family/:fid',
-      pageBuilder: (context, state) {
+      builder: (context, state) {
         final fid = state.params['fid']!;
         final family = Families.data.firstWhere((f) => f.id == fid,
             orElse: () => throw Exception('family not found: $fid'));
 
-        return MaterialPage<void>(
-          key: state.pageKey,
-          child: FamilyTabsPage(key: state.pageKey, currentFamily: family),
-        );
+        return FamilyTabsScreen(key: state.pageKey, currentFamily: family);
       },
     ),
   ],
-
-  errorPageBuilder: ...,
 );
 ```
 
 The `/` route is a redirect to the first family. The `/family/:fid` route is the
 one that sets up nested navigation. It does this by first creating an
-instance of `FamilyTabsPage` with the family that matches the `fid` parameter.
+instance of `FamilyTabsScreen` with the family that matches the `fid` parameter.
 And second, it uses `state.pageKey` to signal to Flutter that this is the same
 page as before. This combination is what causes the router to leave the page
 alone, to update the browser's address bar and to let the `TabView` navigate to
 the new selection.
 
-This may seem like a lot, but in summary, you need to do three things with the
+This may seem like a lot, but in summary, you need to do two things with the
 page you create in your page builder to support nested navigation:
 
-1. Use a `StatefulWidget` as the base class of the thing you pass to
-   `MaterialPage` (or whatever).
-
-1. Pass the same key value to the `MaterialPage` so that Flutter knows that
-   you're keeping the same state for your `StatefulWidget`-derived page;
-   `state.pageKey` is handy for this.
+1. Use a `StatefulWidget` as the base class of your screen widget.
 
 1. As the user navigates, you'll create the same `StatefulWidget`-derived type,
    passing in new data, e.g. which tab is currently selected. Because you're
-   using a widget with the same key, Flutter will keep the state but swap out the
-   widget wrapping w/ the new data as constructor args. When that new widget wrapper is
-   in place, Flutter will call `didUpdateWidget` so that you can use the new
-   data to update the existing widgets, e.g. the selected tab.
+   using a widget with the same key, Flutter will keep the state but swap out
+   the widget wrapping w/ the new data as constructor args. When that new widget
+   wrapper is in place, Flutter will call `didUpdateWidget` so that you can use
+   the new data to update the existing widgets, e.g. the selected tab.
 
 This example shows off the selected tab on a `TabView` but you can use it for
 any nested content of a page your app navigates to.
@@ -160,7 +151,8 @@ state that they left them in when they navigated to a new page and return, e.g.
 scroll position, text input values, etc. You can enable support for this by
 using `AutomaticKeepAliveClientMixin` on a stateful widget. You can see this in
 action in the `FamiliyView` of the
-[`nested_nav.dart`](https://github.com/csells/go_router/blob/master/example/lib/nested_nav.dart) example:
+[`nested_nav.dart`](https://github.com/csells/go_router/blob/master/example/lib/nested_nav.dart)
+example:
 
 ```dart
 class FamilyView extends StatefulWidget {
@@ -201,7 +193,7 @@ To instruct the `AutomaticKeepAliveClientMixin` to keep the state, you need to
 override `wantKeepAlive` to return `true` and call `super.build` in the `State`
 class's `build` method, as show above.
 
-![keeping state example](https://raw.githubusercontent.com/csells/go_router/master/readme/keeping-state.gif)
+![keeping state example](images/keeping-state.gif)
 
 Notice that after scrolling to the bottom of the long list of children in the
 Hunting family, then going to another tab and then going to another page, when

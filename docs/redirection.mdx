@@ -1,6 +1,6 @@
 # Redirection
 
-Sometimes you want your app to redirect to a different location. The go_router
+Sometimes you want your app to redirect to a different location. go_router
 allows you to do this at a top level for each new navigation event or at the
 route level for a specific route.
 
@@ -39,22 +39,14 @@ class App extends StatelessWidget {
     routes: [
       GoRoute(
         path: '/',
-        pageBuilder: (context, state) => MaterialPage<void>(
-          key: state.pageKey,
-          child: HomePage(families: Families.data),
-        ),
+        builder: (context, state) => HomeScreen(families: Families.data),
       ),
       ...,
       GoRoute(
         path: '/login',
-        pageBuilder: (context, state) => MaterialPage<void>(
-          key: state.pageKey,
-          child: const LoginPage(),
-        ),
+        builder: (context, state) => LoginScreen(),
       ),
     ],
-
-    errorPageBuilder: ...,
 
     // redirect to the login page if the user is not logged in
     redirect: (state) {
@@ -100,10 +92,10 @@ class App extends StatelessWidget {
 ```
 
 With the login info in the widget tree, you can easily implement your login
-page:
+screen:
 
 ```dart
-class LoginPage extends StatelessWidget {
+class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: Text(_title(context))),
@@ -129,7 +121,7 @@ class LoginPage extends StatelessWidget {
 ```
 
 In this case, we've logged the user in and manually redirected them to the home
-page. That's because the go_router doesn't know that the app's state has
+screen. That's because the go_router doesn't know that the app's state has
 changed in a way that affects the route. If you'd like to have the app's state
 cause go_router to automatically redirect, you can use the `refreshListenable`
 argument of the `GoRouter` constructor:
@@ -140,7 +132,6 @@ class App extends StatelessWidget {
   ...
   late final _router = GoRouter(
     routes: ...,
-    errorPageBuilder: ...,
     redirect: ...
 
     // changes on the listenable will cause the router to refresh it's route
@@ -150,7 +141,7 @@ class App extends StatelessWidget {
 ```
 
 Since the `loginInfo` is a `ChangeNotifier`, it will notify listeners when it
-changes. By passing it to the `GoRouter` constructor, the go_router will
+changes. By passing it to the `GoRouter` constructor, go_router will
 automatically refresh the route when the login info changes. This allows you to
 simplify the login logic in your app:
 
@@ -186,7 +177,7 @@ final _router = GoRouter(
     ),
     GoRoute(
       path: '/family/:fid',
-      pageBuilder: ...,
+      builder: ...,
   ],
   errorPageBuilder: ...,
 );
@@ -330,26 +321,26 @@ raw `location` will cause a stack overflow, an exercise that I'll leave to the
 reader).
 
 Now, when the `/login` route is matched, we want to pull the `from` parameter
-out of the `state` object to pass along to the `LoginPage`:
+out of the `state` object to pass along to the `LoginScreen`:
 
 ```dart
 GoRoute(
   path: '/login',
   pageBuilder: (context, state) => MaterialPage<void>(
     key: state.pageKey,
-    // pass the original location to the LoginPage (if there is one)
-    child: LoginPage(from: state.queryParams['from']),
+    // pass the original location to the LoginScreen (if there is one)
+    child: LoginScreen(from: state.queryParams['from']),
   ),
 ),
 ```
 
-In the `LoginPage`, if the `from` parameter was passed, we use it to go to the
+In the `LoginScreen`, if the `from` parameter was passed, we use it to go to the
 deep link location after a successful login:
 
 ```dart
-class LoginPage extends StatelessWidget {
+class LoginScreen extends StatelessWidget {
   final String? from;
-  const LoginPage({this.from, Key? key}) : super(key: key);
+  const LoginScreen({this.from, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) => Scaffold(

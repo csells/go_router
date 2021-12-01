@@ -30,7 +30,7 @@ be preserved.
 
 In addition to the `path`, each route will typically have a `builder` function,
 which is responsible for building the `Widget` that is to take up the entire
-screen of your app. The default [transition](/transitions) will be used between
+screen of your app. The [default transition](/transitions) will be used between
 pages depending on the type of app you've put at the top of your widget tree,
 e.g. the use of `MaterialApp` will cause go_router to use the `MaterialPage`
 transitions.
@@ -55,9 +55,9 @@ some useful information:
 | `pageKey`                | unique key for this sub-route                      | `ValueKey('/login')`     | `ValueKey('/family/:fid')` |
 
 The `state` object is useful for passing parameters to [parameterized
-routes](/parameters) and for [redirection](/redirection). In fact, not all of
-the state parameters will be set every time. In general, `GoRouterState` defines
-a superset of the potential current state of a `GoRouter` instance. For example,
+routes](/parameters) and for [redirection](/redirection). Not all of the state
+parameters will be set every time. In general, `GoRouterState` defines a
+superset of the potential current state of a `GoRouter` instance. For example,
 the `error` parameter will only be set of there's an error.
 
 ## Initialization
@@ -80,8 +80,8 @@ class App extends StatelessWidget {
 }
 ```
 
-With the router in place, your app can now [navigate](/navigation) between
-pages.
+With the router in place, your app can now [navigate between
+pages](/navigation).
 
 ## Error handling
 
@@ -101,7 +101,7 @@ class App extends StatelessWidget {
 ```
 
 The error screen, whether it's provided by you or go_router, will be used in
-case a location doesn't match a route, more than one router is found for a given
+case a location doesn't match a route, more than one route is found for a given
 location or if any of the page builder functions throws an exception.
 
 ## Deep Linking
