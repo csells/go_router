@@ -53,6 +53,19 @@ will take the top-most page from the stack and push that page onto the stack.
 
 You can also push a [named route](/named-routes).
 
+## Pushing Replacement 
+
+If you'd like to replace the top page of the stack with another page, you can use
+`pushReplacement` or `pushReplacementNamed`. This is equivalent to the sequence of
+calling `pop` then `push` methods. Unlike popping then pushing, `pushReplacement`
+or `pushReplacementNamed` will be unnoticeable by the user if, and only if, the 
+replaced page has the same `fullpath` as the new page (i.e. the `pageKey` will
+not change). 
+
+Pushing replacement becomes useful when an application would like to maintain the 
+stack under a page with nested navigation without compromising the UX during the 
+nested navigation activity (e.g. changing a tab within a `TabBar`). 
+
 ## Popping pages
 
 If you'd like to pop a page from the stack, you can use the `pop` method. This
