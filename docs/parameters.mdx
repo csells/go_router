@@ -12,7 +12,7 @@ final _router = GoRouter(
       builder: (context, state) {
         // use state.params to get router parameter values
         final family = Families.family(state.params['fid']!);
-        return FamilyPage(family: family);
+        return FamilyScreen(family: family);
       },
     ),
   ],
@@ -70,7 +70,7 @@ This object is provided as `state.extra`:
 ```dart
 GoRoute(
   path: '/family',
-  builder: (context, state) => FamilyPage(family: state.extra! as Family),
+  builder: (context, state) => FamilyScreen(family: state.extra! as Family),
 ),
 ```
 

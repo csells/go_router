@@ -9,7 +9,7 @@ Future<void> _addPerson(BuildContext context) async {
   final person = await Navigator.push<Person>(
     context,
     MaterialPageRoute(
-      builder: (context) => NewPersonPage(family: widget.family),
+      builder: (context) => NewPersonScreen(family: widget.family),
     ),
   );
 
@@ -122,7 +122,7 @@ GoRoute(
           path: 'new-person',
           builder: (context, state) {
             final family = Families.family(state.params['fid']!);
-            return NewPersonPage(family: family);
+            return NewPersonScreen(family: family);
           },
         ),
       ],

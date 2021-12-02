@@ -3,13 +3,11 @@
 ### 2.5.0
 
 - provide default implementation of `GoRoute.pageBuilder` to provide a simpler
-  way to build pages for the 80% case via the `GoRouter.build` method
+  way to build pages via the `GoRouter.build` method
 - provide default implementation of `GoRouter.errorPageBuilder` to provide a
   simpler way to build error pages via the `GoRouter.errorBuilder` method
 - provide default implementation of `GoRouter.errorBuilder` to provide an error
   page without the need to implement a custom error page builder
-- updated docs to take new `builder` into account
-    - TODO: including relative images, e.g. async.mdx
 - new [Migrating to 2.5 section](https://gorouter.dev/migrating-to-25) in
   the docs to show how to take advantage of the new `builder` and default error
   page builder
