@@ -13,6 +13,7 @@ class GoRoute {
   GoRoute({
     required this.path,
     this.name,
+    this.title,
     this.pageBuilder,
     this.builder = _builder,
     this.routes = const [],
@@ -63,6 +64,13 @@ class GoRoute {
   ///
   /// If used, a unique string name must be provided and it can not be empty.
   final String? name;
+
+  /// Optional title of the route
+  ///
+  /// If used, it will wrap the provided child inside the pageBuilder's [Page]
+  /// of [GoRoute] with a [Title] widget so the operating system can use this to
+  /// apply a title where it's possible (for example for titles in browsers)
+  final String? title;
 
   /// The path of this go route.
   ///

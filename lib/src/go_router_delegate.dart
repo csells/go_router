@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 
@@ -24,6 +25,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     required this.routes,
     required this.errorPageBuilder,
     required this.errorBuilder,
+    required this.errorTitle,
     required this.topRedirect,
     required this.redirectLimit,
     required this.refreshListenable,
@@ -64,6 +66,12 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
   /// Error widget builder for the go router delegate.
   final GoRouterWidgetBuilder? errorBuilder;
+
+  /// Title to use for the error page. Will wrap the child of
+  /// the error page with a [Title] widget to provide the
+  /// operating system with a title (for example for titles
+  /// in browsers)
+  final String? errorTitle;
 
   /// Top level page redirect.
   final GoRouterRedirect topRedirect;
@@ -394,6 +402,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
                 queryParams: state.queryParams,
                 extra: state.extra,
               ),
+              errorTitle,
             ),
           ),
         ),
@@ -620,6 +629,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
             queryParams: uri.queryParameters,
             error: err is Exception ? err : Exception(err),
           ),
+          errorTitle,
         ),
       ];
     }
@@ -702,7 +712,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
       yield match.route.pageBuilder != null
           ? match.route.pageBuilder!(context, state)
-          : _pageBuilder(context, state, match.route.builder);
+          : _pageBuilder(
+              context, state, match.route.builder, match.route.title);
     }
   }
 
@@ -745,13 +756,20 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     BuildContext context,
     GoRouterState state,
     GoRouterWidgetBuilder builder,
+    String? title,
   ) {
     // build the page based on app type
     _cacheAppType(context);
     return _pageBuilderForAppType!(
       state.pageKey,
       state.pageKey.value,
-      builder(context, state),
+      title != null
+          ? Title(
+              title: title,
+              color: const Color(0xffffffff),
+              child: builder(context, state),
+            )
+          : builder(context, state),
     );
   }
 
@@ -770,6 +788,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   Page<void> _errorPageBuilder(
     BuildContext context,
     GoRouterState state,
+    String? title,
   ) {
     // if the error page builder is provided, use that; otherwise, if the error
     // builder is provided, wrap that in an app-specific page, e.g.
@@ -783,6 +802,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
             context,
             state,
             errorBuilder ?? _errorBuilderForAppType!,
+            title,
           );
   }
 

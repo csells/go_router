@@ -16,13 +16,16 @@ class App extends StatelessWidget {
       );
 
   final _router = GoRouter(
+    errorTitle: '404',
     routes: [
       GoRoute(
         path: '/',
+        title: 'Page 1',
         builder: (context, state) => const Page1Screen(),
       ),
       GoRoute(
         path: '/page2',
+        title: 'Page 2',
         builder: (context, state) => const Page2Screen(),
       ),
     ],
