@@ -6,15 +6,12 @@ not done yet nor is it currently available as a supported part of the go_router
 package. I'm writing this down as a way to do what I like doing: focusing on the
 client code I want to write instead of focusing only on the implementation.__*
 
-*__Note: this proposal assumes the implementation of [this
-feature](https://github.com/csells/go_router/issues/173).__*
-
 ## Goal
 
 Routing in go_router fundamentally relies on the ability to match a string-based
 location in a URI format into one or more page builders, each that require zero
 or more arguments that are passed as path and query parameters as part of the
-location. The go_router does a good job of making the path and query parameters
+location. go_router does a good job of making the path and query parameters
 available via the `params` and `queryParams` properties of the `GoRouterState`
 object, but often the page builder must first parse the parameters into types
 that aren't `String`s, e.g.
@@ -22,16 +19,10 @@ that aren't `String`s, e.g.
 ```dart
 GoRoute(
   path: ':authorId',
-  pageBuilder: (context, state) {
+  builder: (context, state) {
     // require the authorId to be present and be an integer
     final authorId = int.parse(state.params['authorId']!);
-    final selectedAuthor = libraryInstance.allAuthors
-        .firstWhereOrNull((a) => a.id == authorId);
-
-    return MaterialPage<void>(
-      key: state.pageKey,
-      child: AuthorDetailsScreen(author: selectedAuthor),
-    );
+    return AuthorDetailsScreen(authorId: authorId);
   },
 ),
 ```
@@ -51,16 +42,17 @@ a specific route consumes and to use code generation to take out the drudgery of
 writing a bunch of `go`, `push` and `location` boilerplate code implementations
 ourselves.
 
-The code generator to do this work today in [our experimental
-implementation](https://github.com/csells/go_router/pull/130) is the
-[build_runner](https://pub.dev/packages/build_runner) package but the plan is to
-move to [Dart
-macros](https://github.com/dart-lang/language/blob/master/working/macros/feature-specification.md)
+The code generator to do this work today in
+[our experimental implementation](https://github.com/csells/go_router/pull/130)
+is the [build_runner](https://pub.dev/packages/build_runner) package but the
+plan is to move to
+[Dart macros](https://github.com/dart-lang/language/blob/master/working/macros/feature-specification.md)
 when they're available.
 
 ## Defining a route
 
-Define each route as a class extending `GoRouteData` and overriding the `build` method.
+Define each route as a class extending `GoRouteData` and overriding the `build`
+method.
 
 ```dart
 class PersonRoute extends GoRouteData {
@@ -69,11 +61,12 @@ class PersonRoute extends GoRouteData {
   final String pid;
 
   @override
-  Widget build(BuildContext context) => PersonPage(fid: fid, pid: pid);
-} 
+  Widget build(BuildContext context) => PersonScreen(fid: fid, pid: pid);
+}
 ```
 
-Required parameters are pulled from the route's `path` defined in the route tree.
+Required parameters are pulled from the route's `path` defined in the route
+tree.
 
 ## Route tree
 
@@ -87,9 +80,9 @@ The tree of routes is defined as an attribute on each of the top-level routes:
       path: 'family/:fid',
       routes: [
         TypedGoRoute<PersonRoute>(
-          path: 'person/:pid', 
+          path: 'person/:pid',
         ),
-      ], 
+      ],
     ),
   ],
 )
@@ -107,12 +100,12 @@ The code generator aggregates all top-level routes into a single list called
 `$appRoutes` for use in initializing the `GoRouter` instance:
 
 ```dart
-final _router = GoRouter(routes: $appRoutes, errorPageBuilder: ...);
+final _router = GoRouter(routes: $appRoutes);
 ```
 
-## Error page builder
+## Error builder
 
-You can use typed routes to provide an error page builder as well:
+You can use typed routes to provide an error builder as well:
 
 ```dart
 class ErrorRoute extends GoRouteData {
@@ -120,16 +113,16 @@ class ErrorRoute extends GoRouteData {
   final Exception error;
 
   @override
-  Widget build(BuildContext context) => ErrorPage(error: error);
+  Widget build(BuildContext context) => ErrorScreen(error: error);
 }
 ```
 
-With this in place, you can provide the `errorPageBuilder` parameter like so:
+With this in place, you can provide the `errorBuilder` parameter like so:
 
 ```dart
 final _router = GoRouter(
   routes: $appRoutes,
-  errorPageBuilder: (c, s) => ErrorRoute(s.error!).buildPage(c, s),
+  errorBuilder: (c, s) => ErrorRoute(s.error!).build(c),
 );
 ```
 
@@ -148,8 +141,8 @@ If you get this wrong, the compiler will complain:
 void _tap() => PersonRoute(pid: 'p1').go(context);
 ```
 
-This, of course, is the whole point of typed routing; the compiler can let
-us known when we get it wrong.
+This, of course, is the whole point of typed routing; the compiler can let us
+known when we get it wrong.
 
 ## Query parameters
 
@@ -158,10 +151,10 @@ Optional parameters indicate query parameters:
 ```dart
 class LoginRoute extends GoRouteData {
   LoginRoute({this.from});
-  final String? from; 
-  
+  final String? from;
+
   @override
-  Widget build(BuildContext context) => LoginPage(from: from);
+  Widget build(BuildContext context) => LoginScreen(from: from);
 }
 ```
 
@@ -176,7 +169,7 @@ class PersonRouteWithExtra extends GoRouteData {
   final Person $extra;
 
   @override
-  Widget build(BuildContext context) => PersonPage(person: $extra); 
+  Widget build(BuildContext context) => PersonScreen(person: $extra);
 }
 ```
 
@@ -187,7 +180,8 @@ void _tap() => PersonRouteWithExtra(Person(name: 'Marvin', age: 42)).go(context)
 ```
 
 The `$extra` parameter is still passed outside of the location, still defeats
-dynamic and deep linking and is still not recommended in general.
+dynamic and deep linking (including the brower's Back button) and is still not
+recommended when targeting Flutter web.
 
 ## Mixed parameters
 
@@ -201,7 +195,7 @@ class HotdogRouteWithEverything extends GoRouteData {
   final Sauce $extra; // special $extra parameter
 
   @override
-  Widget build(BuildContext context) => HotdogPage(ketchup, mustard, $extra); 
+  Widget build(BuildContext context) => HotdogScreen(ketchup, mustard, $extra);
 }
 ```
 
@@ -218,21 +212,20 @@ redirect: (state) {
   final loggingIn = state.subloc == LoginRoute().location;
   if( !loggedIn && !loggingIn ) return LoginRoute(from: state.subloc).location;
   if( loggedIn && loggingIn ) return HomeRoute().location;
-  return null; 
+  return null;
 }
 ```
 
 ## Route-level redirection
 
-Handle route-level redirects by implementing the `redirect` method on the
-route:
+Handle route-level redirects by implementing the `redirect` method on the route:
 
 ```dart
 class HomeRoute extends GoRouteData {
   // no need to implement [build] when this [redirect] is unconditional
   @override
   String? redirect() => BooksRoute().location;
-} 
+}
 ```
 
 ## Type conversions
@@ -246,26 +239,27 @@ enum BookKind { all, popular, recent }
 class BooksRoute extends GoRouteData {
   BooksRoute({this.kind = BookKind.popular});
   final BookKind kind;
-  
+
   @override
-  Widget build(BuildContext context) => BooksPage(kind: kind);
+  Widget build(BuildContext context) => BooksScreen(kind: kind);
 }
 ```
 
 ## Transitions
 
-By default, the `GoRouter` will use  the app it finds in the widget tree, e.g.
-`MaterialApp`, `CupertinoApp`, `WidgetApp`, etc. and use  the corresponding page
+By default, the `GoRouter` will use the app it finds in the widget tree, e.g.
+`MaterialApp`, `CupertinoApp`, `WidgetApp`, etc. and use the corresponding page
 type to create the page that wraps the `Widget` returned by the route's `build`
-method, e.g. `MaterialPage`, `CupertinoPage`, `Page`, etc. Furthermore, it will
-use the `state.pageKey` property to set the `key` property of the page.
+method, e.g. `MaterialPage`, `CupertinoPage`, `NoTransitionPage`, etc.
+Furthermore, it will use the `state.pageKey` property to set the `key` property
+of the page and the `restorationId` of the page.
 
 ### Transition override
 
 If you'd like to change how the page is created, e.g. to use a different page
-type, pass non-default parameters when creating the page (like a custom
-key) or access the `GoRouteState` object, you can override the `buildPage` method
-of the base class instead of the `build` method:
+type, pass non-default parameters when creating the page (like a custom key) or
+access the `GoRouteState` object, you can override the `buildPage` method of the
+base class instead of the `build` method:
 
 ```dart
 class MyMaterialRouteWithKey extends GoRouteData {
@@ -277,7 +271,7 @@ class MyMaterialRouteWithKey extends GoRouteData {
       key: _key,
       child: MyPage(),
     );
-} 
+}
 ```
 
 ### Custom transitions
@@ -294,5 +288,28 @@ class FancyRoute extends GoRouteData {
       transitionsBuilder: (context, animation, animation2, child) =>
           RotationTransition(turns: animation, child: child),
     ),
-} 
+}
 ```
+
+## Implementation notes
+
+1. The `@TypedGoRoute` annotation:
+   - It's only valid to annotate implementations of `GoRouteData`.
+   - The type parameter MUST be provided.
+   - The root `@TypedGoRoute` type param must match the annotated class.
+   - Later, maybe:
+     - Expand the set of things that can be annotated. Widgets? Libraries?
+2. `GoRouteData` implementations
+   - Must have a default constructor (or factory).
+   - All constructor parameters must map 1-to-1 name and type to fields or
+     getters on the type.
+   - Only fields that align getters with constructor parameters
+   - It is valid to have a `const` constructor. In the case of a no-param
+     constructor, `const` will be used to initailze the type.
+   - Valid parameter/field/property types:
+     - `String`: as-is
+     - `num`, `int`, `bool`, `DateTime`, `Duration`, `BigInt`, `double`, `Uri`:
+       encoded with `toString`, decoded with parse or similar.
+     - `Enum`: encoded/decoded using kebab cased names.
+   - Later, maybe:
+     - Support for using writeable fields and/or setters

@@ -2,19 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'shared/data.dart';
-import 'shared/pages.dart';
 
 void main() => runApp(App());
 
-/// sample class using simple declarative routes
 class App extends StatelessWidget {
   App({Key? key}) : super(key: key);
+
+  static const title = 'GoRouter Example: Nested Navigation';
 
   @override
   Widget build(BuildContext context) => MaterialApp.router(
         routeInformationParser: _router.routeInformationParser,
         routerDelegate: _router.routerDelegate,
-        title: 'GoRouter Example: Nested Navigation',
+        title: title,
       );
 
   late final _router = GoRouter(
@@ -25,34 +25,23 @@ class App extends StatelessWidget {
       ),
       GoRoute(
         path: '/family/:fid',
-        pageBuilder: (context, state) {
-          final family = Families.family(state.params['fid']!);
-
-          return MaterialPage<void>(
-            key: state.pageKey,
-            child: FamilyTabsPage(key: state.pageKey, selectedFamily: family),
-          );
-        },
+        builder: (context, state) => FamilyTabsScreen(
+          key: state.pageKey,
+          selectedFamily: Families.family(state.params['fid']!),
+        ),
         routes: [
           GoRoute(
             path: 'person/:pid',
-            pageBuilder: (context, state) {
+            builder: (context, state) {
               final family = Families.family(state.params['fid']!);
               final person = family.person(int.parse(state.params['pid']!));
 
-              return MaterialPage<void>(
-                key: state.pageKey,
-                child: PersonPage(family: family, person: person),
-              );
+              return PersonScreen(family: family, person: person);
             },
           ),
         ],
       ),
     ],
-    errorPageBuilder: (context, state) => MaterialPage<void>(
-      key: state.pageKey,
-      child: ErrorPage(state.error),
-    ),
 
     // show the current router location as the user navigates page to page; note
     // that this is not required for nested navigation but it is useful to show
@@ -71,8 +60,8 @@ class App extends StatelessWidget {
   );
 }
 
-class FamilyTabsPage extends StatefulWidget {
-  FamilyTabsPage({required Family selectedFamily, Key? key})
+class FamilyTabsScreen extends StatefulWidget {
+  FamilyTabsScreen({required Family selectedFamily, Key? key})
       : index = Families.data.indexWhere((f) => f.id == selectedFamily.id),
         super(key: key) {
     assert(index != -1);
@@ -81,10 +70,10 @@ class FamilyTabsPage extends StatefulWidget {
   final int index;
 
   @override
-  _FamilyTabsPageState createState() => _FamilyTabsPageState();
+  _FamilyTabsScreenState createState() => _FamilyTabsScreenState();
 }
 
-class _FamilyTabsPageState extends State<FamilyTabsPage>
+class _FamilyTabsScreenState extends State<FamilyTabsScreen>
     with TickerProviderStateMixin {
   late final TabController _controller;
 
@@ -105,7 +94,7 @@ class _FamilyTabsPageState extends State<FamilyTabsPage>
   }
 
   @override
-  void didUpdateWidget(FamilyTabsPage oldWidget) {
+  void didUpdateWidget(FamilyTabsScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
     _controller.index = widget.index;
   }
@@ -113,7 +102,7 @@ class _FamilyTabsPageState extends State<FamilyTabsPage>
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(
-          title: Text(_title(context)),
+          title: const Text(App.title),
           bottom: TabBar(
             controller: _controller,
             tabs: [for (final f in Families.data) Tab(text: f.name)],
@@ -128,9 +117,6 @@ class _FamilyTabsPageState extends State<FamilyTabsPage>
 
   void _tap(BuildContext context, int index) =>
       context.go('/family/${Families.data[index].id}');
-
-  String _title(BuildContext context) =>
-      (context as Element).findAncestorWidgetOfExactType<MaterialApp>()!.title;
 }
 
 class FamilyView extends StatefulWidget {
@@ -171,4 +157,18 @@ class _FamilyViewState extends State<FamilyView>
       ],
     );
   }
+}
+
+class PersonScreen extends StatelessWidget {
+  const PersonScreen({required this.family, required this.person, Key? key})
+      : super(key: key);
+
+  final Family family;
+  final Person person;
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: Text(person.name)),
+        body: Text('${person.name} ${family.name} is ${person.age} years old'),
+      );
 }

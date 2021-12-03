@@ -7,17 +7,17 @@ To navigate between pages, use the `GoRouter.go` method:
 onTap: () => GoRouter.of(context).go('/page2')
 ```
 
-The go_router also provides a simplified means of navigation using Dart
-extension methods:
+go_router also provides a simplified means of navigation using Dart extension
+methods:
 
 ```dart
-// more easily navigate using the GoRouter
+// navigate using the GoRouter more easily
 onTap: () => context.go('/page2')
 ```
 
 The simplified version maps directly to the more fully-specified version, so you
 can use either. If you're curious, the ability to just call `context.go(...)`
-and have magic happen is where the name of the go_router came from.
+and have magic happen is where the name of go_router came from.
 
 If you'd like to navigate via [the `Link`
 widget](https://pub.dev/documentation/url_launcher/latest/link/link-library.html),
@@ -41,10 +41,10 @@ You can also navigate to a [named route](/named-routes).
 
 ## Pushing pages
 
-In addition to the `go` method, the go_router also provides a `push` method.
-Both `go` and `push` can be used to build up a stack of pages, but in different
-ways. The `go` method does this by turning a single location into any number of
-pages in a stack using [sub-routes](/sub-routes).
+In addition to the `go` method, go_router also provides a `push` method. Both
+`go` and `push` can be used to build up a stack of pages, but in different ways.
+The `go` method does this by turning a single location into any number of pages
+in a stack using [sub-routes](/sub-routes).
 
 The `push` method is used to push a single page onto the stack of existing
 pages, which means that you can build up the stack programmatically instead of
@@ -68,17 +68,17 @@ If you'd like to set an initial location for routing, you can set the
 ```dart
 final _router = GoRouter(
   routes: ...,
-  errorPageBuilder: ...,
   initialLocation: '/page2',
 );
 ```
 
-The value you provide to `initialLocation` will be ignored if your app is started
-using [deep linking](/declarative-routing#deep-linking).
+The value you provide to `initialLocation` will be ignored if your app is
+started using [deep linking](/declarative-routing#deep-linking).
 
 ## Current location
 
 If you want to know the current location, use the `GoRouter.location` property.
+
 If you'd like to know when the current location changes, either because of
 manual navigation or a deep link or a pop due to the user pushing the Back
 button, the `GoRouter` is a

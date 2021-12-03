@@ -13,7 +13,8 @@ class GoRoute {
   GoRoute({
     required this.path,
     this.name,
-    this.pageBuilder = _builder,
+    this.pageBuilder,
+    this.builder = _builder,
     this.routes = const [],
     this.redirect = _redirect,
   }) {
@@ -90,7 +91,20 @@ class GoRoute {
   ///
   /// You can also use CupertinoPage, and for a custom page builder to use
   /// custom page transitions, you can use [CustomTransitionPage].
-  final GoRouterPageBuilder pageBuilder;
+  final GoRouterPageBuilder? pageBuilder;
+
+  /// A custom builder for this route.
+  ///
+  /// For example:
+  /// ```
+  /// GoRoute(
+  ///   path: '/',
+  ///   builder: (context, state) =>
+  ///     FamilyPage(families: Families.family(state.params['id'])),
+  /// ),
+  /// ```
+  ///
+  final GoRouterWidgetBuilder builder;
 
   /// A list of sub go routes for this route.
   ///
@@ -179,6 +193,7 @@ class GoRoute {
 
   static String? _redirect(GoRouterState state) => null;
 
-  static Page<dynamic> _builder(BuildContext context, GoRouterState state) =>
-      throw Exception('GoRoute builder parameter not set');
+  static Widget _builder(BuildContext context, GoRouterState state) =>
+      throw Exception('GoRoute builder parameter not set\n'
+          'See gorouter.dev/redirection#considerations for details');
 }

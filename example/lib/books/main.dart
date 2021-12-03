@@ -12,7 +12,6 @@ import 'src/screens/author_details.dart';
 import 'src/screens/authors.dart';
 import 'src/screens/book_details.dart';
 import 'src/screens/books.dart';
-import 'src/screens/error.dart';
 import 'src/screens/scaffold.dart';
 import 'src/screens/settings.dart';
 import 'src/screens/sign_in.dart';
@@ -34,7 +33,6 @@ class Bookstore extends StatelessWidget {
       );
 
   final _auth = BookstoreAuth();
-  final _curveTween = CurveTween(curve: Curves.easeIn);
 
   late final _router = GoRouter(
     routes: [
@@ -44,11 +42,8 @@ class Bookstore extends StatelessWidget {
       ),
       GoRoute(
         path: '/signin',
-        pageBuilder: (context, state) => CustomTransitionPage<void>(
+        pageBuilder: (context, state) => FadeTransitionPage(
           key: state.pageKey,
-          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
-              FadeTransition(
-                  opacity: animation.drive(_curveTween), child: child),
           child: SignInScreen(
             onSignIn: (credentials) {
               BookstoreAuthScope.of(context)
@@ -67,11 +62,8 @@ class Bookstore extends StatelessWidget {
       ),
       GoRoute(
         path: '/books/:kind(new|all|popular)',
-        pageBuilder: (context, state) => CustomTransitionPage<void>(
+        pageBuilder: (context, state) => FadeTransitionPage(
           key: _scaffoldKey,
-          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
-              FadeTransition(
-                  opacity: animation.drive(_curveTween), child: child),
           child: BookstoreScaffold(
             selectedTab: ScaffoldTab.books,
             child: BooksScreen(state.params['kind']!),
@@ -80,15 +72,12 @@ class Bookstore extends StatelessWidget {
         routes: [
           GoRoute(
             path: ':bookId',
-            pageBuilder: (context, state) {
+            builder: (context, state) {
               final bookId = state.params['bookId']!;
               final selectedBook = libraryInstance.allBooks
                   .firstWhereOrNull((b) => b.id.toString() == bookId);
 
-              return MaterialPage<void>(
-                key: state.pageKey,
-                child: BookDetailsScreen(book: selectedBook),
-              );
+              return BookDetailsScreen(book: selectedBook);
             },
           ),
         ],
@@ -99,11 +88,8 @@ class Bookstore extends StatelessWidget {
       ),
       GoRoute(
         path: '/authors',
-        pageBuilder: (context, state) => CustomTransitionPage<void>(
+        pageBuilder: (context, state) => FadeTransitionPage(
           key: _scaffoldKey,
-          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
-              FadeTransition(
-                  opacity: animation.drive(_curveTween), child: child),
           child: const BookstoreScaffold(
             selectedTab: ScaffoldTab.authors,
             child: AuthorsScreen(),
@@ -112,26 +98,20 @@ class Bookstore extends StatelessWidget {
         routes: [
           GoRoute(
             path: ':authorId',
-            pageBuilder: (context, state) {
-              final authorId = state.params['authorId']!;
+            builder: (context, state) {
+              final authorId = int.parse(state.params['authorId']!);
               final selectedAuthor = libraryInstance.allAuthors
-                  .firstWhereOrNull((a) => a.id.toString() == authorId);
+                  .firstWhereOrNull((a) => a.id == authorId);
 
-              return MaterialPage<void>(
-                key: state.pageKey,
-                child: AuthorDetailsScreen(author: selectedAuthor),
-              );
+              return AuthorDetailsScreen(author: selectedAuthor);
             },
           ),
         ],
       ),
       GoRoute(
         path: '/settings',
-        pageBuilder: (context, state) => CustomTransitionPage<void>(
+        pageBuilder: (context, state) => FadeTransitionPage(
           key: _scaffoldKey,
-          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
-              FadeTransition(
-                  opacity: animation.drive(_curveTween), child: child),
           child: const BookstoreScaffold(
             selectedTab: ScaffoldTab.settings,
             child: SettingsScreen(),
@@ -139,10 +119,6 @@ class Bookstore extends StatelessWidget {
         ),
       ),
     ],
-    errorPageBuilder: (context, state) => MaterialPage<void>(
-      key: state.pageKey,
-      child: ErrorScreen(state.error),
-    ),
     redirect: _guard,
     refreshListenable: _auth,
     debugLogDiagnostics: true,
@@ -164,4 +140,19 @@ class Bookstore extends StatelessWidget {
     // no redirect
     return null;
   }
+}
+
+class FadeTransitionPage extends CustomTransitionPage<void> {
+  FadeTransitionPage({
+    required LocalKey key,
+    required Widget child,
+  }) : super(
+            key: key,
+            transitionsBuilder: (c, animation, a2, child) => FadeTransition(
+                  opacity: animation.drive(_curveTween),
+                  child: child,
+                ),
+            child: child);
+
+  static final _curveTween = CurveTween(curve: Curves.easeIn);
 }

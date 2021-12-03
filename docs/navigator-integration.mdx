@@ -9,7 +9,7 @@ Future<void> _addPerson(BuildContext context) async {
   final person = await Navigator.push<Person>(
     context,
     MaterialPageRoute(
-      builder: (context) => NewPersonPage(family: widget.family),
+      builder: (context) => NewPersonScreen(family: widget.family),
     ),
   );
 
@@ -63,10 +63,10 @@ some random place in your app, that's not something that can be represented in a
 link.
 
 However, that doesn't mean that you can't use `GoRouter` to navigate to a page
-that gathers user input; in fact, I expect that to happen all of the time.
-Because the results of the navigation are not available to the caller when using
-the `GoRouter`, the page itself would be responsible for managing what happens
-to the user input, e.g.
+that gathers user input; in fact, that's a common scenario that `GoRouter`
+supports. Because the results of the navigation are not available to the caller
+when using the `GoRouter`, the screen itself would be responsible for managing
+what happens to the user input, e.g.
 
 ```dart
 ButtonBar(children: [
@@ -105,28 +105,24 @@ new person:
 GoRoute(
   name: 'home',
   path: '/',
-  pageBuilder: ...,
+  builder: ...,
   routes: [
     GoRoute(
       name: 'family',
       path: 'family/:fid',
-      pageBuilder: ...,
+      builder: ...,
       routes: [
         GoRoute(
           name: 'person',
           path: 'person/:pid',
-          pageBuilder: ...,
+          builder: ...,
         ),
         GoRoute(
           name: 'new-person',
           path: 'new-person',
-          pageBuilder: (context, state) {
+          builder: (context, state) {
             final family = Families.family(state.params['fid']!);
-
-            return MaterialPage<void>(
-              key: state.pageKey,
-              child: NewPersonPage(family: family),
-            );
+            return NewPersonScreen(family: family);
           },
         ),
       ],

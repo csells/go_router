@@ -9,7 +9,8 @@
         ["Overview", "/"],
         ["Contributors", "/contributors"],
         ["Changelog", "/changelog"],
-        ["Migrating to 2.x", "/migrating"]
+        ["Migrating to 2.5", "/migrating-to-25"],
+        ["Migrating to 2.0", "/migrating-to-20"]
       ]
     ],
     ["Getting Started", "/getting-started"],
@@ -26,7 +27,7 @@
     [
       "Advanced Routing",
       [
-        ["Custom Transitions", "/custom-transitions"],
+        ["Transitions", "/transitions"],
         ["Async Data", "/async-data"],
         ["Nested Navigation", "/nested-navigation"],
         ["Navigator Builder", "/navigator-builder"],

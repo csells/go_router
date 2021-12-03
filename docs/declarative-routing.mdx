@@ -1,6 +1,6 @@
 # Declarative Routing
 
-The go_router is governed by a set of routes which you specify as part of the
+go_router is governed by a set of routes which you specify as part of the
 `GoRouter` constructor:
 
 ```dart
@@ -10,44 +10,43 @@ class App extends StatelessWidget {
     routes: [
       GoRoute(
         path: '/',
-        pageBuilder: (context, state) => MaterialPage<void>(
-          key: state.pageKey,
-          child: const Page1Page(),
-        ),
+        builder: (context, state) => const Page1Screen(),
       ),
       GoRoute(
         path: '/page2',
-        pageBuilder: (context, state) => MaterialPage<void>(
-          key: state.pageKey,
-          child: const Page2Page(),
-        ),
+        builder: (context, state) => const Page2Screen(),
       ),
     ],
-  ...
   );
 }
 ```
 
 In this case, we've defined two routes. Each route `path` will be matched
-against the location to which the user is navigating. Only a single path will be
-matched, specifically the one that matches the entire location (and so it
-doesn't matter in which order you list your routes). The `path` will be matched
-in a case-insensitive way, although the case for [parameters](/parameters) will
-be preserved.
+against the location to which the user is navigating. Only a single route can be
+matched, specifically the one whose `path` matches the entire location (and so
+it doesn't matter in which order you list your routes). The `path` will be
+matched in a case-insensitive way, although the case for
+[parameters](/parameters) will be preserved.
+
+In addition to the `path`, each route will typically have a `builder` function,
+which is responsible for building the `Widget` that is to take up the entire
+screen of your app. The [default transition](/transitions) will be used between
+pages depending on the type of app you've put at the top of your widget tree,
+e.g. the use of `MaterialApp` will cause go_router to use the `MaterialPage`
+transitions.
 
 ## Router state
 
-A `GoRoute` also contains a `pageBuilder` function which is called to create the
-page when a path is matched. The builder function is passed a `state` object,
-which is an instance of the `GoRouterState` class that contains some useful
-information:
+While it's not used in the snippet above, the `builder` function are passed a
+`state` object, which is an instance of the `GoRouterState` class that contains
+some useful information:
 
 | `GoRouterState` property | description                                        | example 1                | example 2                  |
 | ------------------------ | -------------------------------------------------- | ------------------------ | -------------------------- |
 | `location`               | location of the full route, including query params | `/login?from=/family/f2` | `/family/f2/person/p1`     |
 | `subloc`                 | location of this sub-route w/o query params        | `/login`                 | `/family/f2`               |
-| `name`                   | the `GoRoute` name                                 | `login`                  | `family`                   |
-| `path`                   | the `GoRoute` path                                 | `/login`                 | `family/:fid`              |
+| `name`                   | route name                                         | `login`                  | `family`                   |
+| `path`                   | route path                                         | `/login`                 | `family/:fid`              |
 | `fullpath`               | full path to this sub-route                        | `/login`                 | `/family/:fid`             |
 | `params`                 | params extracted from the location                 | `{}`                     | `{'fid': 'f2'}`            |
 | `queryParams`            | optional params from the end of the location       | `{'from': '/family/f1'}` | `{}`                       |
@@ -55,46 +54,17 @@ information:
 | `error`                  | `Exception` associated with this sub-route, if any | `Exception('404')`       | ...                        |
 | `pageKey`                | unique key for this sub-route                      | `ValueKey('/login')`     | `ValueKey('/family/:fid')` |
 
-You can read more about [sub-locations/sub-routes](/sub-routes) and
-[parameterized routes](/parameters) below but the example code above uses the
-`pageKey` property as most of the example code does. The `pageKey` is used to
-create a unique key for the `MaterialPage` or `CupertinoPage` based on the
-current path for that page in the [stack of pages](/sub-routes), so it will
-uniquely identify the page w/o having to hardcode a key or come up with one
-yourself.
-
-Not all of the state parameters will be set every time. In general, the state is
-a superset of the potential current state of a `GoRouter` instance. For example,
-the `error` parameter will only be set of there's an error, the `params` won't
-be set during top-level redirection because there's no `path` to match yet, etc.
-
-## Error handling
-
-In addition to the list of routes, the go_router needs an `errorPageBuilder`
-function in case no page is found, more than one page is found or if any of the
-page builder functions throws an exception, e.g.
-
-```dart
-class App extends StatelessWidget {
-  ...
-  final _router = GoRouter(
-    ...
-    errorPageBuilder: (context, state) => MaterialPage<void>(
-      key: state.pageKey,
-      child: ErrorPage(state.error),
-    ),
-  );
-}
-```
-
-The `GoRouterState` object contains the location that caused the exception and
-the `Exception` that was thrown attempting to navigate to that route.
+The `state` object is useful for passing parameters to [parameterized
+routes](/parameters) and for [redirection](/redirection). Not all of the state
+parameters will be set every time. In general, `GoRouterState` defines a
+superset of the potential current state of a `GoRouter` instance. For example,
+the `error` parameter will only be set of there's an error.
 
 ## Initialization
 
-With just a list of routes and an error page builder function, you can create an
-instance of a `GoRouter`, which itself provides the objects you need to call the
-`MaterialApp.router` constructor:
+With a list of routes, you can create an instance of a `GoRouter`, which itself
+provides the objects you need to call the `MaterialApp.router` constructor (or
+the `CupertinoApp.router` constructor):
 
 ```dart
 class App extends StatelessWidget {
@@ -106,11 +76,33 @@ class App extends StatelessWidget {
         routerDelegate: _router.routerDelegate,
       );
 
-  final _router = GoRouter(routes: ..., errorPageBuilder: ...);
+  final _router = GoRouter(routes: ...);
 }
 ```
 
-With the router in place, your app can now navigate between pages.
+With the router in place, your app can now [navigate between
+pages](/navigation).
+
+## Error handling
+
+By default, go_router comes with default error screens for both `MaterialApp`
+and `CupertinoApp` as well as a default error screen in the case that you're
+using neither. You can replace the default error screen by setting the
+`errorBuilder` parameter of the `GoRouter`:
+
+```dart
+class App extends StatelessWidget {
+  ...
+  final _router = GoRouter(
+    ...
+    errorBuilder: (context, state) => ErrorScreen(state.error),
+  );
+}
+```
+
+The error screen, whether it's provided by you or go_router, will be used in
+case a location doesn't match a route, more than one route is found for a given
+location or if any of the builder functions throws an exception.
 
 ## Deep Linking
 

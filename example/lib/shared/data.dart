@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 
 enum PersonDetails {
@@ -22,7 +24,6 @@ class Person {
   final Map<PersonDetails, String> details;
 }
 
-/// sample Family class
 class Family {
   Family({required this.id, required this.name, required this.people});
 
@@ -36,7 +37,6 @@ class Family {
       );
 }
 
-/// sample families data
 class Families {
   static final data = [
     Family(
@@ -95,7 +95,6 @@ extension on List<Family> {
       );
 }
 
-/// info about the current login state that notifies listens upon change
 class LoginInfo extends ChangeNotifier {
   var _userName = '';
   String get userName => _userName;
@@ -120,9 +119,16 @@ class FamilyPerson {
 }
 
 class Repository {
+  static final rnd = Random();
+
   Future<List<Family>> getFamilies() async {
     // simulate network delay
     await Future<void>.delayed(const Duration(seconds: 1));
+
+    // simulate error
+    // if (rnd.nextBool()) throw Exception('error fetching families');
+
+    // return data "fetched over the network"
     return Families.data;
   }
 

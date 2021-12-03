@@ -16,13 +16,9 @@ An example of placing some data provider widget:
 ```dart
 final _router = GoRouter(
   routes: ...,
-  errorPageBuilder: ...,
-  redirect: ...,
-  refreshListenable: ...,
 
   // add a wrapper around the navigator to put loginInfo into the widget tree
-  navigatorBuilder: (context, child) =>
-      ChangeNotifierProvider<LoginInfo>.value(
+  navigatorBuilder: (context, child) => ChangeNotifierProvider<LoginInfo>.value(
     value: loginInfo,
     child: child,
     builder: (context, child) => child!,
@@ -36,15 +32,11 @@ puts a floating button on every page to allow for easy logout:
 ```dart
 final _router = GoRouter(
   routes: ...,
-  errorPageBuilder: ...,
-  redirect: ...,
-  refreshListenable: ...,
 
   // add a wrapper around the navigator to:
   // - put loginInfo into the widget tree, and to
   // - add an overlay to show a logout option
-  navigatorBuilder: (context, child) =>
-      ChangeNotifierProvider<LoginInfo>.value(
+  navigatorBuilder: (context, child) => ChangeNotifierProvider<LoginInfo>.value(
     value: loginInfo,
     child: child,
     builder: (context, child) => loginInfo.loggedIn
@@ -94,4 +86,4 @@ class AuthOverlay extends StatelessWidget {
 Here's what this look like in action:
 
 ![navigationBuilder in
-action](https://raw.githubusercontent.com/csells/go_router/master/readme/nav_builder.gif)
+action](images/nav_builder.gif)

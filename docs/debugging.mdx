@@ -29,11 +29,20 @@ GoRouter: going to /family/f2/person/p1
 GoRouter: location changed to /family/f2/person/p1
 ```
 
-Finally, if there's an exception in your routing, you'll see that in the debug
-output, too, e.g.
+Furthermore, if you use the `builder` instead of the `pageBuilder` method to
+create a screen in your app, go_router will look for the app type to determine
+what [transitions](/transitions) to provide to your pages:
+
+```text
+GoRouter: MaterialApp found
+```
+
+And finally, if there's an exception in your routing, you'll see that in the
+debug output, too, along with the call stack, e.g.
 
 ```text
 GoRouter: Exception: no routes for location: /foobarquux
+...call stack elided...
 ```
 
 To enable this kind of output when your `GoRouter` is first created, you can use
@@ -42,7 +51,6 @@ the `debugLogDiagnostics` argument:
 ```dart
 final _router = GoRouter(
   routes: ...,
-  errorPageBuilder: ...,
 
   // log diagnostic info for your routes
   debugLogDiagnostics: true,

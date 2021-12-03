@@ -1,19 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'shared/pages.dart';
-
 void main() => runApp(App());
 
-/// sample class using simple declarative routes
 class App extends StatelessWidget {
   App({Key? key}) : super(key: key);
+
+  static const title = 'GoRouter Example: Custom Transitions';
 
   @override
   Widget build(BuildContext context) => MaterialApp.router(
         routeInformationParser: _router.routeInformationParser,
         routerDelegate: _router.routerDelegate,
-        title: 'GoRouter Example: Custom Transitions',
+        title: title,
       );
 
   final _router = GoRouter(
@@ -26,7 +25,10 @@ class App extends StatelessWidget {
         path: '/fade',
         pageBuilder: (context, state) => CustomTransitionPage<void>(
           key: state.pageKey,
-          child: const TransitionsPage(kind: 'fade', color: Colors.red),
+          child: const ExampleTransitionsScreen(
+            kind: 'fade',
+            color: Colors.red,
+          ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) =>
               FadeTransition(opacity: animation, child: child),
         ),
@@ -35,7 +37,10 @@ class App extends StatelessWidget {
         path: '/scale',
         pageBuilder: (context, state) => CustomTransitionPage<void>(
           key: state.pageKey,
-          child: const TransitionsPage(kind: 'scale', color: Colors.green),
+          child: const ExampleTransitionsScreen(
+            kind: 'scale',
+            color: Colors.green,
+          ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) =>
               ScaleTransition(scale: animation, child: child),
         ),
@@ -44,7 +49,10 @@ class App extends StatelessWidget {
         path: '/slide',
         pageBuilder: (context, state) => CustomTransitionPage<void>(
           key: state.pageKey,
-          child: const TransitionsPage(kind: 'slide', color: Colors.yellow),
+          child: const ExampleTransitionsScreen(
+            kind: 'slide',
+            color: Colors.yellow,
+          ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) =>
               SlideTransition(
                   position: animation.drive(
@@ -60,31 +68,34 @@ class App extends StatelessWidget {
         path: '/rotation',
         pageBuilder: (context, state) => CustomTransitionPage<void>(
           key: state.pageKey,
-          child: const TransitionsPage(kind: 'rotation', color: Colors.purple),
+          child: const ExampleTransitionsScreen(
+            kind: 'rotation',
+            color: Colors.purple,
+          ),
           transitionsBuilder: (context, animation, secondaryAnimation, child) =>
               RotationTransition(turns: animation, child: child),
         ),
       ),
       GoRoute(
         path: '/none',
-        pageBuilder: (context, state) => CustomTransitionPage<void>(
+        pageBuilder: (context, state) => NoTransitionPage<void>(
           key: state.pageKey,
-          child: const TransitionsPage(kind: 'none', color: Colors.white),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
-              child,
+          child: const ExampleTransitionsScreen(
+            kind: 'none',
+            color: Colors.white,
+          ),
         ),
       ),
     ],
-    errorPageBuilder: (context, state) => MaterialPage<void>(
-      key: state.pageKey,
-      child: ErrorPage(state.error),
-    ),
   );
 }
 
-class TransitionsPage extends StatelessWidget {
-  const TransitionsPage({required this.color, required this.kind, Key? key})
-      : super(key: key);
+class ExampleTransitionsScreen extends StatelessWidget {
+  const ExampleTransitionsScreen({
+    required this.color,
+    required this.kind,
+    Key? key,
+  }) : super(key: key);
 
   static final kinds = ['fade', 'scale', 'slide', 'rotation', 'none'];
   final Color color;
@@ -92,7 +103,7 @@ class TransitionsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: Text('${_title(context)}: $kind')),
+        appBar: AppBar(title: Text('${App.title}: $kind')),
         body: Container(
           color: color,
           child: Center(
@@ -112,7 +123,4 @@ class TransitionsPage extends StatelessWidget {
           ),
         ),
       );
-
-  static String _title(BuildContext context) =>
-      (context as Element).findAncestorWidgetOfExactType<MaterialApp>()!.title;
 }

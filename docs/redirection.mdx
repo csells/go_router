@@ -1,6 +1,6 @@
 # Redirection
 
-Sometimes you want your app to redirect to a different location. The go_router
+Sometimes you want your app to redirect to a different location. go_router
 allows you to do this at a top level for each new navigation event or at the
 route level for a specific route.
 
@@ -39,22 +39,14 @@ class App extends StatelessWidget {
     routes: [
       GoRoute(
         path: '/',
-        pageBuilder: (context, state) => MaterialPage<void>(
-          key: state.pageKey,
-          child: HomePage(families: Families.data),
-        ),
+        builder: (context, state) => HomeScreen(families: Families.data),
       ),
       ...,
       GoRoute(
         path: '/login',
-        pageBuilder: (context, state) => MaterialPage<void>(
-          key: state.pageKey,
-          child: const LoginPage(),
-        ),
+        builder: (context, state) => LoginScreen(),
       ),
     ],
-
-    errorPageBuilder: ...,
 
     // redirect to the login page if the user is not logged in
     redirect: (state) {
@@ -80,7 +72,7 @@ path, we redirect to `/login`. Likewise, if the user _is_ logged in but going to
 `null`. The `redirect` function will be called again until `null` is returned to
 enable [multiple redirects](#multiple-redirections).
 
-To make it easy to access this info wherever it's need in the app, consider
+To make it easy to access this info wherever it's needed in the app, consider
 using a state management option like
 [provider](https://pub.dev/packages/provider) to put the login info into the
 widget tree:
@@ -100,10 +92,10 @@ class App extends StatelessWidget {
 ```
 
 With the login info in the widget tree, you can easily implement your login
-page:
+screen:
 
 ```dart
-class LoginPage extends StatelessWidget {
+class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: Text(_title(context))),
@@ -129,9 +121,9 @@ class LoginPage extends StatelessWidget {
 ```
 
 In this case, we've logged the user in and manually redirected them to the home
-page. That's because the go_router doesn't know that the app's state has
-changed in a way that affects the route. If you'd like to have the app's state
-cause go_router to automatically redirect, you can use the `refreshListenable`
+screen. That's because go_router doesn't know that the app's state has changed
+in a way that affects the route. If you'd like to have the app's state cause
+go_router to automatically redirect, you can use the `refreshListenable`
 argument of the `GoRouter` constructor:
 
 ```dart
@@ -140,7 +132,6 @@ class App extends StatelessWidget {
   ...
   late final _router = GoRouter(
     routes: ...,
-    errorPageBuilder: ...,
     redirect: ...
 
     // changes on the listenable will cause the router to refresh it's route
@@ -150,7 +141,7 @@ class App extends StatelessWidget {
 ```
 
 Since the `loginInfo` is a `ChangeNotifier`, it will notify listeners when it
-changes. By passing it to the `GoRouter` constructor, the go_router will
+changes. By passing it to the `GoRouter` constructor, go_router will
 automatically refresh the route when the login info changes. This allows you to
 simplify the login logic in your app:
 
@@ -186,9 +177,8 @@ final _router = GoRouter(
     ),
     GoRoute(
       path: '/family/:fid',
-      pageBuilder: ...,
+      builder: ...,
   ],
-  errorPageBuilder: ...,
 );
 ```
 
@@ -197,6 +187,62 @@ called to redirect to the first family's page. Redirection will only occur on
 the last sub-route matched, so you can't have to worry about redirecting in the
 middle of a location being parsed when you're already on your way to another
 page anyway.
+
+### Considerations
+
+There are a couple of subtleties to consider when using route-level redirection.
+If you have a route that has a `redirect` function that only redirects under
+certain conditions, you will still need to provide a `builder` function, e.g.
+
+```dart
+GoRoute(
+  path: '/',
+  redirect: (_) => kGoElsewhere ? '/elsewhere' : null,
+  builder: (context, state) => ..., // need this if kGoElsewhere == false
+)
+```
+
+The `builder` function will be called when the redirect condition is false.
+
+Also, if the `redirect` function is part of a sub-route, you will need to
+provide a `builder` function, e.g.
+
+```dart
+GoRoute(
+  path: '/profile',
+  redirect: (_) => '/profile/home', // only called when going to /profile
+  builder: (c, s) => ..., // need this to build /profile/:section stack
+  routes: [
+    GoRoute(
+      path: ':section',
+      builder: ...ProfileScreen(state.params['section']!)...,
+    ),
+  ],
+)
+```
+
+The `redirect` function will only be called when it's the top-most route of a
+stack of matched routes, so if the `redirect` is provided on a route in the
+middle of the stack, the `builder` will be called when building pages for the
+stack above.
+
+In fact, you probably don't want to have a `redirect` in the middle of your
+stack of pages anyway. You probably want the `redirect` function on a stack all
+by itself, redirecting to another top-level route:
+
+```dart
+GoRoute(
+  path: '/profile',
+  redirect: (_) => '/profile/home', // builder not needed in this case
+),
+GoRoute
+  path: '/profile/:section',
+  builder: ...ProfileScreen(state.params['section']!)...,
+)
+```
+
+Of course, in you don't have a route-level `redirect` function at all in your
+route, you will need a `builder` function in that case as well.
 
 ## Parameterized redirection
 
@@ -239,7 +285,6 @@ class App extends StatelessWidget {
   ...
   late final _router = GoRouter(
     routes: ...,
-    errorPageBuilder: ...,
 
     // redirect to the login page if the user is not logged in
     redirect: (state) {
@@ -273,26 +318,25 @@ raw `location` will cause a stack overflow, an exercise that I'll leave to the
 reader).
 
 Now, when the `/login` route is matched, we want to pull the `from` parameter
-out of the `state` object to pass along to the `LoginPage`:
+out of the `state` object to pass along to the `LoginScreen`:
 
 ```dart
 GoRoute(
   path: '/login',
-  pageBuilder: (context, state) => MaterialPage<void>(
-    key: state.pageKey,
-    // pass the original location to the LoginPage (if there is one)
-    child: LoginPage(from: state.queryParams['from']),
+  builder: (context, state) => 
+    // pass the original location to the LoginScreen (if there is one)
+    LoginScreen(from: state.queryParams['from']
   ),
 ),
 ```
 
-In the `LoginPage`, if the `from` parameter was passed, we use it to go to the
+In the `LoginScreen`, if the `from` parameter was passed, we use it to go to the
 deep link location after a successful login:
 
 ```dart
-class LoginPage extends StatelessWidget {
+class LoginScreen extends StatelessWidget {
   final String? from;
-  const LoginPage({this.from, Key? key}) : super(key: key);
+  const LoginScreen({this.from, Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) => Scaffold(

@@ -6,7 +6,7 @@ void main() => runApp(App());
 class App extends StatelessWidget {
   App({Key? key}) : super(key: key);
 
-  static const title = 'GoRouter Example: Declarative Routes';
+  static const title = 'GoRouter Example: Custom Error Screen';
 
   @override
   Widget build(BuildContext context) => MaterialApp.router(
@@ -26,6 +26,7 @@ class App extends StatelessWidget {
         builder: (context, state) => const Page2Screen(),
       ),
     ],
+    errorBuilder: (context, state) => ErrorScreen(state.error!),
   );
 }
 
@@ -62,6 +63,28 @@ class Page2Screen extends StatelessWidget {
               ElevatedButton(
                 onPressed: () => context.go('/'),
                 child: const Text('Go to home page'),
+              ),
+            ],
+          ),
+        ),
+      );
+}
+
+class ErrorScreen extends StatelessWidget {
+  const ErrorScreen(this.error, {Key? key}) : super(key: key);
+  final Exception error;
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: const Text('My "Page Not Found" Screen')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SelectableText(error.toString()),
+              TextButton(
+                onPressed: () => context.go('/'),
+                child: const Text('Home'),
               ),
             ],
           ),

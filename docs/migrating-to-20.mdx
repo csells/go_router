@@ -1,4 +1,4 @@
-# Migration to 2.x
+# Migrating to 2.0
 
 By [popular demand](https://twitter.com/csells/status/1445520767190388738),
 there is a breaking change in the go_router 2.0 release: the `params` property
@@ -18,7 +18,7 @@ GoRoute(
   pageBuilder: (context, state) => MaterialPage<void>(
     key: state.pageKey,
     // 1.x: accessing query parameters
-    child: LoginPage(from: state.params['from']),
+    child: LoginScreen(from: state.params['from']),
   ),
 ),
 ```
@@ -31,7 +31,7 @@ GoRoute(
   pageBuilder: (context, state) => MaterialPage<void>(
     key: state.pageKey,
     // 2.0: accessing query parameters
-    child: LoginPage(from: state.queryParams['from']),
+    child: LoginScreen(from: state.queryParams['from']),
   ),
 ),
 ```
@@ -45,7 +45,7 @@ ListTile(
   // 1.x: passing both path and query parameters
   onTap: () => context.goNamed(
     'person',
-    // "extra" path params were query params
+    // anything not a path param was assumed to be a query param
     {'fid': family.id, 'pid': p.id, 'qid': 'quid'},
   ),
 ),

@@ -2,15 +2,15 @@
 
 By default, Flutter adds a hash (#) into the URL for web apps:
 
-![URL Strategy w/ Hash](https://raw.githubusercontent.com/csells/go_router/master/readme/url-strat-hash.png)
+![URL Strategy w/ Hash](images/url-strat-hash.png)
 
 ## Turning Off the Hash
 
 The process for turning off the hash is
 [documented](https://flutter.dev/docs/development/ui/navigation/url-strategies)
-but fiddly. The go_router has built-in support for setting the URL path
-strategy, however, so you can simply call `GoRouter.setUrlPathStrategy` before
-calling `runApp` and make your choice:
+but fiddly. go_router has built-in support for setting the URL path strategy,
+however, so you can simply call `GoRouter.setUrlPathStrategy` before calling
+`runApp` and make your choice:
 
 ```dart
 void main() {
@@ -26,7 +26,7 @@ void main() {
 
 Setting the path instead of the hash strategy turns off the # in the URLs:
 
-![URL Strategy w/o Hash](https://raw.githubusercontent.com/csells/go_router/master/readme/url-strat-no-hash.png)
+![URL Strategy w/o Hash](images/url-strat-no-hash.png)
 
 If your router is created as part of the construction of the widget passed to
 the `runApp` method, you can use a shortcut to set the URL path strategy by
@@ -41,7 +41,6 @@ class App extends StatelessWidget {
   ...
   final _router = GoRouter(
     routes: ...,
-    errorPageBuilder: ...,
 
     // turn off the # in the URLs on the web
     urlPathStrategy: UrlPathStrategy.path,

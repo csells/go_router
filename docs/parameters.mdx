@@ -1,5 +1,6 @@
 # Parameters
-The route paths are defined and implemented in [the path_to_regexp
+
+Route paths are defined and implemented in [the path_to_regexp
 package](https://pub.dev/packages/path_to_regexp), which gives you the ability
 to include parameters in your route's `path`: 
 
@@ -8,18 +9,13 @@ final _router = GoRouter(
   routes: [
     GoRoute(
       path: '/family/:fid',
-      pageBuilder: (context, state) {
+      builder: (context, state) {
         // use state.params to get router parameter values
         final family = Families.family(state.params['fid']!);
-
-        return MaterialPage<void>(
-          key: state.pageKey,
-          child: FamilyPage(family: family),
-        );
+        return FamilyScreen(family: family);
       },
     ),
   ],
-  errorPageBuilder: ...,
 ]);
 ```
 
@@ -27,6 +23,7 @@ You can access the matched parameters in the `state` object using the `params`
 property.
 
 ## Dynamic Linking
+
 The idea of "dynamic linking" is that as the user adds objects to your app, each
 of them gets a link of their own, e.g. a new family gets a new link. This is
 exactly what route parameters enables, e.g. a new family has its own identifier
@@ -40,25 +37,19 @@ data as part of a location is to use query parameters, which is a set of
 name-value pairs passed at the end of a URI after a `?` character, e.g.
 
 ```dart
-void _tap() {
-  context.go('/search?query=kitties');
-}
+void _tap() => context.go('/search?query=kitties');
 ```
 
 These parameters are optional and, if passed, will be provided in the
-`state.queryParams` property:
+`state.queryParams` property for every page matched in a stack of routes:
 
 ```dart
 GoRoute(
   path: '/search',
-  pageBuilder: (context, state) {
+  builder: (context, state) {
     // use state.params to get search query from query parameter
     final query = state.queryParams['query']; // may be null
-
-    return MaterialPage<void>(
-      key: state.pageKey,
-      child: SearchPage(query: query),
-    );
+    return SearchPage(query: query);
   },
 ),
 ```
@@ -66,28 +57,31 @@ GoRoute(
 Since query parameters are optional, they will be `null` if they're not passed.
 
 ## Extra Parameter
+
 In addition to passing along path and query parameters, you can also pass along
 an extra object as part of your navigation, e.g.
 
 ```dart
-void _tap(BuildContext context, Family family) =>
-  context.go('/family', extra: family);
+void _tap() => context.go('/family', extra: _family);
 ```
 
-This object is available during the `pageBuilder` function as `state.extra`:
+This object is provided as `state.extra`:
 
 ```dart
 GoRoute(
   path: '/family',
-  pageBuilder: (context, state) => MaterialPage<Family>(
-    key: state.pageKey,
-    child: FamilyPage(family: state.extra! as Family),
-  ),
+  builder: (context, state) => FamilyScreen(family: state.extra! as Family),
 ),
 ```
 
 The `extra` object is useful if you'd like to simply pass along a single object
-to the `pageBuilder` function w/o passing an object identifier via a URI and
-looking up the object from a store. _However_, this object cannot be used to
-create a dynamic link, cannot be used in deep linking and so is _not
-recommended_ for those cases.
+to the `builder` function w/o passing an object identifier via a URI and looking
+up the object from a store. Also, if the user presses the Back button on an
+`AppBar`, the `extra` object will be passed along properly.
+
+_However_, the `extra` object cannot be used to create a dynamic link nor can it
+be used in deep linking. Furthermore, since a press of the brower's Back button
+is treated like a deep link for purposes of navigation, the `extra` object will
+be lost when the user navigates back via the browser. For these reasons, __the
+use of the `extra` object is not recommended for use in targeting Flutter web
+apps__.

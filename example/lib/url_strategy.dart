@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'shared/pages.dart';
-
 void main() {
   // turn on the # in the URLs on the web (default)
   // GoRouter.setUrlPathStrategy(UrlPathStrategy.hash);
@@ -13,15 +11,16 @@ void main() {
   runApp(App());
 }
 
-/// sample class using simple declarative routes
 class App extends StatelessWidget {
   App({Key? key}) : super(key: key);
+
+  static const title = 'GoRouter Example: URL Path Strategy';
 
   @override
   Widget build(BuildContext context) => MaterialApp.router(
         routeInformationParser: _router.routeInformationParser,
         routerDelegate: _router.routerDelegate,
-        title: 'GoRouter Example: URL Path Strategy',
+        title: App.title,
       );
 
   final _router = GoRouter(
@@ -31,23 +30,52 @@ class App extends StatelessWidget {
     routes: [
       GoRoute(
         path: '/',
-        pageBuilder: (context, state) => MaterialPage<void>(
-          key: state.pageKey,
-          child: const Page1Page(),
-        ),
+        builder: (context, state) => const Page1Screen(),
       ),
       GoRoute(
         path: '/page2',
-        pageBuilder: (context, state) => MaterialPage<void>(
-          key: state.pageKey,
-          child: const Page2Page(),
-        ),
+        builder: (context, state) => const Page2Screen(),
       ),
     ],
-
-    errorPageBuilder: (context, state) => MaterialPage<void>(
-      key: state.pageKey,
-      child: ErrorPage(state.error),
-    ),
   );
+}
+
+class Page1Screen extends StatelessWidget {
+  const Page1Screen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: const Text(App.title)),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: () => context.go('/page2'),
+                child: const Text('Go to page 2'),
+              ),
+            ],
+          ),
+        ),
+      );
+}
+
+class Page2Screen extends StatelessWidget {
+  const Page2Screen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: const Text(App.title)),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: () => context.go('/'),
+                child: const Text('Go to home page'),
+              ),
+            ],
+          ),
+        ),
+      );
 }

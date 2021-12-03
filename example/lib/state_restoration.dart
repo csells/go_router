@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import 'shared/pages.dart';
+void main() => runApp(
+      const RootRestorationScope(restorationId: 'root', child: App()),
+    );
 
-void main() =>
-    runApp(const RootRestorationScope(restorationId: 'root', child: App()));
-
-/// sample class using simple declarative routes
 class App extends StatefulWidget {
   const App({Key? key}) : super(key: key);
+
+  static const title = 'GoRouter Example: State Restoration';
 
   @override
   State<App> createState() => _AppState();
@@ -27,33 +27,64 @@ class _AppState extends State<App> with RestorationMixin {
   Widget build(BuildContext context) => MaterialApp.router(
         routeInformationParser: _router.routeInformationParser,
         routerDelegate: _router.routerDelegate,
-        title: 'GoRouter Example: State Restoration',
+        title: App.title,
         restorationScopeId: 'app',
       );
 
   final _router = GoRouter(
     routes: [
+      // restorationId set for the route automatically
       GoRoute(
         path: '/',
-        pageBuilder: (context, state) => MaterialPage<void>(
-          restorationId: state.pageKey.value,
-          key: state.pageKey,
-          child: const Page1Page(),
-        ),
+        builder: (context, state) => const Page1Screen(),
       ),
+
+      // restorationId set for the route automatically
       GoRoute(
         path: '/page2',
-        pageBuilder: (context, state) => MaterialPage<void>(
-          restorationId: state.pageKey.value,
-          key: state.pageKey,
-          child: const Page2Page(),
-        ),
+        builder: (context, state) => const Page2Screen(),
       ),
     ],
-    errorPageBuilder: (context, state) => MaterialPage<void>(
-      key: state.pageKey,
-      child: ErrorPage(state.error),
-    ),
     restorationScopeId: 'router',
   );
+}
+
+class Page1Screen extends StatelessWidget {
+  const Page1Screen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: const Text(App.title)),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: () => context.go('/page2'),
+                child: const Text('Go to page 2'),
+              ),
+            ],
+          ),
+        ),
+      );
+}
+
+class Page2Screen extends StatelessWidget {
+  const Page2Screen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: const Text(App.title)),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: () => context.go('/'),
+                child: const Text('Go to home page'),
+              ),
+            ],
+          ),
+        ),
+      );
 }

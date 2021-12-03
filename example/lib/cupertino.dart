@@ -6,46 +6,35 @@ void main() => runApp(App());
 class App extends StatelessWidget {
   App({Key? key}) : super(key: key);
 
+  static const title = 'GoRouter Example: Cupertino App';
+
   @override
   Widget build(BuildContext context) => CupertinoApp.router(
         routeInformationParser: _router.routeInformationParser,
         routerDelegate: _router.routerDelegate,
-        title: 'GoRouter Example: Cupertino App',
+        title: title,
       );
 
   final _router = GoRouter(
     routes: [
       GoRoute(
         path: '/',
-        pageBuilder: (context, state) => CupertinoPage<void>(
-          key: state.pageKey,
-          child: const Page1Page(),
-        ),
+        builder: (context, state) => const Page1Screen(),
       ),
       GoRoute(
         path: '/page2',
-        pageBuilder: (context, state) => CupertinoPage<void>(
-          key: state.pageKey,
-          child: const Page2Page(),
-        ),
+        builder: (context, state) => const Page2Screen(),
       ),
     ],
-    errorPageBuilder: (context, state) => CupertinoPage<void>(
-      key: state.pageKey,
-      child: ErrorPage(state.error),
-    ),
   );
 }
 
-String _title(BuildContext context) =>
-    (context as Element).findAncestorWidgetOfExactType<CupertinoApp>()!.title;
-
-class Page1Page extends StatelessWidget {
-  const Page1Page({Key? key}) : super(key: key);
+class Page1Screen extends StatelessWidget {
+  const Page1Screen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) => CupertinoPageScaffold(
-        navigationBar: CupertinoNavigationBar(middle: Text(_title(context))),
+        navigationBar: const CupertinoNavigationBar(middle: Text(App.title)),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -60,12 +49,12 @@ class Page1Page extends StatelessWidget {
       );
 }
 
-class Page2Page extends StatelessWidget {
-  const Page2Page({Key? key}) : super(key: key);
+class Page2Screen extends StatelessWidget {
+  const Page2Screen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) => CupertinoPageScaffold(
-        navigationBar: CupertinoNavigationBar(middle: Text(_title(context))),
+        navigationBar: const CupertinoNavigationBar(middle: Text(App.title)),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -73,29 +62,6 @@ class Page2Page extends StatelessWidget {
               CupertinoButton(
                 onPressed: () => context.go('/'),
                 child: const Text('Go to home page'),
-              ),
-            ],
-          ),
-        ),
-      );
-}
-
-class ErrorPage extends StatelessWidget {
-  const ErrorPage(this.error, {Key? key}) : super(key: key);
-  final Exception? error;
-
-  @override
-  Widget build(BuildContext context) => CupertinoPageScaffold(
-        navigationBar:
-            const CupertinoNavigationBar(middle: Text('Page Not Found')),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(error?.toString() ?? 'page not found'),
-              CupertinoButton(
-                onPressed: () => context.go('/'),
-                child: const Text('Home'),
               ),
             ],
           ),

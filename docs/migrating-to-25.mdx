@@ -1,0 +1,119 @@
+# Migrating to 2.5
+
+go_router v2.5 comes with a new, simplified way to provide a screen for each
+route in your app. In versions prior to v2.5, the only way to do that was to
+implement the `pageBuilder` function for each route, e.g.
+
+```dart
+GoRoute(
+  path: '/',
+  pageBuilder: (context, state) => MaterialPage<void>( // boilerplate
+    key: state.pageKey, // boilerplate
+    restorationId: state.pageKey.value, // boilerplate
+    child: const Page1Page(), // useful code
+  ), // boilerplate
+),
+```
+
+This method came with a lot of boilerplate code if you were using the default
+transitions provided with the `MaterialApp` (or `CupertinoApp`) since you were
+forced to build up a `MaterialPage` (or `CupertinoPage`) for every route.
+Furthermore, assuming you wanted to let go_router pick the key for each of your
+pages instead of managing that yourself, you still had to manually pass the key
+to each `MaterialPage` instance (or `CupertinoPage` instance). And finally, you
+had to pass in a `restorationId` value by hand as well.
+
+## builder instead of pageBuilder
+
+In v2.5, if you want to let go_router pick the appropriate page-type based on
+your app-type, i.e. `MaterialApp`, `CupertinoApp` or something else, and you
+want to let go_router manage the keys and restoration IDs, you can use the
+default implementation of the `pageBuilder` for each route and instead implement
+the `builder` function:
+
+```dart
+GoRoute(
+  path: '/',
+  builder: (context, state) => const Page1Page(),  // just the useful code!
+),
+```
+
+This code removes the boilerplate and gives you the default implementation of
+the `pageBuilder` that you expect (in fact, it looks just like the `pageBuilder`
+snippet above). You can continue to use the `pageBuilder` if you want to specify
+the key or some other parameter to the page-type you're creating:
+
+```dart
+GoRoute(
+  path: '/',
+  pageBuilder: (context, state) => MaterialPage<void>(
+    key: _myPage1Key,
+    child: const Page1Screen(),
+  ),
+),
+```
+
+Likewise, if you want to [set a custom transition](/transitions), you can still
+use the `pageBuilder` for that, too:
+
+```dart
+GoRoute(
+  path: '/fade',
+  pageBuilder: (context, state) => CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: const ExampleTransitionsScreen(
+      kind: 'fade',
+      color: Colors.red,
+    ),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+        FadeTransition(opacity: animation, child: child),
+  ),
+),
+```
+
+However, I expect most people to use `builder` instead of `pageBuilder` most of
+the time.
+
+## Optional error builder
+
+Another simplification in go_router v2.5 is that you're no longer required to
+provide an `errorPageBuilder` function. Instead, go_router will automatically
+give you a simple one based on the app-type you're using, e.g. `MaterialApp`,
+`CupertinoApp` or something else. Of course, if you want a custom error screen,
+you can continue to use `errorPageBuilder` or take advantage of the new
+`errorBuilder` function instead:
+
+```dart
+final _router = GoRouter(
+  routes: ...,
+  errorBuilder: (context, state) => ErrorScreen(state.error!),
+);
+```
+
+The `errorBuilder` takes advantage of the new default implementation of the
+`errorPageBuilder` function that works just like the `pageBuilder`, although
+you're free to use either.
+
+## No transition at all
+
+And finally, if you'd like to remove the transition from a route, there's a new
+`NoTransitionPage` type that derives from the existing `CustomTransitionPage` to
+handle the case of turning off transitions:
+
+```dart
+GoRoute(
+  path: '/none',
+  pageBuilder: (context, state) => NoTransitionPage<void>(
+    key: state.pageKey,
+    child: const ExampleTransitionsScreen(
+      kind: 'none',
+      color: Colors.white,
+    ),
+  ),
+),
+```
+
+In fact, the `NoTransitionPage` is what you'll get in the case that your app
+doesn't have a `MaterialApp` or a `CupertinoApp` in the widget tree, e.g. if
+you're using `WidgetsApp`. You can [read more about custom
+transitions](/transitions) for details.

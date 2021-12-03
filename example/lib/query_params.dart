@@ -3,15 +3,14 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'shared/data.dart';
-import 'shared/pages.dart';
 
 void main() => runApp(App());
 
-/// sample app using query parameters in the page builders
 class App extends StatelessWidget {
   App({Key? key}) : super(key: key);
 
   final loginInfo = LoginInfo();
+  static const title = 'GoRouter Example: Query Parameters';
 
   // add the login info into the tree as app state that can change over time
   @override
@@ -20,7 +19,7 @@ class App extends StatelessWidget {
         child: MaterialApp.router(
           routeInformationParser: _router.routeInformationParser,
           routerDelegate: _router.routerDelegate,
-          title: 'GoRouter Example: Query Parameters',
+          title: title,
           debugShowCheckedModeBanner: false,
         ),
       );
@@ -29,30 +28,20 @@ class App extends StatelessWidget {
     routes: [
       GoRoute(
         path: '/',
-        pageBuilder: (context, state) => MaterialPage<void>(
-          key: state.pageKey,
-          child: HomePage(families: Families.data),
-        ),
+        builder: (context, state) => HomeScreen(families: Families.data),
         routes: [
           GoRoute(
             path: 'family/:fid',
-            pageBuilder: (context, state) {
-              final family = Families.family(state.params['fid']!);
-              return MaterialPage<void>(
-                key: state.pageKey,
-                child: FamilyPage(family: family),
-              );
-            },
+            builder: (context, state) => FamilyScreen(
+              family: Families.family(state.params['fid']!),
+            ),
             routes: [
               GoRoute(
                 path: 'person/:pid',
-                pageBuilder: (context, state) {
+                builder: (context, state) {
                   final family = Families.family(state.params['fid']!);
                   final person = family.person(int.parse(state.params['pid']!));
-                  return MaterialPage<void>(
-                    key: state.pageKey,
-                    child: PersonPage(family: family, person: person),
-                  );
+                  return PersonScreen(family: family, person: person);
                 },
               ),
             ],
@@ -61,18 +50,11 @@ class App extends StatelessWidget {
       ),
       GoRoute(
         path: '/login',
-        pageBuilder: (context, state) => MaterialPage<void>(
-          key: state.pageKey,
-          // pass the original location to the LoginPage (if there is one)
-          child: LoginPage(from: state.queryParams['from']),
-        ),
+        builder: (context, state) =>
+            // pass the original location to the LoginPage (if there is one)
+            LoginScreen(from: state.queryParams['from']),
       ),
     ],
-
-    errorPageBuilder: (context, state) => MaterialPage<void>(
-      key: state.pageKey,
-      child: ErrorPage(state.error),
-    ),
 
     // redirect to the login page if the user is not logged in
     redirect: (state) {
@@ -94,4 +76,96 @@ class App extends StatelessWidget {
     // changes on the listenable will cause the router to refresh it's route
     refreshListenable: loginInfo,
   );
+}
+
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({required this.families, Key? key}) : super(key: key);
+  final List<Family> families;
+
+  @override
+  Widget build(BuildContext context) {
+    final info = context.read<LoginInfo>();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(App.title),
+        actions: [
+          IconButton(
+            onPressed: info.logout,
+            tooltip: 'Logout: ${info.userName}',
+            icon: const Icon(Icons.logout),
+          )
+        ],
+      ),
+      body: ListView(
+        children: [
+          for (final f in families)
+            ListTile(
+              title: Text(f.name),
+              onTap: () => context.go('/family/${f.id}'),
+            )
+        ],
+      ),
+    );
+  }
+}
+
+class FamilyScreen extends StatelessWidget {
+  const FamilyScreen({required this.family, Key? key}) : super(key: key);
+  final Family family;
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: Text(family.name)),
+        body: ListView(
+          children: [
+            for (final p in family.people)
+              ListTile(
+                title: Text(p.name),
+                onTap: () => context.go('/family/${family.id}/person/${p.id}'),
+              ),
+          ],
+        ),
+      );
+}
+
+class PersonScreen extends StatelessWidget {
+  const PersonScreen({required this.family, required this.person, Key? key})
+      : super(key: key);
+
+  final Family family;
+  final Person person;
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: Text(person.name)),
+        body: Text('${person.name} ${family.name} is ${person.age} years old'),
+      );
+}
+
+class LoginScreen extends StatelessWidget {
+  const LoginScreen({this.from, Key? key}) : super(key: key);
+  final String? from;
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: const Text(App.title)),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  // log a user in, letting all the listeners know
+                  context.read<LoginInfo>().login('test-user');
+
+                  // if there's a deep link, go there
+                  if (from != null) context.go(from!);
+                },
+                child: const Text('Login'),
+              ),
+            ],
+          ),
+        ),
+      );
 }
