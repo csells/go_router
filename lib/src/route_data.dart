@@ -17,23 +17,6 @@ abstract class GoRouteData {
   Widget build(BuildContext context) =>
       throw UnsupportedError('Should be overridden in subclass.');
 
-  Page<dynamic> buildPage(
-    BuildContext context,
-    GoRouterState state,
-  ) {
-    if (context.findAncestorWidgetOfExactType<CupertinoApp>() != null) {
-      return CupertinoPage<dynamic>(
-        key: state.pageKey,
-        child: build(context),
-      );
-    }
-
-    return MaterialPage<dynamic>(
-      key: state.pageKey,
-      child: build(context),
-    );
-  }
-
   String? redirect() => null;
 
   static String $location(String path, {Map<String, String>? queryParams}) =>
@@ -52,17 +35,17 @@ abstract class GoRouteData {
   }) =>
       GoRoute(
         path: path,
-        pageBuilder: _createPageHelper(factory),
+        builder: _createPageHelper(factory),
         redirect: _createRedirectHelper(factory),
         routes: routes,
       );
 
-  static Page<dynamic> Function(BuildContext, GoRouterState) _createPageHelper(
+  static Widget Function(BuildContext, GoRouterState) _createPageHelper(
     GoRouteData Function(GoRouterState) factory,
   ) =>
       (context, state) {
         final data = factory(state);
-        return data.buildPage(context, state);
+        return data.build(context);
       };
 
   static String? Function(GoRouterState) _createRedirectHelper(
