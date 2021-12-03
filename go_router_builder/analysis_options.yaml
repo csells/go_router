@@ -1,11 +1,6 @@
 include: package:all_lint_rules_community/all.yaml
 
 analyzer:
-  exclude:
-    - "**/*.freezed.dart"
-    - "test/.test_coverage.dart"
-    - "bin/cache/**"
-    - "lib/generated_plugin_registrant.dart"
   strong-mode:
     implicit-casts: false
     implicit-dynamic: false
@@ -26,7 +21,7 @@ linter:
     prefer_final_parameters: false # I like the sentiment, but too much typing!
     prefer_asserts_with_message: false # too lazy for this...
     require_trailing_commas: false # not good for things all on one line
-    public_member_api_docs: false # except for public libs
+    # public_member_api_docs: false # except for public libs
     avoid_classes_with_only_static_members: false # need this; no namespaces
     always_put_control_body_on_new_line: false # single line is nice when we can
     always_use_package_imports: false # prefer relative imports for local files
@@ -34,5 +29,5 @@ linter:
     avoid_redundant_argument_values: false # sometimes it's nice to be explicit
     one_member_abstracts: false # interfaces can have a single method
     flutter_style_todos: false # I'm too lazy for this...
-    diagnostic_describe_all_properties: false # too annoying for StatefulWidget
-    library_private_types_in_public_api: false # too annoying for StatefulWidget
+    # diagnostic_describe_all_properties: false # too annoying for StatefulWidget
+    # library_private_types_in_public_api: false # too annoying for StatefulWidget
