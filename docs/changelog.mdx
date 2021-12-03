@@ -1,5 +1,11 @@
 # Changelog
 
+### 2.5.1
+
+- [fix 205](https://github.com/csells/go_router/issues/205): hack around a
+  failed assertion in Flutter when using `Duration.zero` in the
+  `NoTransitionPage`
+
 ### 2.5.0
 
 - provide default implementation of `GoRoute.pageBuilder` to provide a simpler

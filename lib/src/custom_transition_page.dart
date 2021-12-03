@@ -161,7 +161,7 @@ class NoTransitionPage<T> extends CustomTransitionPage<T> {
     LocalKey? key,
   }) : super(
           transitionsBuilder: _transitionsBuilder,
-          transitionDuration: Duration.zero,
+          transitionDuration: const Duration(microseconds: 1), // hack for #205
           key: key,
           restorationId: restorationId,
           child: child,
