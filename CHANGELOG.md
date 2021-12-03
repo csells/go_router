@@ -1,5 +1,10 @@
 # Changelog
 
+### 2.5.2
+
+- pass additional information to the `NavigatorObserver` via default args to
+  `MaterialPage`, etc.
+
 ### 2.5.1
 
 - [fix 205](https://github.com/csells/go_router/issues/205): hack around a

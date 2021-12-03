@@ -8,12 +8,16 @@ bool isCupertinoApp(Element elem) =>
     elem.findAncestorWidgetOfExactType<CupertinoApp>() != null;
 
 /// Builds a Cupertino page.
-CupertinoPage<void> pageBuilderForCupertinoApp(
-  LocalKey key,
-  String restorationId,
-  Widget child,
-) =>
+CupertinoPage<void> pageBuilderForCupertinoApp({
+  required LocalKey key,
+  required String? name,
+  required Object? arguments,
+  required String restorationId,
+  required Widget child,
+}) =>
     CupertinoPage<void>(
+      name: name,
+      arguments: arguments,
       key: key,
       restorationId: restorationId,
       child: child,

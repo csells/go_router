@@ -8,12 +8,16 @@ bool isMaterialApp(Element elem) =>
     elem.findAncestorWidgetOfExactType<MaterialApp>() != null;
 
 /// Builds a Material page.
-MaterialPage<void> pageBuilderForMaterialApp(
-  LocalKey key,
-  String restorationId,
-  Widget child,
-) =>
+MaterialPage<void> pageBuilderForMaterialApp({
+  required LocalKey key,
+  required String? name,
+  required Object? arguments,
+  required String restorationId,
+  required Widget child,
+}) =>
     MaterialPage<void>(
+      name: name,
+      arguments: arguments,
       key: key,
       restorationId: restorationId,
       child: child,
