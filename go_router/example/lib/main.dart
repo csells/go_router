@@ -16,6 +16,7 @@ class App extends StatelessWidget {
       );
 
   final _router = GoRouter(
+    debugLogDiagnostics: true,
     routes: [
       GoRoute(
         path: '/',

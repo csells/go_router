@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
+import 'package:logging/logging.dart';
 
 import 'custom_transition_page.dart';
 import 'go_route.dart';
@@ -10,6 +12,7 @@ import 'go_router_cupertino.dart';
 import 'go_router_error_page.dart';
 import 'go_router_material.dart';
 import 'go_router_state.dart';
+import 'logging.dart';
 import 'typedefs.dart';
 
 /// GoRouter implementation of the RouterDelegate base class.
@@ -47,7 +50,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     _outputKnownRoutes();
 
     // build the list of route matches
-    _log('setting initial location $initUri');
+    log.info('setting initial location $initUri');
     _go(initUri.toString());
 
     // when the listener changes, refresh the route
@@ -133,7 +136,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     required Map<String, String> params,
     required Map<String, String> queryParams,
   }) {
-    _log('getting location for name: '
+    log.info('getting location for name: '
         '"$name"'
         '${params.isEmpty ? '' : ', params: $params'}'
         '${queryParams.isEmpty ? '' : ', queryParams: $queryParams'}');
@@ -152,21 +155,21 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
   /// Navigate to the given location.
   void go(String location, {Object? extra}) {
-    _log('going to $location');
+    log.info('going to $location');
     _go(location, extra: extra);
     _safeNotifyListeners();
   }
 
   /// push the given location onto the page stack
   void push(String location, {Object? extra}) {
-    _log('pushing $location');
+    log.info('pushing $location');
     _push(location, extra: extra);
     _safeNotifyListeners();
   }
 
   /// Refresh the current location, including re-evaluating redirections.
   void refresh() {
-    _log('refreshing $location');
+    log.info('refreshing $location');
     _go(location, extra: _matches.last.extra);
     _safeNotifyListeners();
   }
@@ -207,7 +210,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     if (config == '/') {
       _go(location);
     } else {
-      _log('deep linking to $config');
+      log.info('deep linking to $config');
       _go(config);
     }
 
@@ -220,24 +223,9 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   @override
   Future<void> setNewRoutePath(Uri configuration) async {
     final config = configuration.toString();
-    _log('going to $config');
+    log.info('going to $config');
     _go(config);
   }
-
-  void _log(Object o) {
-    if (debugLogDiagnostics) debugPrint('GoRouter: $o');
-  }
-
-  // note that we're dumping this even if the debugLogDiagnostics flag is clear;
-  // exceptions should be loud and proud!
-  void _logError(Object err, StackTrace stack) =>
-      FlutterError.dumpErrorToConsole(
-        FlutterErrorDetails(
-          exception: err is Exception ? err : Exception(err),
-          stack: stack,
-          context: ErrorDescription('Exception during GoRouter navigation'),
-        ),
-      );
 
   void _go(String location, {Object? extra}) {
     final matches = _getLocRouteMatchesWithRedirects(location, extra: extra);
@@ -303,7 +291,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
           throw Exception(msg);
         }
 
-        _log('redirecting to $redir');
+        log.info('redirecting to $redir');
         return true;
       }
 
@@ -368,7 +356,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       // `redirect` impl
       // ignore: avoid_catches_without_on_clauses
     } catch (err, stack) {
-      _logError(err, stack);
+      log.severe('Exception during GoRouter navigation', err, stack);
 
       // create a match that routes to the error page
       final uri = Uri.parse(location);
@@ -606,7 +594,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       // `redirect` impl
       // ignore: avoid_catches_without_on_clauses
     } catch (err, stack) {
-      _logError(err, stack);
+      log.severe('Exception during GoRouter navigation', err, stack);
 
       // if there's an error, show an error page
       final uri = Uri.parse(location);
@@ -630,7 +618,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       context,
       Navigator(
         restorationScopeId: restorationScopeId,
-        key: _key, // needed to enable Android system Back button
+        key: _key,
+        // needed to enable Android system Back button
         pages: pages,
         observers: observers,
         onPopPage: (route, dynamic result) {
@@ -729,17 +718,17 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       final elem = context is Element ? context : null;
 
       if (elem != null && isMaterialApp(elem)) {
-        _log('MaterialApp found');
+        log.info('MaterialApp found');
         _pageBuilderForAppType = pageBuilderForMaterialApp;
         _errorBuilderForAppType =
             (c, s) => GoRouterMaterialErrorScreen(s.error);
       } else if (elem != null && isCupertinoApp(elem)) {
-        _log('CupertinoApp found');
+        log.info('CupertinoApp found');
         _pageBuilderForAppType = pageBuilderForCupertinoApp;
         _errorBuilderForAppType =
             (c, s) => GoRouterCupertinoErrorScreen(s.error);
       } else {
-        _log('WidgetsApp assumed');
+        log.info('WidgetsApp assumed');
         _pageBuilderForAppType = pageBuilderForWidgetApp;
         _errorBuilderForAppType = (c, s) => GoRouterErrorScreen(s.error);
       }
@@ -802,14 +791,13 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   }
 
   void _outputKnownRoutes() {
-    if (!debugLogDiagnostics) return;
-    _log('known full paths for routes:');
+    log.info('known full paths for routes:');
     _outputFullPathsFor(routes, '', 0);
 
     if (_namedMatches.isNotEmpty) {
-      _log('known full paths for route names:');
+      log.info('known full paths for route names:');
       for (final e in _namedMatches.entries) {
-        _log('  ${e.key} => ${e.value.fullpath}');
+        log.info('  ${e.key} => ${e.value.fullpath}');
       }
     }
   }
@@ -819,11 +807,9 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     String parentFullpath,
     int depth,
   ) {
-    assert(debugLogDiagnostics);
-
     for (final route in routes) {
       final fullpath = fullLocFor(parentFullpath, route.path);
-      _log('  => ${''.padLeft(depth * 2)}$fullpath');
+      log.info('  => ${''.padLeft(depth * 2)}$fullpath');
       _outputFullPathsFor(route.routes, fullpath, depth + 1);
     }
   }

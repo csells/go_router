@@ -1,6 +1,7 @@
 // ignore_for_file: cascade_invocations, diagnostic_describe_all_properties
 
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/diagnostics.dart';
@@ -9,8 +10,28 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:go_router/src/go_route_match.dart';
 import 'package:go_router/src/go_router_refresh_stream.dart';
+import 'package:logging/logging.dart';
+
+const enableLogs = true;
+final log = Logger('GoRouter tests');
 
 void main() {
+  if (enableLogs) {
+    Logger.root.onRecord.listen((e) {
+      debugPrint('$e');
+      developer.log(
+        e.message,
+        time: e.time,
+        sequenceNumber: e.sequenceNumber,
+        level: e.level.value,
+        name: e.loggerName,
+        zone: e.zone,
+        error: e.error,
+        stackTrace: e.stackTrace,
+      );
+    });
+  }
+
   group('path routes', () {
     test('match home route', () {
       final routes = [
@@ -39,66 +60,48 @@ void main() {
     });
 
     test('empty path', () {
-      try {
+      expect(() {
         GoRoute(path: '');
-        expect(false, true);
-      } on Exception catch (ex) {
-        dump(ex);
-      }
+      }, throwsException);
     });
 
     test('leading / on sub-route', () {
-      try {
-        // ignore: unused_local_variable
-        final routes = [
-          GoRoute(
-            path: '/',
-            builder: _dummy,
-            routes: [
-              GoRoute(
-                path: '/foo',
-                builder: _dummy,
-              ),
-            ],
-          ),
-        ];
-        expect(false, true);
-      } on Exception catch (ex) {
-        dump(ex);
-      }
+      expect(() {
+        GoRoute(
+          path: '/',
+          builder: _dummy,
+          routes: [
+            GoRoute(
+              path: '/foo',
+              builder: _dummy,
+            ),
+          ],
+        );
+      }, throwsException);
     });
 
     test('trailing / on sub-route', () {
-      try {
-        // ignore: unused_local_variable
-        final routes = [
-          GoRoute(
-            path: '/',
-            builder: _dummy,
-            routes: [
-              GoRoute(
-                path: 'foo/',
-                builder: _dummy,
-              ),
-            ],
-          ),
-        ];
-        expect(false, true);
-      } on Exception catch (ex) {
-        dump(ex);
-      }
+      expect(() {
+        GoRoute(
+          path: '/',
+          builder: _dummy,
+          routes: [
+            GoRoute(
+              path: 'foo/',
+              builder: _dummy,
+            ),
+          ],
+        );
+      }, throwsException);
     });
 
     test('lack of leading / on top-level route', () {
-      try {
+      expect(() {
         final routes = [
           GoRoute(path: 'foo', builder: _dummy),
         ];
         _router(routes);
-        expect(false, true);
-      } on Exception catch (ex) {
-        dump(ex);
-      }
+      }, throwsException);
     });
 
     test('match no routes', () {
@@ -441,35 +444,25 @@ void main() {
         GoRoute(name: 'home', path: '/', builder: _dummy),
       ];
 
-      try {
+      expect(() {
         _router(routes);
-        expect(false, true);
-      } on Exception catch (ex) {
-        dump(ex);
-      }
+      }, throwsException);
     });
 
     test('empty name', () {
-      try {
+      expect(() {
         GoRoute(name: '', path: '/');
-        expect(false, true);
-      } on Exception catch (ex) {
-        dump(ex);
-      }
+      }, throwsException);
     });
 
     test('match no routes', () {
-      final routes = [
-        GoRoute(name: 'home', path: '/', builder: _dummy),
-      ];
-
-      try {
+      expect(() {
+        final routes = [
+          GoRoute(name: 'home', path: '/', builder: _dummy),
+        ];
         final router = _router(routes);
         router.goNamed('work');
-        expect(false, true);
-      } on Exception catch (ex) {
-        dump(ex);
-      }
+      }, throwsException);
     });
 
     test('match 2nd top level route', () {
@@ -589,14 +582,10 @@ void main() {
           ],
         ),
       ];
-
-      final router = _router(routes);
-      try {
+      expect(() {
+        final router = _router(routes);
         router.goNamed('person', params: {'fid': 'f2'});
-        expect(false, true);
-      } on Exception catch (ex) {
-        dump(ex);
-      }
+      }, throwsException);
     });
 
     test('match case insensitive w/ params', () {
@@ -637,14 +626,10 @@ void main() {
           builder: (context, state) => const FamilyScreen('dummy'),
         ),
       ];
-
-      try {
+      expect(() {
         final router = _router(routes);
         router.goNamed('family');
-        expect(true, false);
-      } on Exception catch (ex) {
-        dump(ex);
-      }
+      }, throwsException);
     });
 
     test('too many params', () {
@@ -655,14 +640,10 @@ void main() {
           builder: (context, state) => const FamilyScreen('dummy'),
         ),
       ];
-
-      try {
+      expect(() {
         final router = _router(routes);
         router.goNamed('family', params: {'fid': 'f2', 'pid': 'p1'});
-        expect(true, false);
-      } on Exception catch (ex) {
-        dump(ex);
-      }
+      }, throwsException);
     });
 
     test('sparsely named routes', () {
@@ -690,13 +671,10 @@ void main() {
           ],
         ),
       ];
-      try {
+      expect(() {
         final router = _router(routes);
         router.goNamed('person', params: {'fid': 'f2', 'pid': 'p1'});
-      } on Exception catch (ex) {
-        dump(ex);
-        assert(false, true);
-      }
+      }, throwsException);
     });
 
     test('preserve path param spaces and slashes', () {
@@ -714,11 +692,11 @@ void main() {
 
       final router = _router(routes);
       final loc = router.namedLocation('page1', params: {'param1': param1});
-      dump('loc= $loc');
+      log.info('loc= $loc');
       router.go(loc);
 
       final matches = router.routerDelegate.matches;
-      dump('param1= ${matches[0].decodedParams['param1']}');
+      log.info('param1= ${matches[0].decodedParams['param1']}');
       expect(router.screenFor(matches[0]).runtimeType, DummyScreen);
       expect(matches[0].decodedParams['param1'], param1);
     });
@@ -739,11 +717,11 @@ void main() {
       final router = _router(routes);
       final loc =
           router.namedLocation('page1', queryParams: {'param1': param1});
-      dump('loc= $loc');
+      log.info('loc= $loc');
       router.go(loc);
 
       final matches = router.routerDelegate.matches;
-      dump('param1= ${matches[0].queryParams['param1']}');
+      log.info('param1= ${matches[0].queryParams['param1']}');
       expect(router.screenFor(matches[0]).runtimeType, DummyScreen);
       expect(matches[0].queryParams['param1'], param1);
     });
@@ -905,7 +883,7 @@ void main() {
       expect(matches.length, 1);
       expect(router.screenFor(matches[0]).runtimeType, ErrorScreen);
       expect((router.screenFor(matches[0]) as ErrorScreen).ex, isNotNull);
-      dump((router.screenFor(matches[0]) as ErrorScreen).ex);
+      log.info((router.screenFor(matches[0]) as ErrorScreen).ex);
     });
 
     test('route-level redirect loop', () {
@@ -927,7 +905,7 @@ void main() {
       expect(matches.length, 1);
       expect(router.screenFor(matches[0]).runtimeType, ErrorScreen);
       expect((router.screenFor(matches[0]) as ErrorScreen).ex, isNotNull);
-      dump((router.screenFor(matches[0]) as ErrorScreen).ex);
+      log.info((router.screenFor(matches[0]) as ErrorScreen).ex);
     });
 
     test('mixed redirect loop', () {
@@ -946,7 +924,7 @@ void main() {
       expect(matches.length, 1);
       expect(router.screenFor(matches[0]).runtimeType, ErrorScreen);
       expect((router.screenFor(matches[0]) as ErrorScreen).ex, isNotNull);
-      dump((router.screenFor(matches[0]) as ErrorScreen).ex);
+      log.info((router.screenFor(matches[0]) as ErrorScreen).ex);
     });
 
     test('top-level redirect loop w/ query params', () {
@@ -964,7 +942,7 @@ void main() {
       expect(matches.length, 1);
       expect(router.screenFor(matches[0]).runtimeType, ErrorScreen);
       expect((router.screenFor(matches[0]) as ErrorScreen).ex, isNotNull);
-      dump((router.screenFor(matches[0]) as ErrorScreen).ex);
+      log.info((router.screenFor(matches[0]) as ErrorScreen).ex);
     });
 
     test('expect null path/fullpath on top-level redirect', () {
@@ -1108,7 +1086,7 @@ void main() {
       expect(matches.length, 1);
       expect(router.screenFor(matches[0]).runtimeType, ErrorScreen);
       expect((router.screenFor(matches[0]) as ErrorScreen).ex, isNotNull);
-      dump((router.screenFor(matches[0]) as ErrorScreen).ex);
+      log.info((router.screenFor(matches[0]) as ErrorScreen).ex);
     });
   });
 
@@ -1226,7 +1204,7 @@ void main() {
       router.go(loc);
 
       final matches = router.routerDelegate.matches;
-      dump('param1= ${matches[0].decodedParams['param1']}');
+      log.info('param1= ${matches[0].decodedParams['param1']}');
       expect(router.screenFor(matches[0]).runtimeType, DummyScreen);
       expect(matches[0].decodedParams['param1'], param1);
     });
@@ -1272,7 +1250,7 @@ void main() {
         );
         expect(false, true);
       } on Exception catch (ex) {
-        dump(ex);
+        log.info(ex);
       }
     });
 
@@ -1282,7 +1260,7 @@ void main() {
           GoRoute(
             path: '/',
             builder: (context, state) {
-              dump('id= ${state.params['id']}');
+              log.info('id= ${state.params['id']}');
               expect(state.params.length, 0);
               expect(state.queryParams.length, 1);
               expect(state.queryParams['id'], anyOf('0', '1'));
@@ -1515,9 +1493,6 @@ extension on GoRouter {
   Widget screenFor(GoRouteMatch match) =>
       (_pageFor(match) as NoTransitionPage<void>).child;
 }
-
-// ignore: avoid_print
-void dump(Object o) => print(o);
 
 class DummyBuildContext implements BuildContext {
   @override
