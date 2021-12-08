@@ -12,7 +12,7 @@ import 'package:go_router/src/go_route_match.dart';
 import 'package:go_router/src/go_router_refresh_stream.dart';
 import 'package:logging/logging.dart';
 
-const enableLogs = true;
+const enableLogs = false;
 final log = Logger('GoRouter tests');
 
 void main() {
