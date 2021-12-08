@@ -2,7 +2,7 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 
-import 'route_def.dart';
+import 'route_config.dart';
 
 /// A [Generator] for classes annotated with `RouteDef`.
 class GoRouterGenerator extends GeneratorForAnnotation<void> {
@@ -36,7 +36,7 @@ class GoRouterGenerator extends GeneratorForAnnotation<void> {
       );
     }
 
-    final definition = RouteDef.fromAnnotation(annotation, element);
+    final definition = RouteConfig.fromAnnotation(annotation, element);
 
     if (element != definition.routeDataClass) {
       throw InvalidGenerationSourceError(

@@ -8,20 +8,20 @@ import 'package:path_to_regexp/path_to_regexp.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:source_helper/source_helper.dart';
 
-class RouteDef {
-  RouteDef({
+class RouteConfig {
+  RouteConfig({
     required this.path,
     required this.children,
     required this.routeDataClass,
   });
 
-  factory RouteDef.fromAnnotation(
+  factory RouteConfig.fromAnnotation(
     ConstantReader reader,
     ClassElement element,
   ) =>
-      RouteDef._fromAnnotation(reader, element)..parent = null;
+      RouteConfig._fromAnnotation(reader, element)..parent = null;
 
-  factory RouteDef._fromAnnotation(
+  factory RouteConfig._fromAnnotation(
     ConstantReader reader,
     ClassElement element,
   ) {
@@ -39,7 +39,7 @@ class RouteDef {
     final children = reader
         .read('children')
         .listValue
-        .map((e) => RouteDef._fromAnnotation(ConstantReader(e), element))
+        .map((e) => RouteConfig._fromAnnotation(ConstantReader(e), element))
         .toList();
 
     final type = reader.objectValue.type! as InterfaceType;
@@ -56,7 +56,7 @@ class RouteDef {
     // TODO: validate that this MUST be a subtype of `GoRouteData`
     final classElement = typeParamType.element;
 
-    final value = RouteDef(
+    final value = RouteConfig(
       path: path,
       children: children,
       routeDataClass: classElement,
@@ -70,9 +70,9 @@ class RouteDef {
   }
 
   final String path;
-  final List<RouteDef> children;
+  final List<RouteConfig> children;
   final ClassElement routeDataClass;
-  late final RouteDef? parent;
+  late final RouteConfig? parent;
 
   String extensionDefinition() => '''
 extension $_extensionName on $_className {
@@ -84,7 +84,7 @@ extension $_extensionName on $_className {
 } 
 ''';
 
-  Iterable<RouteDef> flatten() sync* {
+  Iterable<RouteConfig> flatten() sync* {
     yield this;
     for (final child in children) {
       yield* child.flatten();
@@ -161,7 +161,7 @@ GoRoute get $routeGetterName => ${_routeDefinition()};
   late final _fullPath = (() {
     final bits = <String>[];
 
-    RouteDef? bit = this;
+    RouteConfig? bit = this;
     while (bit != null) {
       bits.add(bit.path);
       bit = bit.parent;
