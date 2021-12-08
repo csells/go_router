@@ -1,5 +1,3 @@
-// ignore_for_file: public_member_api_docs
-
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:collection/collection.dart';
@@ -8,22 +6,36 @@ import 'package:path_to_regexp/path_to_regexp.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:source_helper/source_helper.dart';
 
+/// Represents a `RouteDef` annotation to the builder.
 class RouteConfig {
-  RouteConfig({
-    required this.path,
-    required this.children,
-    required this.routeDataClass,
-  });
+  RouteConfig._(
+    this._path,
+    this._routeDataClass,
+    this._parent,
+  );
 
+  /// Creates a new [RouteConfig] represented the annotation data in [reader].
   factory RouteConfig.fromAnnotation(
     ConstantReader reader,
     ClassElement element,
-  ) =>
-      RouteConfig._fromAnnotation(reader, element)..parent = null;
+  ) {
+    final definition = RouteConfig._fromAnnotation(reader, element, null);
+
+    if (element != definition._routeDataClass) {
+      throw InvalidGenerationSourceError(
+        'The @RouteDef annotation must have a type parameter that matches the '
+        'annotated element.',
+        element: element,
+      );
+    }
+
+    return definition;
+  }
 
   factory RouteConfig._fromAnnotation(
     ConstantReader reader,
     ClassElement element,
+    RouteConfig? parent,
   ) {
     assert(!reader.isNull, 'reader should not be null');
     final pathValue = reader.read('path');
@@ -35,12 +47,6 @@ class RouteConfig {
     }
 
     final path = pathValue.stringValue;
-
-    final children = reader
-        .read('children')
-        .listValue
-        .map((e) => RouteConfig._fromAnnotation(ConstantReader(e), element))
-        .toList();
 
     final type = reader.objectValue.type! as InterfaceType;
     final typeParamType = type.typeArguments.single;
@@ -56,24 +62,20 @@ class RouteConfig {
     // TODO: validate that this MUST be a subtype of `GoRouteData`
     final classElement = typeParamType.element;
 
-    final value = RouteConfig(
-      path: path,
-      children: children,
-      routeDataClass: classElement,
-    );
+    final value = RouteConfig._(path, classElement, parent);
 
-    for (final val in value.children) {
-      val.parent = value;
-    }
+    value._children.addAll(reader.read('children').listValue.map(
+        (e) => RouteConfig._fromAnnotation(ConstantReader(e), element, value)));
 
     return value;
   }
 
-  final String path;
-  final List<RouteConfig> children;
-  final ClassElement routeDataClass;
-  late final RouteConfig? parent;
+  final _children = <RouteConfig>[];
+  final String _path;
+  final ClassElement _routeDataClass;
+  final RouteConfig? _parent;
 
+  /// Returns `extension` code.
   String extensionDefinition() => '''
 extension $_extensionName on $_className {
   static $_className _fromState(GoRouterState state) $_newFromState
@@ -84,13 +86,15 @@ extension $_extensionName on $_className {
 } 
 ''';
 
+  /// Returns this [RouteConfig] and all child [RouteConfig] instances.
   Iterable<RouteConfig> flatten() sync* {
     yield this;
-    for (final child in children) {
+    for (final child in _children) {
       yield* child.flatten();
     }
   }
 
+  /// Returns the `GoRoute` code for the annotated class.
   String rootDefinition() {
     final routeGetterName =
         _className.substring(0, 1).toLowerCase() + _className.substring(1);
@@ -100,6 +104,8 @@ GoRoute get $routeGetterName => ${_routeDefinition()};
 ''';
   }
 
+  /// Returns code representing the constant maps that contain the `enum` to
+  /// [String] mapping for each referenced enum.
   Iterable<String> enumDefinitions() sync* {
     final enumParamTypes = <InterfaceType>{};
 
@@ -159,31 +165,31 @@ GoRoute get $routeGetterName => ${_routeDefinition()};
   }
 
   late final _fullPath = (() {
-    final bits = <String>[];
+    final pathSegments = <String>[];
 
-    RouteConfig? bit = this;
-    while (bit != null) {
-      bits.add(bit.path);
-      bit = bit.parent;
+    RouteConfig? config = this;
+    while (config != null) {
+      pathSegments.add(config._path);
+      config = config._parent;
     }
 
-    return p.joinAll(bits.reversed);
+    return p.joinAll(pathSegments.reversed);
   })();
 
-  String get _className => routeDataClass.name;
+  String get _className => _routeDataClass.name;
 
   String get _extensionName => '\$${_className}Extension';
 
   String _routeDefinition() {
-    final routesBit = children.isEmpty
+    final routesBit = _children.isEmpty
         ? ''
         : '''
-routes: [${children.map((e) => '${e._routeDefinition()},').join('')}],
+routes: [${_children.map((e) => '${e._routeDefinition()},').join('')}],
 ''';
 
     return '''
 GoRouteData.\$route(
-      path: ${escapeDartString(path)},
+      path: ${escapeDartString(_path)},
       factory: $_extensionName._fromState,
       $routesBit
 )
@@ -257,7 +263,7 @@ ${_enumMapName(paramType as InterfaceType)}.entries
     if (field == null) {
       throw InvalidGenerationSourceError(
         'Could not find a field for the path parameter "$fieldName".',
-        element: routeDataClass,
+        element: _routeDataClass,
       );
     }
 
@@ -303,19 +309,19 @@ ${_enumMapName(paramType as InterfaceType)}.entries
       .toList();
 
   ConstructorElement get _ctor {
-    final ctor = routeDataClass.unnamedConstructor;
+    final ctor = _routeDataClass.unnamedConstructor;
 
     if (ctor == null) {
       throw InvalidGenerationSourceError(
         'Missing default constructor',
-        element: routeDataClass,
+        element: _routeDataClass,
       );
     }
     return ctor;
   }
 
   PropertyAccessorElement? _field(String name) =>
-      routeDataClass.getGetter(name);
+      _routeDataClass.getGetter(name);
 }
 
 String _enumMapName(InterfaceType type) => '_\$${type.element.name}EnumMap';

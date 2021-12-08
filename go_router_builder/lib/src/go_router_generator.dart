@@ -38,14 +38,6 @@ class GoRouterGenerator extends GeneratorForAnnotation<void> {
 
     final definition = RouteConfig.fromAnnotation(annotation, element);
 
-    if (element != definition.routeDataClass) {
-      throw InvalidGenerationSourceError(
-        'The @RouteDef annotation must have a type parameter that matches the '
-        'annotated element.',
-        element: element,
-      );
-    }
-
     final items = <String>[
       definition.rootDefinition(),
     ];
