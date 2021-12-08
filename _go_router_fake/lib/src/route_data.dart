@@ -2,16 +2,21 @@
 
 import 'package:meta/meta_meta.dart';
 
-/// Baseclass for types that wish to play along her.
-///
-/// This looks like [StatelessWidget] – I don't think we want to subclass,
-/// though.
 abstract class GoRouteData {
   const GoRouteData();
+
+  static String $location(String path, {Map<String, String>? queryParams}) =>
+      throw UnimplementedError();
+  static GoRoute $route({
+    required String path,
+    required GoRouteData Function(GoRouterState) factory,
+    List<GoRoute> routes = const [],
+  }) =>
+      throw UnimplementedError();
 }
 
-/// The annotation we use! Annotating the source library seems to be a good
-/// idea, but open to discuss.
+abstract class GoRoute {}
+
 @Target({TargetKind.library, TargetKind.classType})
 class RouteDef<T extends GoRouteData> {
   const RouteDef({
@@ -21,4 +26,10 @@ class RouteDef<T extends GoRouteData> {
 
   final String path;
   final List<RouteDef> children;
+}
+
+abstract class GoRouterState {
+  Object? get extra;
+  Map<String, String> get params;
+  Map<String, String> get queryParams;
 }
