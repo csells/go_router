@@ -43,7 +43,15 @@ class RouteDef {
         .toList();
 
     final type = reader.objectValue.type! as InterfaceType;
-    final typeParamType = type.typeArguments.single as InterfaceType;
+    final typeParamType = type.typeArguments.single;
+
+    if (typeParamType is! InterfaceType) {
+      throw InvalidGenerationSourceError(
+        'The type parameter on one of the @RouteDef declarations could not be '
+        'parsed.',
+        element: element,
+      );
+    }
 
     // TODO: validate that this MUST be a subtype of `GoRouteData`
     final classElement = typeParamType.element;
@@ -144,7 +152,8 @@ GoRoute get $routeGetterName => ${_routeDefinition()};
         return e.value;
       }
       throw UnsupportedError(
-          'Cannot party on a Token ($e) of type ${e.runtimeType}');
+        'Cannot party on a Token ($e) of type ${e.runtimeType}',
+      );
     });
     return "'${pathItems.join('')}'";
   }
@@ -219,7 +228,7 @@ ${_enumMapName(paramType as InterfaceType)}.entries
     }
 
     throw InvalidGenerationSourceError(
-      'Not sure how to deal with this!',
+      'Should never get here! File an issue! (param not named or positional)',
       element: element,
     );
   }
@@ -238,7 +247,7 @@ ${_enumMapName(paramType as InterfaceType)}.entries
     }
 
     throw InvalidGenerationSourceError(
-      'Not sure how to deal with this.',
+      'Should never get here! File an issue! (param not required or optional)',
       element: element,
     );
   }
