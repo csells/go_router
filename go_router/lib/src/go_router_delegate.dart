@@ -616,8 +616,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       context,
       Navigator(
         restorationScopeId: restorationScopeId,
-        key: _key,
-        // needed to enable Android system Back button
+        key: _key, // needed to enable Android system Back button
         pages: pages,
         observers: observers,
         onPopPage: (route, dynamic result) {
