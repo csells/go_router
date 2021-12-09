@@ -6,6 +6,8 @@ import 'package:path_to_regexp/path_to_regexp.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:source_helper/source_helper.dart';
 
+import 'type_helpers.dart';
+
 /// Represents a `RouteDef` annotation to the builder.
 class RouteConfig {
   RouteConfig._(
@@ -132,7 +134,7 @@ GoRoute get $routeGetterName => ${_routeDefinition()};
     }
 
     final extraParam = _ctor.parameters
-        .singleWhereOrNull((element) => element.name == _extraFieldName);
+        .singleWhereOrNull((element) => element.name == extraFieldName);
 
     buffer.writeln('$_className(');
     for (final param in [
@@ -197,33 +199,14 @@ GoRouteData.\$route(
   }
 
   String get _goExtraParameter {
-    final extraField = _field(_extraFieldName);
+    final extraField = _field(extraFieldName);
     if (extraField == null) return '';
 
-    return ', extra: $_extraFieldName';
+    return ', extra: $extraFieldName';
   }
 
   String _decodeFor(ParameterElement element) {
-    final paramType = element.type;
-
-    final stateValueAccess = _stateValueAccess(element);
-    String fromStateExpression;
-    if (paramType.isDartCoreString) {
-      fromStateExpression = 'state.$stateValueAccess';
-    } else if (paramType.isDartCoreInt) {
-      fromStateExpression = 'int.parse(state.$stateValueAccess)';
-    } else if (paramType.isEnum) {
-      fromStateExpression = '''
-${_enumMapName(paramType as InterfaceType)}.entries
-    .singleWhere((element) => element.value == state.$stateValueAccess)
-    .key
-''';
-    } else {
-      throw InvalidGenerationSourceError(
-        'The parameter type `$paramType` is not supported.',
-        element: element,
-      );
-    }
+    final fromStateExpression = decodeParameter(element);
 
     if (element.isPositional) {
       return '$fromStateExpression,';
@@ -239,25 +222,6 @@ ${_enumMapName(paramType as InterfaceType)}.entries
     );
   }
 
-  String _stateValueAccess(ParameterElement element) {
-    if (element.isRequiredPositional || element.isRequiredNamed) {
-      return 'params[${escapeDartString(element.name)}]!';
-    }
-
-    if (element.name == _extraFieldName) {
-      return 'extra as ${element.type.getDisplayString(withNullability: true)}';
-    }
-
-    if (element.isOptional) {
-      return 'queryParams[${escapeDartString(element.name)}]';
-    }
-
-    throw InvalidGenerationSourceError(
-      'Should never get here! File an issue! (param not required or optional)',
-      element: element,
-    );
-  }
-
   String _encodeFor(String fieldName) {
     final field = _field(fieldName);
     if (field == null) {
@@ -267,19 +231,7 @@ ${_enumMapName(paramType as InterfaceType)}.entries
       );
     }
 
-    final returnType = field.returnType;
-    if (returnType.isDartCoreString) {
-      return fieldName;
-    } else if (returnType.isDartCoreInt) {
-      return '$fieldName.toString()';
-    } else if (returnType.isEnum) {
-      return '${_enumMapName(returnType as InterfaceType)}[$fieldName]!';
-    }
-
-    throw InvalidGenerationSourceError(
-      'The return type `$returnType` is not supported.',
-      element: field,
-    );
+    return encodeField(field);
   }
 
   String get _locationQueryParams {
@@ -305,7 +257,7 @@ ${_enumMapName(paramType as InterfaceType)}.entries
 
   late final List<ParameterElement> _ctorQueryParams = _ctor.parameters
       .where((element) =>
-          element.isOptionalNamed && element.name != _extraFieldName)
+          element.isOptionalNamed && element.name != extraFieldName)
       .toList();
 
   ConstructorElement get _ctor {
@@ -324,14 +276,12 @@ ${_enumMapName(paramType as InterfaceType)}.entries
       _routeDataClass.getGetter(name);
 }
 
-String _enumMapName(InterfaceType type) => '_\$${type.element.name}EnumMap';
-
 String _enumMapConst(InterfaceType type) {
   assert(type.isEnum);
 
   final enumName = type.element.name;
 
-  final buffer = StringBuffer('const ${_enumMapName(type)} = {');
+  final buffer = StringBuffer('const ${enumMapName(type)} = {');
 
   for (final enumField
       in type.element.fields.where((element) => !element.isSynthetic)) {
@@ -344,5 +294,3 @@ String _enumMapConst(InterfaceType type) {
 
   return buffer.toString();
 }
-
-const _extraFieldName = r'$extra';
