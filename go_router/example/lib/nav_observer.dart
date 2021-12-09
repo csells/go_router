@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart';
 
-Logger log = Logger('go_router_observer');
+final log = Logger('go_router_observer');
 
 void main() => runApp(App());
 

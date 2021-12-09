@@ -3,7 +3,7 @@ import 'dart:developer' as developer;
 import 'package:logging/logging.dart';
 
 /// The logger for this package.
-Logger log = Logger('GoRouter');
+final log = Logger('GoRouter');
 
 StreamSubscription? _subscription;
 
