@@ -4,6 +4,7 @@
 
 - pass additional information to the `NavigatorObserver` via default args to
   `MaterialPage`, etc.
+- export `InheritedGoRouter`
 
 ### 2.5.1
 
