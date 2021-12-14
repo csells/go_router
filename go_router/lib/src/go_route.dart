@@ -42,7 +42,9 @@ class GoRoute {
       groupedParams.entries.where((e) => e.value.length > 1),
     );
     if (dupParams.isNotEmpty) {
-      throw Exception('duplicate path params: ${dupParams.keys.join(', ')}');
+      throw Exception(
+        'duplicate path params: ${dupParams.keys.join(', ')}',
+      );
     }
 
     // check sub-routes
@@ -51,7 +53,8 @@ class GoRoute {
       if (route.path != '/' &&
           (route.path.startsWith('/') || route.path.endsWith('/'))) {
         throw Exception(
-            'sub-route path may not start or end with /: ${route.path}');
+          'sub-route path may not start or end with /: ${route.path}',
+        );
       }
     }
   }
@@ -71,8 +74,9 @@ class GoRoute {
   /// GoRoute(
   ///   path: '/',
   ///   pageBuilder: (context, state) => MaterialPage<void>(
-  ///   key: state.pageKey,
-  ///   child: HomePage(families: Families.data),
+  ///     key: state.pageKey,
+  ///     child: HomePage(families: Families.data),
+  ///   ),
   /// ),
   /// ```
   final String path;
@@ -84,8 +88,9 @@ class GoRoute {
   /// GoRoute(
   ///   path: '/',
   ///   pageBuilder: (context, state) => MaterialPage<void>(
-  ///   key: state.pageKey,
-  ///   child: HomePage(families: Families.data),
+  ///     key: state.pageKey,
+  ///     child: HomePage(families: Families.data),
+  ///   ),
   /// ),
   /// ```
   ///
@@ -99,8 +104,11 @@ class GoRoute {
   /// ```
   /// GoRoute(
   ///   path: '/',
-  ///   builder: (context, state) =>
-  ///     FamilyPage(families: Families.family(state.params['id'])),
+  ///   builder: (context, state) => FamilyPage(
+  ///     families: Families.family(
+  ///       state.params['id'],
+  ///     ),
+  ///   ),
   /// ),
   /// ```
   ///
@@ -113,9 +121,9 @@ class GoRoute {
   ///
   /// For example these routes:
   /// ```
-  /// /             => HomePage()
-  ///   family/f1   => FamilyPage('f1')
-  ///     person/p2 => PersonPage('f1', 'p2') ← showing this page, Back pops ↑
+  ///   /          => HomePage()
+  ///   family/f1  => FamilyPage('f1')
+  ///   person/p2  => PersonPage('f1', 'p2') ← showing this page, Back pops ↑
   /// ```
   ///
   /// Can be represented as:
@@ -156,7 +164,6 @@ class GoRoute {
   ///       ],
   ///     ),
   ///   ],
-  ///   errorPageBuilder: ...
   /// );
   ///
   final List<GoRoute> routes;
@@ -177,9 +184,9 @@ class GoRoute {
   ///     ),
   ///     GoRoute(
   ///       path: '/family/:fid',
-  ///       pageBuilder: ...,
+  ///       pageBuilder: (context, state) => ...,
+  ///     ),
   ///   ],
-  ///   errorPageBuilder: ...,
   /// );
   /// ```
   final GoRouterRedirect redirect;
@@ -194,6 +201,8 @@ class GoRoute {
   static String? _redirect(GoRouterState state) => null;
 
   static Widget _builder(BuildContext context, GoRouterState state) =>
-      throw Exception('GoRoute builder parameter not set\n'
-          'See gorouter.dev/redirection#considerations for details');
+      throw Exception(
+        'GoRoute builder parameter not set\n'
+        'See gorouter.dev/redirection#considerations for details',
+      );
 }
