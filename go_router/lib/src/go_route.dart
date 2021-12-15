@@ -121,9 +121,9 @@ class GoRoute {
   ///
   /// For example these routes:
   /// ```
-  ///   /          => HomePage()
-  ///   family/f1  => FamilyPage('f1')
-  ///   person/p2  => PersonPage('f1', 'p2') ← showing this page, Back pops ↑
+  /// /         => HomePage()
+  ///   family/f1 => FamilyPage('f1')
+  ///     person/p2 => PersonPage('f1', 'p2') ← showing this page, Back pops ↑
   /// ```
   ///
   /// Can be represented as:
