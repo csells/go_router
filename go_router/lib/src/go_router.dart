@@ -75,12 +75,12 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
       );
 
   /// Navigate to a URI location w/ optional query parameters, e.g.
-  /// /family/f2/person/p1?color=blue
+  /// `/family/f2/person/p1?color=blue`
   void go(String location, {Object? extra}) =>
       routerDelegate.go(location, extra: extra);
 
   /// Navigate to a named route w/ optional parameters, e.g.
-  /// name='person', params={'fid': 'f2', 'pid': 'p1'}
+  /// `name='person', params={'fid': 'f2', 'pid': 'p1'}`
   /// Navigate to the named route.
   void goNamed(
     String name, {
@@ -94,12 +94,12 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
       );
 
   /// Push a URI location onto the page stack w/ optional query parameters, e.g.
-  /// /family/f2/person/p1?color=blue
+  /// `/family/f2/person/p1?color=blue`
   void push(String location, {Object? extra}) =>
       routerDelegate.push(location, extra: extra);
 
   /// Push a named route onto the page stack w/ optional parameters, e.g.
-  /// name='person', params={'fid': 'f2', 'pid': 'p1'}
+  /// `name='person', params={'fid': 'f2', 'pid': 'p1'}`
   void pushNamed(
     String name, {
     Map<String, String> params = const {},
