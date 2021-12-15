@@ -1,12 +1,12 @@
 # Changelog
 
-### TODO: 2.5.3
+### 2.5.3
 
 - added `GoRouterRefreshStream` from
   [jopmiddelkamp](https://github.com/jopmiddelkamp) to easily map from a
   `Stream` to a `Listenable` for use with `refreshListenable`; very useful when
   combined with stream-based state management like
-  [`flutter_bloc`](https://pub.dev/packages/flutter_bloc)
+  [flutter_bloc](https://pub.dev/packages/flutter_bloc)
 - dartdocs fixups from [mehade369](https://github.com/mehade369)
 - example link fixes from [ben-milanko](https://github.com/ben-milanko)
 
