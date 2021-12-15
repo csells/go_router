@@ -39,7 +39,7 @@ class App extends StatelessWidget {
                 path: 'person/:pid',
                 builder: (context, state) {
                   final family = Families.family(state.params['fid']!);
-                  final person = family.person(int.parse(state.params['pid']!));
+                  final person = family.person(state.params['pid']!);
                   return PersonScreen(family: family, person: person);
                 },
               ),
@@ -98,7 +98,7 @@ class _FamilyScreenWithAddState extends State<FamilyScreenWithAdd> {
                 title: Text(p.name),
                 onTap: () => context.go(context.namedLocation(
                   'person',
-                  params: {'fid': widget.family.id, 'pid': p.id.toString()},
+                  params: {'fid': widget.family.id, 'pid': p.id},
                   queryParams: {'qid': 'quid'},
                 )),
               ),
@@ -118,7 +118,7 @@ class _FamilyScreenWithAddState extends State<FamilyScreenWithAdd> {
       setState(() => widget.family.people.add(person));
       context.goNamed('person', params: {
         'fid': widget.family.id,
-        'pid': person.id.toString(),
+        'pid': person.id,
       });
     }
   }
@@ -197,7 +197,7 @@ class _NewPersonScreenState extends State<NewPersonScreen> {
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
                           final person = Person(
-                            id: widget.family.people.length + 1,
+                            id: 'p${widget.family.people.length + 1}',
                             name: _nameController.text,
                             age: int.parse(_ageController.text),
                           );

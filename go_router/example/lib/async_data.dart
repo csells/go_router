@@ -38,7 +38,7 @@ class App extends StatelessWidget {
                 path: 'person/:pid',
                 builder: (context, state) => PersonScreenWithAsync(
                   fid: state.params['fid']!,
-                  pid: int.parse(state.params['pid']!),
+                  pid: state.params['pid']!,
                 ),
               ),
             ],
@@ -181,7 +181,7 @@ class PersonScreenWithAsync extends StatefulWidget {
       : super(key: key);
 
   final String fid;
-  final int pid;
+  final String pid;
 
   @override
   State<PersonScreenWithAsync> createState() => _PersonScreenWithAsyncState();
