@@ -1,5 +1,7 @@
 # Changelog
 
+### 3.0.0-dev
+
 ### 2.5.2
 
 - pass additional information to the `NavigatorObserver` via default args to

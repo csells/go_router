@@ -41,7 +41,7 @@ class App extends StatelessWidget {
                 path: 'person/:pid',
                 builder: (context, state) {
                   final family = Families.family(state.params['fid']!);
-                  final person = family.person(state.params['pid']!);
+                  final person = family.person(int.parse(state.params['pid']!));
                   return PersonScreen(family: family, person: person);
                 },
               ),
