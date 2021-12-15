@@ -2,26 +2,12 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 
-enum PersonDetails {
-  hobbies,
-  favoriteFood,
-  favoriteSport,
-}
-
-/// sample Person class
 class Person {
-  Person({
-    required this.id,
-    required this.name,
-    required this.age,
-    this.details = const {},
-  });
+  Person({required this.id, required this.name, required this.age});
 
-  final int id;
+  final String id;
   final String name;
   final int age;
-
-  final Map<PersonDetails, String> details;
 }
 
 class Family {
@@ -31,7 +17,7 @@ class Family {
   final String name;
   final List<Person> people;
 
-  Person person(int pid) => people.singleWhere(
+  Person person(String pid) => people.singleWhere(
         (p) => p.id == pid,
         orElse: () => throw Exception('unknown person $pid for family $id'),
       );
@@ -43,44 +29,40 @@ class Families {
       id: 'f1',
       name: 'Sells',
       people: [
-        Person(id: 1, name: 'Chris', age: 52, details: {
-          PersonDetails.hobbies: 'coding',
-          PersonDetails.favoriteFood: 'all of the above',
-          PersonDetails.favoriteSport: 'football?'
-        }),
-        Person(id: 2, name: 'John', age: 27),
-        Person(id: 3, name: 'Tom', age: 26),
+        Person(id: 'p1', name: 'Chris', age: 52),
+        Person(id: 'p2', name: 'John', age: 27),
+        Person(id: 'p3', name: 'Tom', age: 26),
       ],
     ),
     Family(
       id: 'f2',
       name: 'Addams',
       people: [
-        Person(id: 1, name: 'Gomez', age: 55),
-        Person(id: 2, name: 'Morticia', age: 50),
-        Person(id: 3, name: 'Pugsley', age: 10),
-        Person(id: 4, name: 'Wednesday', age: 17),
+        Person(id: 'p1', name: 'Gomez', age: 55),
+        Person(id: 'p2', name: 'Morticia', age: 50),
+        Person(id: 'p3', name: 'Pugsley', age: 10),
+        Person(id: 'p4', name: 'Wednesday', age: 17),
       ],
     ),
     Family(
       id: 'f3',
       name: 'Hunting',
       people: [
-        Person(id: 1, name: 'Mom', age: 54),
-        Person(id: 2, name: 'Dad', age: 55),
-        Person(id: 3, name: 'Will', age: 20),
-        Person(id: 4, name: 'Marky', age: 21),
-        Person(id: 5, name: 'Ricky', age: 22),
-        Person(id: 6, name: 'Danny', age: 23),
-        Person(id: 7, name: 'Terry', age: 24),
-        Person(id: 8, name: 'Mikey', age: 25),
-        Person(id: 9, name: 'Davey', age: 26),
-        Person(id: 10, name: 'Timmy', age: 27),
-        Person(id: 11, name: 'Tommy', age: 28),
-        Person(id: 12, name: 'Joey', age: 29),
-        Person(id: 13, name: 'Robby', age: 30),
-        Person(id: 14, name: 'Johnny', age: 31),
-        Person(id: 15, name: 'Brian', age: 32),
+        Person(id: 'p1', name: 'Mom', age: 54),
+        Person(id: 'p2', name: 'Dad', age: 55),
+        Person(id: 'p3', name: 'Will', age: 20),
+        Person(id: 'p4', name: 'Marky', age: 21),
+        Person(id: 'p5', name: 'Ricky', age: 22),
+        Person(id: 'p6', name: 'Danny', age: 23),
+        Person(id: 'p7', name: 'Terry', age: 24),
+        Person(id: 'p8', name: 'Mikey', age: 25),
+        Person(id: 'p9', name: 'Davey', age: 26),
+        Person(id: 'p10', name: 'Timmy', age: 27),
+        Person(id: 'p11', name: 'Tommy', age: 28),
+        Person(id: 'p12', name: 'Joey', age: 29),
+        Person(id: 'p13', name: 'Robby', age: 30),
+        Person(id: 'p14', name: 'Johnny', age: 31),
+        Person(id: 'p15', name: 'Brian', age: 32),
       ],
     ),
   ];
@@ -135,7 +117,7 @@ class Repository {
   Future<Family> getFamily(String fid) async =>
       (await getFamilies()).family(fid);
 
-  Future<FamilyPerson> getPerson(String fid, int pid) async {
+  Future<FamilyPerson> getPerson(String fid, String pid) async {
     final family = await getFamily(fid);
     return FamilyPerson(family: family, person: family.person(pid));
   }
