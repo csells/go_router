@@ -1,11 +1,14 @@
 // ignore_for_file: cascade_invocations, diagnostic_describe_all_properties
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/diagnostics.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:go_router/src/go_route_match.dart';
+import 'package:go_router/src/go_route_refresh_listener.dart';
 
 void main() {
   group('path routes', () {
@@ -1385,6 +1388,67 @@ void main() {
       expect(page2.pid, 'p1');
     });
   });
+
+  group('refresh listenable', () {
+    late StreamController<int> streamController;
+
+    setUpAll(() async {
+      streamController = StreamController<int>.broadcast();
+      await streamController.addStream(Stream.value(0));
+    });
+
+    tearDownAll(() {
+      streamController.close();
+    });
+
+    group('stream', () {
+      test('no stream emits', () async {
+        // Act
+        final notifyListener = MockGoRouterRefreshStream(
+          streamController.stream,
+        );
+
+        // Assert
+        expect(notifyListener.notifyCount, equals(1));
+
+        // Cleanup
+        notifyListener.dispose();
+      });
+
+      test('three stream emits', () async {
+        // Arrange
+        final toEmit = [1, 2, 3];
+
+        // Act
+        final notifyListener = MockGoRouterRefreshStream(
+          streamController.stream,
+        );
+
+        await streamController.addStream(Stream.fromIterable(toEmit));
+
+        // Assert
+        expect(notifyListener.notifyCount, equals(toEmit.length + 1));
+
+        // Cleanup
+        notifyListener.dispose();
+      });
+    });
+  });
+}
+
+class MockGoRouterRefreshStream extends GoRouterRefreshStream {
+  MockGoRouterRefreshStream(
+    Stream stream,
+  )   : notifyCount = 0,
+        super(stream);
+
+  late int notifyCount;
+
+  @override
+  void notifyListeners() {
+    notifyCount++;
+    super.notifyListeners();
+  }
 }
 
 GoRouter _router(List<GoRoute> routes) => GoRouter(
