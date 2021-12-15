@@ -1,7 +1,6 @@
 // ignore_for_file: cascade_invocations, diagnostic_describe_all_properties
 
 import 'dart:async';
-import 'dart:developer' as developer;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/src/foundation/diagnostics.dart';
