@@ -49,36 +49,3 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: coverage/lcov.info
-
-  test_example:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v1
-        with:
-          fetch-depth: 0
-      - name: "Install Flutter"
-        run: ../.github/workflows/scripts/install-flutter.sh stable
-      - name: "Install Tools"
-        run: ../.github/workflows/scripts/install-tools.sh
-      - run: flutter test --run-skipped -t presubmit-only
-        working-directory: go_router/example
-
-  test_builder:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        sdk: [2.14.0, dev]
-    steps:
-      - uses: actions/checkout@v2
-      - uses: dart-lang/setup-dart@v1.0
-        with:
-          sdk: ${{ matrix.sdk }}
-      - id: install
-        run: dart pub get
-        working-directory: go_router_builder
-      - run: dart test
-        working-directory: go_router_builder
