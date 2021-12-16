@@ -18,7 +18,7 @@ void main() {
   if (enableLogs) {
     Logger.root.onRecord.listen((e) {
       // Use debugPrint instead of dart:developer log() so that output is
-      // printed while running tests, not just debugging. 
+      // printed while running tests, not just debugging.
       debugPrint('$e');
     });
   }
