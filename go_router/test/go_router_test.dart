@@ -17,7 +17,8 @@ final log = Logger('GoRouter tests');
 void main() {
   if (enableLogs) {
     Logger.root.onRecord.listen((e) {
-      // TODO(johnpryan): why doesn't log() from dart:developer print anything?
+      // Use debugPrint instead of dart:developer log() so that output is
+      // printed while running tests, not just debugging. 
       debugPrint('$e');
     });
   }
