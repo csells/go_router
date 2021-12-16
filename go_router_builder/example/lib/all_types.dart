@@ -1,0 +1,135 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+
+import 'shared/data.dart';
+
+part 'all_types.g.dart';
+
+@TypedGoRoute<AllTypesRoute>(
+  path: '/:requiredBigIntField/:requiredBoolField/:requiredDateTimeField'
+      '/:requiredDoubleField/:requiredEnumField/:requiredIntField'
+      '/:requiredNumField/:requiredStringField/:requiredUriField',
+)
+@immutable
+class AllTypesRoute extends GoRouteData {
+  const AllTypesRoute({
+    required this.requiredBigIntField,
+    required this.requiredBoolField,
+    required this.requiredDateTimeField,
+    required this.requiredDoubleField,
+    required this.requiredEnumField,
+    required this.requiredIntField,
+    required this.requiredNumField,
+    required this.requiredStringField,
+    required this.requiredUriField,
+    this.bigIntField,
+    this.boolField,
+    this.dateTimeField,
+    this.doubleField,
+    this.enumField,
+    this.intField,
+    this.numField,
+    this.stringField,
+    this.uriField,
+  });
+
+  final BigInt requiredBigIntField;
+  final bool requiredBoolField;
+  final DateTime requiredDateTimeField;
+  final double requiredDoubleField;
+  final PersonDetails requiredEnumField;
+  final int requiredIntField;
+  final num requiredNumField;
+  final String requiredStringField;
+  final Uri requiredUriField;
+
+  final BigInt? bigIntField;
+  final bool? boolField;
+  final DateTime? dateTimeField;
+  final double? doubleField;
+  final PersonDetails? enumField;
+  final int? intField;
+  final num? numField;
+  final String? stringField;
+  final Uri? uriField;
+
+  @override
+  Widget build(BuildContext context) => const Text('built!');
+
+  @override
+  int get hashCode => Object.hashAll(_items);
+
+  @override
+  bool operator ==(Object other) {
+    if (other is AllTypesRoute) {
+      final mine = _items;
+      final theirs = other._items;
+      for (var i = 0; i < mine.length; i++) {
+        if (mine[i] != theirs[i]) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  List<Object?> get _items => [
+        requiredBigIntField,
+        requiredBoolField,
+        requiredDateTimeField,
+        requiredDoubleField,
+        requiredEnumField,
+        requiredIntField,
+        requiredNumField,
+        requiredStringField,
+        requiredUriField,
+        bigIntField,
+        boolField,
+        dateTimeField,
+        doubleField,
+        enumField,
+        intField,
+        numField,
+        stringField,
+        uriField,
+      ];
+}
+
+void main() => runApp(AllTypesApp());
+
+class AllTypesApp extends StatelessWidget {
+  AllTypesApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) => MaterialApp.router(
+        routeInformationParser: _router.routeInformationParser,
+        routerDelegate: _router.routerDelegate,
+      );
+
+  late final _router = GoRouter(
+    debugLogDiagnostics: true,
+    routes: $appRoutes,
+
+    // redirect to the login page if the user is not logged in
+    redirect: (state) {
+      if (state.location == '/') {
+        final location = AllTypesRoute(
+          requiredBigIntField: BigInt.two,
+          requiredBoolField: true,
+          requiredDateTimeField: DateTime.now(),
+          requiredDoubleField: 3.14,
+          requiredEnumField: PersonDetails.favoriteSport,
+          requiredIntField: -42,
+          requiredNumField: 3.15,
+          requiredStringField: r'$!/#bob%%20',
+          requiredUriField: Uri.parse('https://dart.dev'),
+        ).location;
+
+        return location;
+      }
+
+      // no need to redirect at all
+      return null;
+    },
+  );
+}

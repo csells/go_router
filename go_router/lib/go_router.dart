@@ -11,6 +11,7 @@ export 'src/go_route.dart';
 export 'src/go_router.dart';
 export 'src/go_router_refresh_stream.dart';
 export 'src/go_router_state.dart';
+export 'src/route_data.dart' show GoRouteData, TypedGoRoute;
 export 'src/typedefs.dart' show GoRouterPageBuilder, GoRouterRedirect;
 export 'src/url_path_strategy.dart';
 

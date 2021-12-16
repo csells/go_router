@@ -1,5 +1,11 @@
 # Changelog
 
+### 2.6.0-dev
+
+- added `GoRouteData` and `TypedGoRoute` to enable
+  [typed routing](https://gorouter.dev/typed-routing).
+- require Dart 2.14 (Flutter 2.5) or greater.
+
 ### 2.5.7
 
 - [PR 262](https://github.com/csells/go_router/pull/262): add support for
