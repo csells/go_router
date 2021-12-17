@@ -155,6 +155,24 @@ onPressed: () {
 },
 ```
 
+If you've got a `Stream` to react to you can wrap your stream with a 
+`GoRouterRefreshStream` which makes it possible for `GoRouter` to react to any
+stream based state managmenet solutions like for example BLoC.
+
+```dart
+class App extends StatelessWidget {
+  final streamController = StreamController();
+  ...
+  late final _router = GoRouter(
+    routes: ...,
+    redirect: ...
+
+    // changes on the listenable will cause the router to refresh it's route
+    refreshListenable: GoRouterRefreshStream(streamController.stream),
+  );
+}
+```
+
 The use of the top-level `redirect` and `refreshListenable` together is
 recommended because it will handle the routing automatically for you when the
 app's data changes.
