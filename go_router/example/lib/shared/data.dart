@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
@@ -121,4 +122,33 @@ class Repository {
     final family = await getFamily(fid);
     return FamilyPerson(family: family, person: family.person(pid));
   }
+}
+
+abstract class StateStream<T> {
+  StateStream();
+
+  StateStream.seeded(T value) : state = value {
+    _controller.add(value);
+  }
+
+  final StreamController<T> _controller = StreamController<T>();
+  late T state;
+
+  Stream<T> get stream => _controller.stream;
+
+  void emit(T state) {
+    this.state = state;
+    _controller.add(state);
+  }
+
+  void dispose() {
+    _controller.close();
+  }
+}
+
+class LoggedInState extends StateStream<bool> {
+  LoggedInState();
+
+  // ignore: avoid_positional_boolean_parameters
+  LoggedInState.seeded(bool value) : super.seeded(value);
 }
