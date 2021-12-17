@@ -75,10 +75,7 @@ class _AppState extends State<App> {
 
   // add the login info into the tree as app state that can change over time
   @override
-  Widget build(
-    BuildContext context,
-  ) =>
-      Provider<LoggedInState>.value(
+  Widget build(BuildContext context) => Provider<LoggedInState>.value(
         value: loggedInState,
         child: MaterialApp.router(
           routeInformationParser: router.routeInformationParser,
@@ -104,9 +101,7 @@ class HomeScreen extends StatelessWidget {
   final List<Family> families;
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
+  Widget build(BuildContext context) {
     final info = context.read<LoggedInState>();
 
     return Scaffold(
@@ -140,10 +135,7 @@ class FamilyScreen extends StatelessWidget {
   final Family family;
 
   @override
-  Widget build(
-    BuildContext context,
-  ) =>
-      Scaffold(
+  Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: Text(family.name)),
         body: ListView(
           children: [

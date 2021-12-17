@@ -155,6 +155,12 @@ onPressed: () {
 },
 ```
 
+The use of the top-level `redirect` and `refreshListenable` together is
+recommended because it will handle the routing automatically for you when the
+app's data changes.
+
+### Refreshing with a `Stream`
+
 If you've got a `Stream` to react to you can wrap your stream with a 
 `GoRouterRefreshStream` which makes it possible for `GoRouter` to react to any
 stream based state managmenet solutions like for example BLoC.
@@ -172,10 +178,6 @@ class App extends StatelessWidget {
   );
 }
 ```
-
-The use of the top-level `redirect` and `refreshListenable` together is
-recommended because it will handle the routing automatically for you when the
-app's data changes.
 
 ## Route-level redirection
 

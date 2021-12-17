@@ -1,5 +1,10 @@
 # Changelog
 
+### 2.5.4
+
+- fixed up the `GoRouterRefreshStream` implementation with an export, an example
+  and some docs
+
 ### 2.5.3
 
 - added `GoRouterRefreshStream` from
