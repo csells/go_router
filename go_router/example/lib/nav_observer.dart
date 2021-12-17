@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:logging/logging.dart';
+
+final log = Logger('go_router_observer');
 
 void main() => runApp(App());
 
@@ -44,31 +47,30 @@ class App extends StatelessWidget {
 class MyNavObserver extends NavigatorObserver {
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) =>
-      debugPrint('didPush: ${route.str}, previousRoute= ${previousRoute?.str}');
+      log.info('didPush: ${route.str}, previousRoute= ${previousRoute?.str}');
 
   @override
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) =>
-      debugPrint('didPop: ${route.str}, previousRoute= ${previousRoute?.str}');
+      log.info('didPop: ${route.str}, previousRoute= ${previousRoute?.str}');
 
   @override
   void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) =>
-      debugPrint('didRemove: ${route.str}, '
-          'previousRoute= ${previousRoute?.str}');
+      log.info('didRemove: ${route.str}, previousRoute= ${previousRoute?.str}');
 
   @override
   void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) =>
-      debugPrint('didReplace: new= ${newRoute?.str}, old= ${oldRoute?.str}');
+      log.info('didReplace: new= ${newRoute?.str}, old= ${oldRoute?.str}');
 
   @override
   void didStartUserGesture(
     Route<dynamic> route,
     Route<dynamic>? previousRoute,
   ) =>
-      debugPrint('didStartUserGesture: ${route.str}, '
+      log.info('didStartUserGesture: ${route.str}, '
           'previousRoute= ${previousRoute?.str}');
 
   @override
-  void didStopUserGesture() => debugPrint('didStopUserGesture');
+  void didStopUserGesture() => log.info('didStopUserGesture');
 }
 
 extension on Route<dynamic> {

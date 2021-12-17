@@ -4,6 +4,7 @@ import 'go_route.dart';
 import 'go_route_information_parser.dart';
 import 'go_router_delegate.dart';
 import 'inherited_go_router.dart';
+import 'logging.dart';
 import 'path_strategy_nonweb.dart'
     if (dart.library.html) 'path_strategy_web.dart';
 import 'typedefs.dart';
@@ -31,6 +32,8 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
     String? restorationScopeId,
   }) {
     if (urlPathStrategy != null) setUrlPathStrategy(urlPathStrategy);
+
+    setLogging(enabled: debugLogDiagnostics);
 
     routerDelegate = GoRouterDelegate(
       routes: routes,

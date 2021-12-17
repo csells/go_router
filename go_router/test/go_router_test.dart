@@ -8,8 +8,21 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:go_router/src/go_route_match.dart';
+import 'package:go_router/src/go_router_refresh_stream.dart';
+import 'package:logging/logging.dart';
+
+const enableLogs = false;
+final log = Logger('GoRouter tests');
 
 void main() {
+  if (enableLogs) {
+    Logger.root.onRecord.listen((e) {
+      // Use debugPrint instead of dart:developer log() so that output is
+      // printed while running tests, not just debugging.
+      debugPrint('$e');
+    });
+  }
+
   group('path routes', () {
     test('match home route', () {
       final routes = [
@@ -18,9 +31,9 @@ void main() {
 
       final router = _router(routes);
       final matches = router.routerDelegate.matches;
-      expect(matches.length, 1);
-      expect(matches[0].fullpath, '/');
-      expect(router.screenFor(matches[0]).runtimeType, HomeScreen);
+      expect(matches, hasLength(1));
+      expect(matches.first.fullpath, '/');
+      expect(router.screenFor(matches.first).runtimeType, HomeScreen);
     });
 
     test('match too many routes', () {
@@ -32,72 +45,54 @@ void main() {
       final router = _router(routes);
       router.go('/');
       final matches = router.routerDelegate.matches;
-      expect(matches.length, 1);
-      expect(matches[0].fullpath, '/');
-      expect(router.screenFor(matches[0]).runtimeType, ErrorScreen);
+      expect(matches, hasLength(1));
+      expect(matches.first.fullpath, '/');
+      expect(router.screenFor(matches.first).runtimeType, ErrorScreen);
     });
 
     test('empty path', () {
-      try {
+      expect(() {
         GoRoute(path: '');
-        expect(false, true);
-      } on Exception catch (ex) {
-        dump(ex);
-      }
+      }, throwsException);
     });
 
     test('leading / on sub-route', () {
-      try {
-        // ignore: unused_local_variable
-        final routes = [
-          GoRoute(
-            path: '/',
-            builder: _dummy,
-            routes: [
-              GoRoute(
-                path: '/foo',
-                builder: _dummy,
-              ),
-            ],
-          ),
-        ];
-        expect(false, true);
-      } on Exception catch (ex) {
-        dump(ex);
-      }
+      expect(() {
+        GoRoute(
+          path: '/',
+          builder: _dummy,
+          routes: [
+            GoRoute(
+              path: '/foo',
+              builder: _dummy,
+            ),
+          ],
+        );
+      }, throwsException);
     });
 
     test('trailing / on sub-route', () {
-      try {
-        // ignore: unused_local_variable
-        final routes = [
-          GoRoute(
-            path: '/',
-            builder: _dummy,
-            routes: [
-              GoRoute(
-                path: 'foo/',
-                builder: _dummy,
-              ),
-            ],
-          ),
-        ];
-        expect(false, true);
-      } on Exception catch (ex) {
-        dump(ex);
-      }
+      expect(() {
+        GoRoute(
+          path: '/',
+          builder: _dummy,
+          routes: [
+            GoRoute(
+              path: 'foo/',
+              builder: _dummy,
+            ),
+          ],
+        );
+      }, throwsException);
     });
 
     test('lack of leading / on top-level route', () {
-      try {
+      expect(() {
         final routes = [
           GoRoute(path: 'foo', builder: _dummy),
         ];
         _router(routes);
-        expect(false, true);
-      } on Exception catch (ex) {
-        dump(ex);
-      }
+      }, throwsException);
     });
 
     test('match no routes', () {
@@ -108,8 +103,8 @@ void main() {
       final router = _router(routes);
       router.go('/foo');
       final matches = router.routerDelegate.matches;
-      expect(matches.length, 1);
-      expect(router.screenFor(matches[0]).runtimeType, ErrorScreen);
+      expect(matches, hasLength(1));
+      expect(router.screenFor(matches.first).runtimeType, ErrorScreen);
     });
 
     test('match 2nd top level route', () {
@@ -122,9 +117,9 @@ void main() {
       final router = _router(routes);
       router.go('/login');
       final matches = router.routerDelegate.matches;
-      expect(matches.length, 1);
-      expect(matches[0].subloc, '/login');
-      expect(router.screenFor(matches[0]).runtimeType, LoginScreen);
+      expect(matches, hasLength(1));
+      expect(matches.first.subloc, '/login');
+      expect(router.screenFor(matches.first).runtimeType, LoginScreen);
     });
 
     test('match top level route when location has trailing /', () {
@@ -142,9 +137,9 @@ void main() {
       final router = _router(routes);
       router.go('/login/');
       final matches = router.routerDelegate.matches;
-      expect(matches.length, 1);
-      expect(matches[0].subloc, '/login');
-      expect(router.screenFor(matches[0]).runtimeType, LoginScreen);
+      expect(matches, hasLength(1));
+      expect(matches.first.subloc, '/login');
+      expect(router.screenFor(matches.first).runtimeType, LoginScreen);
     });
 
     test('match top level route when location has trailing / (2)', () {
@@ -156,9 +151,9 @@ void main() {
       final router = _router(routes);
       router.go('/profile/');
       final matches = router.routerDelegate.matches;
-      expect(matches.length, 1);
-      expect(matches[0].subloc, '/profile/foo');
-      expect(router.screenFor(matches[0]).runtimeType, DummyScreen);
+      expect(matches, hasLength(1));
+      expect(matches.first.subloc, '/profile/foo');
+      expect(router.screenFor(matches.first).runtimeType, DummyScreen);
     });
 
     test('match top level route when location has trailing / (3)', () {
@@ -170,9 +165,9 @@ void main() {
       final router = _router(routes);
       router.go('/profile/?bar=baz');
       final matches = router.routerDelegate.matches;
-      expect(matches.length, 1);
-      expect(matches[0].subloc, '/profile/foo');
-      expect(router.screenFor(matches[0]).runtimeType, DummyScreen);
+      expect(matches, hasLength(1));
+      expect(matches.first.subloc, '/profile/foo');
+      expect(router.screenFor(matches.first).runtimeType, DummyScreen);
     });
 
     test('match sub-route', () {
@@ -193,8 +188,8 @@ void main() {
       router.go('/login');
       final matches = router.routerDelegate.matches;
       expect(matches.length, 2);
-      expect(matches[0].subloc, '/');
-      expect(router.screenFor(matches[0]).runtimeType, HomeScreen);
+      expect(matches.first.subloc, '/');
+      expect(router.screenFor(matches.first).runtimeType, HomeScreen);
       expect(matches[1].subloc, '/login');
       expect(router.screenFor(matches[1]).runtimeType, LoginScreen);
     });
@@ -227,17 +222,17 @@ void main() {
       final router = _router(routes);
       {
         final matches = router.routerDelegate.matches;
-        expect(matches.length, 1);
-        expect(matches[0].fullpath, '/');
-        expect(router.screenFor(matches[0]).runtimeType, HomeScreen);
+        expect(matches, hasLength(1));
+        expect(matches.first.fullpath, '/');
+        expect(router.screenFor(matches.first).runtimeType, HomeScreen);
       }
 
       router.go('/login');
       {
         final matches = router.routerDelegate.matches;
         expect(matches.length, 2);
-        expect(matches[0].subloc, '/');
-        expect(router.screenFor(matches[0]).runtimeType, HomeScreen);
+        expect(matches.first.subloc, '/');
+        expect(router.screenFor(matches.first).runtimeType, HomeScreen);
         expect(matches[1].subloc, '/login');
         expect(router.screenFor(matches[1]).runtimeType, LoginScreen);
       }
@@ -246,8 +241,8 @@ void main() {
       {
         final matches = router.routerDelegate.matches;
         expect(matches.length, 2);
-        expect(matches[0].subloc, '/');
-        expect(router.screenFor(matches[0]).runtimeType, HomeScreen);
+        expect(matches.first.subloc, '/');
+        expect(router.screenFor(matches.first).runtimeType, HomeScreen);
         expect(matches[1].subloc, '/family/f2');
         expect(router.screenFor(matches[1]).runtimeType, FamilyScreen);
       }
@@ -256,8 +251,8 @@ void main() {
       {
         final matches = router.routerDelegate.matches;
         expect(matches.length, 3);
-        expect(matches[0].subloc, '/');
-        expect(router.screenFor(matches[0]).runtimeType, HomeScreen);
+        expect(matches.first.subloc, '/');
+        expect(router.screenFor(matches.first).runtimeType, HomeScreen);
         expect(matches[1].subloc, '/family/f2');
         expect(router.screenFor(matches[1]).runtimeType, FamilyScreen);
         expect(matches[2].subloc, '/family/f2/person/p1');
@@ -292,8 +287,8 @@ void main() {
       final router = _router(routes);
       router.go('/foo/bar');
       final matches = router.routerDelegate.matches;
-      expect(matches.length, 1);
-      expect(router.screenFor(matches[0]).runtimeType, ErrorScreen);
+      expect(matches, hasLength(1));
+      expect(router.screenFor(matches.first).runtimeType, ErrorScreen);
     });
 
     test('router state', () {
@@ -403,8 +398,8 @@ void main() {
       // produces a match regardless of the location case, we win!
       expect(router.location.toLowerCase(), loc.toLowerCase());
 
-      expect(matches.length, 1);
-      expect(router.screenFor(matches[0]).runtimeType, FamilyScreen);
+      expect(matches, hasLength(1));
+      expect(router.screenFor(matches.first).runtimeType, FamilyScreen);
     });
 
     test('match too many routes, ignoring case', () {
@@ -416,8 +411,8 @@ void main() {
       final router = _router(routes);
       router.go('/PAGE1');
       final matches = router.routerDelegate.matches;
-      expect(matches.length, 1);
-      expect(router.screenFor(matches[0]).runtimeType, ErrorScreen);
+      expect(matches, hasLength(1));
+      expect(router.screenFor(matches.first).runtimeType, ErrorScreen);
     });
   });
 
@@ -440,35 +435,25 @@ void main() {
         GoRoute(name: 'home', path: '/', builder: _dummy),
       ];
 
-      try {
+      expect(() {
         _router(routes);
-        expect(false, true);
-      } on Exception catch (ex) {
-        dump(ex);
-      }
+      }, throwsException);
     });
 
     test('empty name', () {
-      try {
+      expect(() {
         GoRoute(name: '', path: '/');
-        expect(false, true);
-      } on Exception catch (ex) {
-        dump(ex);
-      }
+      }, throwsException);
     });
 
     test('match no routes', () {
-      final routes = [
-        GoRoute(name: 'home', path: '/', builder: _dummy),
-      ];
-
-      try {
+      expect(() {
+        final routes = [
+          GoRoute(name: 'home', path: '/', builder: _dummy),
+        ];
         final router = _router(routes);
         router.goNamed('work');
-        expect(false, true);
-      } on Exception catch (ex) {
-        dump(ex);
-      }
+      }, throwsException);
     });
 
     test('match 2nd top level route', () {
@@ -588,14 +573,10 @@ void main() {
           ],
         ),
       ];
-
-      final router = _router(routes);
-      try {
+      expect(() {
+        final router = _router(routes);
         router.goNamed('person', params: {'fid': 'f2'});
-        expect(false, true);
-      } on Exception catch (ex) {
-        dump(ex);
-      }
+      }, throwsException);
     });
 
     test('match case insensitive w/ params', () {
@@ -636,14 +617,10 @@ void main() {
           builder: (context, state) => const FamilyScreen('dummy'),
         ),
       ];
-
-      try {
+      expect(() {
         final router = _router(routes);
         router.goNamed('family');
-        expect(true, false);
-      } on Exception catch (ex) {
-        dump(ex);
-      }
+      }, throwsException);
     });
 
     test('too many params', () {
@@ -654,14 +631,10 @@ void main() {
           builder: (context, state) => const FamilyScreen('dummy'),
         ),
       ];
-
-      try {
+      expect(() {
         final router = _router(routes);
         router.goNamed('family', params: {'fid': 'f2', 'pid': 'p1'});
-        expect(true, false);
-      } on Exception catch (ex) {
-        dump(ex);
-      }
+      }, throwsException);
     });
 
     test('sparsely named routes', () {
@@ -689,13 +662,10 @@ void main() {
           ],
         ),
       ];
-      try {
+      expect(() {
         final router = _router(routes);
         router.goNamed('person', params: {'fid': 'f2', 'pid': 'p1'});
-      } on Exception catch (ex) {
-        dump(ex);
-        assert(false, true);
-      }
+      }, throwsException);
     });
 
     test('preserve path param spaces and slashes', () {
@@ -713,13 +683,13 @@ void main() {
 
       final router = _router(routes);
       final loc = router.namedLocation('page1', params: {'param1': param1});
-      dump('loc= $loc');
+      log.info('loc= $loc');
       router.go(loc);
 
       final matches = router.routerDelegate.matches;
-      dump('param1= ${matches[0].decodedParams['param1']}');
-      expect(router.screenFor(matches[0]).runtimeType, DummyScreen);
-      expect(matches[0].decodedParams['param1'], param1);
+      log.info('param1= ${matches.first.decodedParams['param1']}');
+      expect(router.screenFor(matches.first).runtimeType, DummyScreen);
+      expect(matches.first.decodedParams['param1'], param1);
     });
 
     test('preserve query param spaces and slashes', () {
@@ -738,13 +708,13 @@ void main() {
       final router = _router(routes);
       final loc =
           router.namedLocation('page1', queryParams: {'param1': param1});
-      dump('loc= $loc');
+      log.info('loc= $loc');
       router.go(loc);
 
       final matches = router.routerDelegate.matches;
-      dump('param1= ${matches[0].queryParams['param1']}');
-      expect(router.screenFor(matches[0]).runtimeType, DummyScreen);
-      expect(matches[0].queryParams['param1'], param1);
+      log.info('param1= ${matches.first.queryParams['param1']}');
+      expect(router.screenFor(matches.first).runtimeType, DummyScreen);
+      expect(matches.first.queryParams['param1'], param1);
     });
   });
 
@@ -901,10 +871,10 @@ void main() {
       );
 
       final matches = router.routerDelegate.matches;
-      expect(matches.length, 1);
-      expect(router.screenFor(matches[0]).runtimeType, ErrorScreen);
-      expect((router.screenFor(matches[0]) as ErrorScreen).ex, isNotNull);
-      dump((router.screenFor(matches[0]) as ErrorScreen).ex);
+      expect(matches, hasLength(1));
+      expect(router.screenFor(matches.first).runtimeType, ErrorScreen);
+      expect((router.screenFor(matches.first) as ErrorScreen).ex, isNotNull);
+      log.info((router.screenFor(matches.first) as ErrorScreen).ex);
     });
 
     test('route-level redirect loop', () {
@@ -923,10 +893,10 @@ void main() {
       );
 
       final matches = router.routerDelegate.matches;
-      expect(matches.length, 1);
-      expect(router.screenFor(matches[0]).runtimeType, ErrorScreen);
-      expect((router.screenFor(matches[0]) as ErrorScreen).ex, isNotNull);
-      dump((router.screenFor(matches[0]) as ErrorScreen).ex);
+      expect(matches, hasLength(1));
+      expect(router.screenFor(matches.first).runtimeType, ErrorScreen);
+      expect((router.screenFor(matches.first) as ErrorScreen).ex, isNotNull);
+      log.info((router.screenFor(matches.first) as ErrorScreen).ex);
     });
 
     test('mixed redirect loop', () {
@@ -942,10 +912,10 @@ void main() {
       );
 
       final matches = router.routerDelegate.matches;
-      expect(matches.length, 1);
-      expect(router.screenFor(matches[0]).runtimeType, ErrorScreen);
-      expect((router.screenFor(matches[0]) as ErrorScreen).ex, isNotNull);
-      dump((router.screenFor(matches[0]) as ErrorScreen).ex);
+      expect(matches, hasLength(1));
+      expect(router.screenFor(matches.first).runtimeType, ErrorScreen);
+      expect((router.screenFor(matches.first) as ErrorScreen).ex, isNotNull);
+      log.info((router.screenFor(matches.first) as ErrorScreen).ex);
     });
 
     test('top-level redirect loop w/ query params', () {
@@ -960,10 +930,10 @@ void main() {
       );
 
       final matches = router.routerDelegate.matches;
-      expect(matches.length, 1);
-      expect(router.screenFor(matches[0]).runtimeType, ErrorScreen);
-      expect((router.screenFor(matches[0]) as ErrorScreen).ex, isNotNull);
-      dump((router.screenFor(matches[0]) as ErrorScreen).ex);
+      expect(matches, hasLength(1));
+      expect(router.screenFor(matches.first).runtimeType, ErrorScreen);
+      expect((router.screenFor(matches.first) as ErrorScreen).ex, isNotNull);
+      log.info((router.screenFor(matches.first) as ErrorScreen).ex);
     });
 
     test('expect null path/fullpath on top-level redirect', () {
@@ -1016,8 +986,8 @@ void main() {
       );
 
       final matches = router.routerDelegate.matches;
-      expect(matches.length, 1);
-      expect(router.screenFor(matches[0]).runtimeType, LoginScreen);
+      expect(matches, hasLength(1));
+      expect(router.screenFor(matches.first).runtimeType, LoginScreen);
     });
 
     test('route-level redirect state', () {
@@ -1046,8 +1016,8 @@ void main() {
       );
 
       final matches = router.routerDelegate.matches;
-      expect(matches.length, 1);
-      expect(router.screenFor(matches[0]).runtimeType, HomeScreen);
+      expect(matches, hasLength(1));
+      expect(router.screenFor(matches.first).runtimeType, HomeScreen);
     });
 
     test('sub-sub-route-level redirect params', () {
@@ -1087,7 +1057,7 @@ void main() {
 
       final matches = router.routerDelegate.matches;
       expect(matches.length, 3);
-      expect(router.screenFor(matches[0]).runtimeType, HomeScreen);
+      expect(router.screenFor(matches.first).runtimeType, HomeScreen);
       expect(router.screenFor(matches[1]).runtimeType, FamilyScreen);
       final page = router.screenFor(matches[2]) as PersonScreen;
       expect(page.fid, 'f2');
@@ -1104,10 +1074,10 @@ void main() {
       );
 
       final matches = router.routerDelegate.matches;
-      expect(matches.length, 1);
-      expect(router.screenFor(matches[0]).runtimeType, ErrorScreen);
-      expect((router.screenFor(matches[0]) as ErrorScreen).ex, isNotNull);
-      dump((router.screenFor(matches[0]) as ErrorScreen).ex);
+      expect(matches, hasLength(1));
+      expect(router.screenFor(matches.first).runtimeType, ErrorScreen);
+      expect((router.screenFor(matches.first) as ErrorScreen).ex, isNotNull);
+      log.info((router.screenFor(matches.first) as ErrorScreen).ex);
     });
   });
 
@@ -1175,9 +1145,9 @@ void main() {
         final matches = router.routerDelegate.matches;
 
         expect(router.location, loc);
-        expect(matches.length, 1);
-        expect(router.screenFor(matches[0]).runtimeType, FamilyScreen);
-        expect(matches[0].decodedParams['fid'], fid);
+        expect(matches, hasLength(1));
+        expect(router.screenFor(matches.first).runtimeType, FamilyScreen);
+        expect(matches.first.decodedParams['fid'], fid);
       }
     });
 
@@ -1202,9 +1172,9 @@ void main() {
         final matches = router.routerDelegate.matches;
 
         expect(router.location, loc);
-        expect(matches.length, 1);
-        expect(router.screenFor(matches[0]).runtimeType, FamilyScreen);
-        expect(matches[0].queryParams['fid'], fid);
+        expect(matches, hasLength(1));
+        expect(router.screenFor(matches.first).runtimeType, FamilyScreen);
+        expect(matches.first.queryParams['fid'], fid);
       }
     });
 
@@ -1225,9 +1195,9 @@ void main() {
       router.go(loc);
 
       final matches = router.routerDelegate.matches;
-      dump('param1= ${matches[0].decodedParams['param1']}');
-      expect(router.screenFor(matches[0]).runtimeType, DummyScreen);
-      expect(matches[0].decodedParams['param1'], param1);
+      log.info('param1= ${matches.first.decodedParams['param1']}');
+      expect(router.screenFor(matches.first).runtimeType, DummyScreen);
+      expect(matches.first.decodedParams['param1'], param1);
     });
 
     test('preserve query param spaces and slashes', () {
@@ -1246,8 +1216,8 @@ void main() {
       router.go('/page1?param1=$param1');
 
       final matches = router.routerDelegate.matches;
-      expect(router.screenFor(matches[0]).runtimeType, DummyScreen);
-      expect(matches[0].queryParams['param1'], param1);
+      expect(router.screenFor(matches.first).runtimeType, DummyScreen);
+      expect(matches.first.queryParams['param1'], param1);
 
       final loc = '/page1?param1=${Uri.encodeQueryComponent(param1)}';
       router.go(loc);
@@ -1271,7 +1241,7 @@ void main() {
         );
         expect(false, true);
       } on Exception catch (ex) {
-        dump(ex);
+        log.info(ex);
       }
     });
 
@@ -1281,7 +1251,7 @@ void main() {
           GoRoute(
             path: '/',
             builder: (context, state) {
-              dump('id= ${state.params['id']}');
+              log.info('id= ${state.params['id']}');
               expect(state.params.length, 0);
               expect(state.queryParams.length, 1);
               expect(state.queryParams['id'], anyOf('0', '1'));
@@ -1294,9 +1264,9 @@ void main() {
 
       router.go('/?id=0&id=1');
       final matches = router.routerDelegate.matches;
-      expect(matches.length, 1);
-      expect(matches[0].fullpath, '/');
-      expect(router.screenFor(matches[0]).runtimeType, HomeScreen);
+      expect(matches, hasLength(1));
+      expect(matches.first.fullpath, '/');
+      expect(router.screenFor(matches.first).runtimeType, HomeScreen);
     });
 
     test('duplicate path + query param', () {
@@ -1316,9 +1286,9 @@ void main() {
 
       router.go('/0?id=1');
       final matches = router.routerDelegate.matches;
-      expect(matches.length, 1);
-      expect(matches[0].fullpath, '/:id');
-      expect(router.screenFor(matches[0]).runtimeType, HomeScreen);
+      expect(matches, hasLength(1));
+      expect(matches.first.fullpath, '/:id');
+      expect(router.screenFor(matches.first).runtimeType, HomeScreen);
     });
 
     test('push + query param', () {
@@ -1345,7 +1315,7 @@ void main() {
       router.go('/family?fid=f2');
       router.push('/person?fid=f2&pid=p1');
       final page1 =
-          router.screenFor(router.routerDelegate.matches[0]) as FamilyScreen;
+          router.screenFor(router.routerDelegate.matches.first) as FamilyScreen;
       expect(page1.fid, 'f2');
 
       final page2 =
@@ -1378,7 +1348,7 @@ void main() {
       router.go('/family', extra: {'fid': 'f2'});
       router.push('/person', extra: {'fid': 'f2', 'pid': 'p1'});
       final page1 =
-          router.screenFor(router.routerDelegate.matches[0]) as FamilyScreen;
+          router.screenFor(router.routerDelegate.matches.first) as FamilyScreen;
       expect(page1.fid, 'f2');
 
       final page2 =
@@ -1514,9 +1484,6 @@ extension on GoRouter {
   Widget screenFor(GoRouteMatch match) =>
       (_pageFor(match) as NoTransitionPage<void>).child;
 }
-
-// ignore: avoid_print
-void dump(Object o) => print(o);
 
 class DummyBuildContext implements BuildContext {
   @override

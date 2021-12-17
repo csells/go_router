@@ -43,7 +43,7 @@ jobs:
       - name: "Install Tools"
         run: ../.github/workflows/scripts/install-tools.sh
       - name: "Flutter Test"
-        run: flutter test --coverage
+        run: flutter test --reporter expanded --coverage
       - name: "Upload test coverage to Codecov"
         uses: codecov/codecov-action@v1
         with:
