@@ -11,14 +11,12 @@ StreamSubscription? _subscription;
 /// Forwards diagnostic messages to the dart:developer log() API.
 void setLogging({bool enabled = false}) {
   _subscription?.cancel();
-  if (!enabled) {
-    return;
-  }
+  if (!enabled) return;
 
-  _subscription = Logger.root.onRecord.listen((e) {
-    // Use `dumpErrorToConsole` for severe messages. This ensures that severe
+  _subscription = log.onRecord.listen((e) {
+    // use `dumpErrorToConsole` for severe messages to ensure that severe
     // exceptions are formatted consistently with other Flutter examples and
-    // avoids printing duplicate exceptions.
+    // avoids printing duplicate exceptions
     if (e.level >= Level.SEVERE) {
       final error = e.error;
       FlutterError.dumpErrorToConsole(
@@ -29,18 +27,17 @@ void setLogging({bool enabled = false}) {
           context: ErrorDescription(e.message),
         ),
       );
-      return;
+    } else {
+      developer.log(
+        e.message,
+        time: e.time,
+        sequenceNumber: e.sequenceNumber,
+        level: e.level.value,
+        name: e.loggerName,
+        zone: e.zone,
+        error: e.error,
+        stackTrace: e.stackTrace,
+      );
     }
-
-    developer.log(
-      e.message,
-      time: e.time,
-      sequenceNumber: e.sequenceNumber,
-      level: e.level.value,
-      name: e.loggerName,
-      zone: e.zone,
-      error: e.error,
-      stackTrace: e.stackTrace,
-    );
   });
 }

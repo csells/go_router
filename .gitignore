@@ -72,5 +72,4 @@ pubspec.lock
 !**/ios/**/default.pbxuser
 !**/ios/**/default.perspectivev3
 
-.vscode/settings.json
-.vscode/settings.json
+.vscode/

@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart';
 
-final log = Logger('go_router_observer');
-
 void main() => runApp(App());
 
 class App extends StatelessWidget {
   App({Key? key}) : super(key: key);
 
-  static const title = 'GoRouter Example: Declarative Routes';
+  static const title = 'GoRouter Example: Navigator Observer';
 
   @override
   Widget build(BuildContext context) => MaterialApp.router(
@@ -45,6 +43,12 @@ class App extends StatelessWidget {
 }
 
 class MyNavObserver extends NavigatorObserver {
+  MyNavObserver() {
+    log.onRecord.listen((e) => debugPrint('$e'));
+  }
+
+  final log = Logger('MyNavObserver');
+
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) =>
       log.info('didPush: ${route.str}, previousRoute= ${previousRoute?.str}');

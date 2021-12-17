@@ -1,5 +1,10 @@
 # Changelog
 
+### 2.5.5
+
+- updated implementation to use logging package for debug diagnostics; thanks
+  to [johnpryan](https://github.com/johnpryan)
+
 ### 2.5.4
 
 - fixed up the `GoRouterRefreshStream` implementation with an export, an example

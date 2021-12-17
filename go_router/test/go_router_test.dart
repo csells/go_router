@@ -8,20 +8,13 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:go_router/src/go_route_match.dart';
-import 'package:go_router/src/go_router_refresh_stream.dart';
 import 'package:logging/logging.dart';
 
-const enableLogs = false;
+const enableLogs = true;
 final log = Logger('GoRouter tests');
 
 void main() {
-  if (enableLogs) {
-    Logger.root.onRecord.listen((e) {
-      // Use debugPrint instead of dart:developer log() so that output is
-      // printed while running tests, not just debugging.
-      debugPrint('$e');
-    });
-  }
+  if (enableLogs) Logger.root.onRecord.listen((e) => debugPrint('$e'));
 
   group('path routes', () {
     test('match home route', () {
@@ -642,30 +635,30 @@ void main() {
         GoRoute(
           path: '/',
           redirect: (_) => '/family/f2',
+        ),
+        GoRoute(
+          path: '/family/:fid',
+          builder: (context, state) => FamilyScreen(
+            state.params['fid']!,
+          ),
           routes: [
             GoRoute(
-              path: 'family/:fid',
-              builder: (context, state) => FamilyScreen(
+              name: 'person',
+              path: 'person:pid',
+              builder: (context, state) => PersonScreen(
                 state.params['fid']!,
+                state.params['pid']!,
               ),
-              routes: [
-                GoRoute(
-                  name: 'person',
-                  path: 'person:pid',
-                  builder: (context, state) => PersonScreen(
-                    state.params['fid']!,
-                    state.params['pid']!,
-                  ),
-                ),
-              ],
             ),
           ],
         ),
       ];
-      expect(() {
-        final router = _router(routes);
-        router.goNamed('person', params: {'fid': 'f2', 'pid': 'p1'});
-      }, throwsException);
+
+      final router = _router(routes);
+      router.goNamed('person', params: {'fid': 'f2', 'pid': 'p1'});
+
+      final matches = router.routerDelegate.matches;
+      expect(router.screenFor(matches.last).runtimeType, PersonScreen);
     });
 
     test('preserve path param spaces and slashes', () {
