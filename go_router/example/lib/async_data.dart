@@ -78,7 +78,9 @@ class _HomeScreenWithAsyncState extends State<HomeScreenWithAsync> {
     _families = null;
     _future = App.repo.getFamilies();
     _future!.then(
-      (families) => setState(() => _families = families), // update AppBar
+      (families) {
+        if (mounted) setState(() => _families = families); // update AppBar
+      },
     );
   }
 
@@ -144,7 +146,9 @@ class _FamilyScreenWithAsyncState extends State<FamilyScreenWithAsync> {
     _family = null;
     _future = App.repo.getFamily(widget.fid);
     _future!.then(
-      (family) => setState(() => _family = family), // update AppBar
+      (family) {
+        if (mounted) setState(() => _family = family); // update AppBar
+      },
     );
   }
 
@@ -209,7 +213,9 @@ class _PersonScreenWithAsyncState extends State<PersonScreenWithAsync> {
     _famper = null;
     _future = App.repo.getPerson(widget.fid, widget.pid);
     _future!.then(
-      (famper) => setState(() => _famper = famper), // update AppBar
+      (famper) {
+        if (mounted) setState(() => _famper = famper); // update AppBar
+      },
     );
   }
 

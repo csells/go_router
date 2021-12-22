@@ -1,5 +1,12 @@
 # Changelog
 
+### 2.5.6
+
+- [PR 259](https://github.com/csells/go_router/pull/259): remove a hack for
+  notifying the router of a route change that was no longer needed
+- improved async example to handle the case that the data has been returned but
+  the page is no longer there by checking the `mounted` property of the screen
+
 ### 2.5.5
 
 - updated implementation to use logging package for debug diagnostics; thanks
