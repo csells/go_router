@@ -9,8 +9,7 @@ class App extends StatelessWidget {
   static const title = 'GoRouter Example: Router neglect';
 
   @override
-  Widget build(BuildContext context) =>
-      MaterialApp.router(
+  Widget build(BuildContext context) => MaterialApp.router(
         routeInformationParser: _router.routeInformationParser,
         routerDelegate: _router.routerDelegate,
         title: title,
@@ -35,8 +34,7 @@ class Page1Screen extends StatelessWidget {
   const Page1Screen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) =>
-      Scaffold(
+  Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: const Text(App.title)),
         body: Center(
           child: Column(
@@ -49,7 +47,7 @@ class Page1Screen extends StatelessWidget {
               ElevatedButton(
                 onPressed: () {
                   Router.neglect(context, () {
-                  context.push('/page2');
+                    context.push('/page2');
                   });
                 },
                 child: const Text('Go to page 2 (Navigator.push'),
@@ -64,8 +62,7 @@ class Page2Screen extends StatelessWidget {
   const Page2Screen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) =>
-      Scaffold(
+  Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: const Text(App.title)),
         body: Center(
           child: Column(
