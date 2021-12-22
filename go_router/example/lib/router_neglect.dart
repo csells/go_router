@@ -47,12 +47,9 @@ class Page1Screen extends StatelessWidget {
               ElevatedButton(
                 onPressed: () {
                   Router.neglect(context, () {
-                    Navigator.of(context).push<void>(
-                      MaterialPageRoute<void>(
-                        builder: (context) =>
-                            const Page2Screen(),
-                      )
-                    );
+                    Navigator.of(context).push<void>(MaterialPageRoute<void>(
+                      builder: (context) => const Page2Screen(),
+                    ));
                   });
                 },
                 child: const Text('Go to page 2 (Navigator.push)'),
