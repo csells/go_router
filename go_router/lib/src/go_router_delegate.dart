@@ -173,8 +173,11 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   }
 
   /// Get the current location, e.g. /family/f2/person/p1
-  String get location =>
-      _addQueryParams(_matches.last.subloc, _matches.last.queryParams);
+  String get location => locationForMatch(_matches.last);
+
+  /// Get the location for a given match, e.g. /family/f2/person/p1
+  String locationForMatch(GoRouteMatch match) =>
+      _addQueryParams(match.subloc, match.queryParams);
 
   /// For internal use; visible for testing only.
   @visibleForTesting
