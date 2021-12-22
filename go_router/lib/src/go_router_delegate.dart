@@ -155,21 +155,21 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   void go(String location, {Object? extra}) {
     log.info('going to $location');
     _go(location, extra: extra);
-    _safeNotifyListeners();
+    _notifyListeners();
   }
 
   /// push the given location onto the page stack
   void push(String location, {Object? extra}) {
     log.info('pushing $location');
     _push(location, extra: extra);
-    _safeNotifyListeners();
+    _notifyListeners();
   }
 
   /// Refresh the current location, including re-evaluating redirections.
   void refresh() {
     log.info('refreshing $location');
     _go(location, extra: _matches.last.extra);
-    _safeNotifyListeners();
+    _notifyListeners();
   }
 
   /// Get the current location, e.g. /family/f2/person/p1
@@ -343,7 +343,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
         // let Router know to update the address bar
         // (the initial route is not a redirect)
-        if (redirects.length > 1) _safeNotifyListeners();
+        if (redirects.length > 1) _notifyListeners();
 
         // no more redirects!
         break;
@@ -632,7 +632,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
           // this hack allows the browser's address bar to be updated after a
           // push and pressing the Back button, but it shouldn't be necessary...
-          _safeNotifyListeners();
+          _notifyListeners();
 
           return true;
         },
@@ -837,12 +837,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         Uri(path: uri.path, queryParameters: queryParams).toString());
   }
 
-  void _safeNotifyListeners() {
-    // this is a hack to fix the following error:
-    // The following assertion was thrown while dispatching notifications for
-    // GoRouterDelegate: setState() or markNeedsBuild() called during build.
-    WidgetsBinding.instance == null
-        ? notifyListeners()
-        : scheduleMicrotask(notifyListeners);
+  void _notifyListeners() {
+    notifyListeners();
   }
 }
