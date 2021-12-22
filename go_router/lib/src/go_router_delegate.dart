@@ -177,8 +177,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   }
 
   /// Get the current location, e.g. /family/f2/person/p1
-  String get location =>
-      _addQueryParams(_matches.last.subloc, _matches.last.queryParams);
+  String get location => _addQueryParams(_matches.last.subloc, _matches.last.queryParams);
 
   /// For internal use; visible for testing only.
   @visibleForTesting
@@ -415,8 +414,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     }
 
     if (matchStacks.length > 1) {
-      final sb = StringBuffer()
-        ..writeln('too many routes for location: $location');
+      final sb = StringBuffer()..writeln('too many routes for location: $location');
 
       for (final stack in matchStacks) {
         sb.writeln('\t${stack.map((m) => m.route.path).join(' => ')}');
@@ -519,8 +517,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       if (route.routes.isEmpty) continue;
 
       // otherwise recurse
-      final childRestLoc =
-          loc.substring(match.subloc.length + (match.subloc == '/' ? 0 : 1));
+      final childRestLoc = loc.substring(match.subloc.length + (match.subloc == '/' ? 0 : 1));
       assert(loc.startsWith(match.subloc));
       assert(restLoc.isNotEmpty);
 
@@ -589,15 +586,13 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
     try {
       // build the stack of pages
-      if(routerNeglect) {
+      if (routerNeglect) {
         Router.neglect(context, () {
           pages = getPages(context, matches.toList()).toList();
         });
-      }
-      else {
+      } else {
         pages = getPages(context, matches.toList()).toList();
       }
-
 
       // note that we need to catch it this way to get all the info, e.g. the
       // file/line info for an error in an inline function impl, e.g. an inline
@@ -628,7 +623,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       context,
       Navigator(
         restorationScopeId: restorationScopeId,
-        key: _key, // needed to enable Android system Back button
+        key: _key,
+        // needed to enable Android system Back button
         pages: pages,
         observers: observers,
         onPopPage: (route, dynamic result) {
@@ -699,9 +695,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         pageKey: match.pageKey, // push() remaps the page key for uniqueness
       );
 
-      yield match.route.pageBuilder != null
-          ? match.route.pageBuilder!(context, state)
-          : _pageBuilder(context, state, match.route.builder);
+      yield match.route.pageBuilder != null ? match.route.pageBuilder!(context, state) : _pageBuilder(context, state, match.route.builder);
     }
   }
 
@@ -729,13 +723,11 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       if (elem != null && isMaterialApp(elem)) {
         log.info('MaterialApp found');
         _pageBuilderForAppType = pageBuilderForMaterialApp;
-        _errorBuilderForAppType =
-            (c, s) => GoRouterMaterialErrorScreen(s.error);
+        _errorBuilderForAppType = (c, s) => GoRouterMaterialErrorScreen(s.error);
       } else if (elem != null && isCupertinoApp(elem)) {
         log.info('CupertinoApp found');
         _pageBuilderForAppType = pageBuilderForCupertinoApp;
-        _errorBuilderForAppType =
-            (c, s) => GoRouterCupertinoErrorScreen(s.error);
+        _errorBuilderForAppType = (c, s) => GoRouterCupertinoErrorScreen(s.error);
       } else {
         log.info('WidgetsApp assumed');
         _pageBuilderForAppType = pageBuilderForWidgetApp;
@@ -831,9 +823,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     // /profile/ => /profile
     // / => /
     // /login?from=/ => login?from=/
-    canon = canon.endsWith('/') && canon != '/' && !canon.contains('?')
-        ? canon.substring(0, canon.length - 1)
-        : canon;
+    canon = canon.endsWith('/') && canon != '/' && !canon.contains('?') ? canon.substring(0, canon.length - 1) : canon;
 
     // /login/?from=/ => /login?from=/
     // /?from=/ => /?from=/
@@ -845,8 +835,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   static String _addQueryParams(String loc, Map<String, String> queryParams) {
     final uri = Uri.parse(loc);
     assert(uri.queryParameters.isEmpty);
-    return _canonicalUri(
-        Uri(path: uri.path, queryParameters: queryParams).toString());
+    return _canonicalUri(Uri(path: uri.path, queryParameters: queryParams).toString());
   }
 
   void _notifyListeners() {
