@@ -1,0 +1,39 @@
+# Web History
+
+Sometimes you don't want the browser tracking history when you navigate. In that case, use Router.neglect.
+
+
+```dart
+
+    Router.neglect(context, () {
+      Navigator.of(context).push<void>(MaterialPageRoute<void>(
+         builder: (context) => const Page2Screen(),
+      ));
+    });
+
+```
+
+
+And if you'd like the browser to stop tracking history altogether for your app, use routerNeglect: true .  This
+will suppress history for all navigation using go_router.
+
+
+
+```dart
+
+  final _router = GoRouter(
+    routerNeglect: true,
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) => const Page1Screen(),
+      ),
+      GoRoute(
+        path: '/page2',
+        builder: (context, state) => const Page2Screen(),
+      ),
+    ],
+  );
+
+```
+
