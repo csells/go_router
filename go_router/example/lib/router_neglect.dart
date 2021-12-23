@@ -16,6 +16,7 @@ class App extends StatelessWidget {
       );
 
   final _router = GoRouter(
+    // turn off history tracking in the browser for this navigation
     routerNeglect: true,
     routes: [
       GoRoute(
@@ -44,15 +45,16 @@ class Page1Screen extends StatelessWidget {
                 onPressed: () => context.go('/page2'),
                 child: const Text('Go to page 2'),
               ),
+              const SizedBox(height: 8),
               ElevatedButton(
-                onPressed: () {
-                  Router.neglect(context, () {
-                    Navigator.of(context).push<void>(MaterialPageRoute<void>(
-                      builder: (context) => const Page2Screen(),
-                    ));
-                  });
-                },
-                child: const Text('Go to page 2 (Navigator.push)'),
+                // turn off history tracking in the browser for this navigation;
+                // note that this isn't necessary when you've set routerNeglect
+                // but it does illustrate the technique
+                onPressed: () => Router.neglect(
+                  context,
+                  () => context.push('/page2'),
+                ),
+                child: const Text('Push page 2'),
               ),
             ],
           ),

@@ -1,9 +1,20 @@
 # Changelog
 
+### 2.5.7
+
+- [PR 262](https://github.com/csells/go_router/pull/262): add support for
+  `Router.neglect`; thanks to [nullrocket](https://github.com/nullrocket)!
+- [PR 265](https://github.com/csells/go_router/pull/265): add Japanese
+  translation of the docs; thanks to
+  [toshi-kuji](https://github.com/toshi-kuji)! Unfortunately I don't yet know
+  how to properly display them via docs.page, but [I'm working on
+  it](https://github.com/csells/go_router/issues/266)
+
 ### 2.5.6
 
 - [PR 259](https://github.com/csells/go_router/pull/259): remove a hack for
-  notifying the router of a route change that was no longer needed
+  notifying the router of a route change that was no longer needed; thanks to
+  [nullrocket](https://github.com/nullrocket)!
 - improved async example to handle the case that the data has been returned but
   the page is no longer there by checking the `mounted` property of the screen
 
