@@ -1,0 +1,105 @@
+# 非同期データ
+
+非同期に取得したデータを元に画面を生成したい場合は、パラメータを画面側に渡してその先でデータの取得を行います。
+
+```dart
+late final _router = GoRouter(
+  routes: [
+    GoRoute(
+      path: '/',
+      builder: (context, state) => const HomeScreenWithAsync(),
+      routes: [
+        GoRoute(
+          path: 'family/:fid',
+          builder: (context, state) => FamilyScreenWithAsync(
+            fid: state.params['fid']!,
+          ),
+          routes: [
+            GoRoute(
+              path: 'person/:pid',
+              builder: (context, state) => PersonScreenWithAsync(
+                fid: state.params['fid']!,
+                pid: state.params['pid']!,
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+  ],
+);
+```
+
+データの取得はどのような方法でも構いません。
+例えば、以下のサンプルコードは[リポジトリ・パターン](https://martinfowler.com/eaaCatalog/repository.html)と
+[Flutter の FutureBuilder](https://api.flutter.dev/flutter/widgets/FutureBuilder-class.html) を使用してデータのロードと表示を行っています。
+
+```dart
+class FamilyScreenWithAsync extends StatefulWidget {
+  const FamilyScreenWithAsync({required this.fid, Key? key}) : super(key: key);
+  final String fid;
+
+  @override
+  State<FamilyScreenWithAsync> createState() => _FamilyScreenWithAsyncState();
+}
+
+class _FamilyScreenWithAsyncState extends State<FamilyScreenWithAsync> {
+  Future<Family>? _future;
+  Family? _family;
+
+  @override
+  void initState() {
+    super.initState();
+    fetch();
+  }
+
+  @override
+  void didUpdateWidget(covariant FamilyScreenWithAsync oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // キャッシュデータを更新
+    if (oldWidget.fid != widget.fid) fetch();
+  }
+
+  void fetch() {
+    _family = null;
+    _future = App.repo.getFamily(widget.fid);
+    _future!.then(
+      (family) => setState(() => _family = family), // AppBar を更新
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: Text(_family?.name ?? 'loading...')),
+        body: FutureBuilder<Family>(
+          future: _future,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (snapshot.hasError) return SnapshotError(snapshot.error!);
+
+            assert(snapshot.hasData);
+            return ListView(
+              children: [
+                for (final p in _family!.people)
+                  ListTile(
+                    title: Text(p.name),
+                    onTap: () =>
+                        context.go('/family/${_family!.id}/person/${p.id}'),
+                  ),
+              ],
+            );
+          },
+        ),
+      );
+}
+```
+
+データ取得中はロードインジケーターを表示し、取得が失敗した場合はエラー内容を表示します。
+
+![非同期データ取得のサンプル](../images/async.gif)
+
+このサンプルコードのフルバージョンは[こちら](https://github.com/csells/go_router/blob/master/example/lib/async_data.dart)でご覧いただけます。

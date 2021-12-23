@@ -1,0 +1,96 @@
+# ナビゲーション
+
+ページ間を遷移するには `GoRouter.go` メソッドを使用します。
+
+```dart
+// GoRouter を使って遷移
+onTap: () => GoRouter.of(context).go('/page2')
+```
+
+また go_router は Dart の拡張メソッドを利用して上記メソッドの簡易バージョンも用意しています。
+
+```dart
+// より簡単に GoRouter を使って遷移
+onTap: () => context.go('/page2')
+```
+
+簡易バージョンにはフルバージョンのものがそのまま割り当てられるため、どちらを使用していただいても構いません。
+余談ですが、`context.go(...)` を実行するだけで魔法のようにページ間を遷移できる... というのが go_router の名前の由来です。
+
+また、url_launcher の [`Link` ウィジェット](https://pub.dev/documentation/url_launcher/latest/link/link-library.html)を使用して遷移することも可能です。
+
+```dart
+Link(
+  uri: Uri.parse('/page2'),
+  builder: (context, followLink) => TextButton(
+    onPressed: followLink,
+    child: const Text('Go to page 2'),
+  ),
+),
+```
+
+`Link` ウィジェットがスキーム付きで URL を渡された場合（例: `https://flutter.dev`）、そのリンクはブラウザで開きます。
+スキームなしの場合は、アプリのナビゲーションシステムによりアプリ内リンクに遷移します。
+
+[名前付きルート](/named-routes)に遷移することも可能です。
+
+## ページを「プッシュ」する
+
+go_router には `go` メソッドに加えて、`push` メソッドがあります。
+`go` と `push` はいずれもページのスタックを生成してくれる点では同じですが、その方法が異なります。
+`go` メソッドはロケーション名からマッチした通しルートの全ての[サブルート](/sub-routes)からページを生成し、それらを順番にページのスタックに追加します。
+
+一方の `push` メソッドは既存のページスタックに、1ページのみ追加（プッシュ）します。
+このページはロケーション名とマッチした通しルートの、最も末端のサブルートに紐づくページです。
+`go` が宣言的にページのスタックを生成するのに対して、 `push` は命令的にスタックを生成するという違いもあります。
+
+また、「プッシュ」は[名前付きルート](/named-routes)に対して行うことも可能です。
+
+## ページを「ポップ」する
+
+スタックからページを取り出す（ポップ）には、`pop` メソッドを使用します。
+このメソッドはシンプルに `Navigator.pop` を呼び出します。
+ちなみに `Navigator` と `GoRouter` は併用することも可能です。
+併用に関して考慮すべき点については [Navigator との併用](/navigator-integration)のセクションをご覧ください。
+
+## 初期ロケーション名
+
+ルーティング（Routing）の初期ロケーション名は、`GoRouter` コンストラクタの `initialLocation` で設定可能です。
+
+```dart
+final _router = GoRouter(
+  routes: ...,
+  initialLocation: '/page2',
+);
+```
+
+[ディープリンク](/declarative-routing#ディープリンク)を使用してアプリを立ち上げた場合は `initialLocation` の値は無視されます。
+
+## 現在のロケーション名
+
+現在のロケーション名を取得するには `GoRouter.location` プロパティを使用します。
+
+手動のナビゲーションにより、あるいはディープリンクにより、あるいはユーザーが戻るボタンを押してポップしたことにより、現在のロケーション名は変化します。
+その変化に応じて何かアクションを起こしたい場合は `GoRouter` にリスナーを追加します。
+`GoRouter` は [`ChangeNotifier`](https://api.flutter.dev/flutter/foundation/ChangeNotifier-class.html) でもあるため、
+`addListener` を呼び出してコールバックを登録することができます。
+あるいは、その名称が直感的とは言い難いことで有名な [`AnimatedBuilder`](https://stackoverflow.com/a/67016227) に `GoRouter` を設定しましょう。
+
+```dart
+class RouterLocationView extends StatelessWidget {
+  const RouterLocationView({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final router = GoRouter.of(context);
+    return AnimatedBuilder(
+      animation: router,
+      builder: (context, child) => Text(router.location),
+    );
+  }
+}
+```
+
+もしくは、[Provider パッケージ](https://pub.dev/packages/provider)を使えば、
+`ChangeNotifier` からの通知を受け取って `Widget` を再構築する仕組みを利用することができます。
+その型の名称は `AnimatedBuilder` より目的がはっきりしているはずです。

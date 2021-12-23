@@ -1,0 +1,100 @@
+# 名前付きルート
+
+ロケーション名を使ってルートに遷移するということは、URI 生成をアプリ内でハードコーディングすることになります。
+例えば、以下のように。
+
+```dart
+void _tap(BuildContext context, String fid, String pid) =>
+  context.go('/family/$fid/person/$pid');
+```
+
+これはエラーを招きがちですし、そもそも開発途中で URI の書式が変わる可能性もあります。
+その場合、リダイレクト機能を使用すれば古い URI でも動作するようにはできますが、
+本当に様々なバージョンのロケーション URI をコードのあちこちに散らばらせたいですか?
+
+## 名前付きルートへの遷移
+
+そこで登場するのが名前付きルートです。名前付きルートは URI を意識することなく、簡単にルートへの遷移を行うためのものです。
+`GoRoute.name` パラメータを使用してルートに一意の名前を付けることができます。
+
+```dart
+final _router = GoRouter(
+  routes: [
+    GoRoute(
+      name: 'home',
+      path: '/',
+      builder: ...,
+      routes: [
+        GoRoute(
+          name: 'family',
+          path: 'family/:fid',
+          builder: ...,
+          routes: [
+            GoRoute(
+              name: 'person',
+              path: 'person/:pid',
+              builder: ...,
+            ),
+          ],
+        ),
+      ],
+    ),
+    GoRoute(
+      name: 'login',
+      path: '/login',
+      builder: ...,
+    ),
+  ],
+```
+
+ルートに名前を付けることは必須ではありませんが、付けた場合はその名前を利用して、そのルートへの遷移を行うことができます（パラメータを含めることも可能）。
+
+```dart
+void _tap(BuildContext context, String fid, String pid) =>
+  context.go(context.namedLocation('person', params: {'fid': fid, 'pid': pid}));
+```
+
+`namedLocation` メソッドは、指定した名前を持つルートをケース・インセンシティブ方式で検索し、
+そのルート情報から、パラメータを含めた形で URI を生成してくれます。
+あるはずのパラメータの指定がなかったり、そのパスにはないパラメータを渡すとエラーが発生します。
+また、上記のように `context` オブジェクトを2度逆参照するのはいくらか不便なため、go_router では `goNamed` メソッドも用意しています。
+これによりロケーション URI の生成からナビゲーションまで、1ステップで行うことが可能です。
+
+```dart
+void _tap(BuildContext context, String fid, String pid) =>
+  context.goNamed('person', params: {'fid': fid, 'pid': pid});
+```
+
+さらに、`pushNamed` メソッドもあります。これはルートを名前で検索した後、
+マッチした通しルートから末端のサブルートのページのみを抜き出し、既存のページスタックに追加（プッシュ）してくれるものです。
+
+## 名前付きルートへのリダイレクト
+
+名前付きルートは、通常の遷移に加えてリダイレクトも可能です。
+ここでも `GoRouter` もしくは `GoRouterState` の `namedLocation` メソッドを使うことができます。
+
+```dart
+// ユーザーがログインしていない場合はログインページにリダイレクト
+redirect: (state) {
+  final loggedIn = loginInfo.loggedIn;
+
+  // クエリパラメータを含まない subloc を使用して行き先をチェック
+  final loginLoc = state.namedLocation('login');
+  final goingToLogin = state.subloc == loginLoc;
+
+  // ユーザーがログインしておらず、かつ /login に向かっていない場合はログインが必要
+  if (!loggedIn && !goingToLogin)
+    return state.namedLocation('login', queryParams: {'from': state.subloc});
+
+  // ユーザーがログイン済みで、かつ /login に向かっている場合はログイン不要
+  if (loggedIn && goingToLogin) return state.namedLocation('home');
+
+  // 一切リダイレクトが不要な場合
+  return null;
+},
+```
+
+この例では、`namedLocation` を使って、「login」という名前のルートのロケーション名を取得し、
+この時点での行き先情報である `subloc` を比較することでユーザがログイン画面に向かうところなのか否かをチェックしています。
+さらに、リダイレクト用にパラメータ付きのロケーション名を生成する際にも `namedLocation` を使用しています。
+これらはすべて、URI をハードコーディングすることなく行われています。

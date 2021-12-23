@@ -1,0 +1,55 @@
+# ルートのデバッグ
+
+go_router では `GoRoute` を通じてパスを設定しますが、そのパスはロケーション名の一部でしかない場合もあります。
+そのため、アプリ内にどのようなルートが設定されているのか全体像を把握しづらいことがありますが、
+デバッグツールを使えばルートの通しパス一覧を簡単に確認することができます。
+
+```text
+GoRouter: known full paths for routes:
+GoRouter:   => /
+GoRouter:   =>   /family/:fid
+GoRouter:   =>     /family/:fid/person/:pid
+GoRouter: known full paths for route names:
+GoRouter:   home => /
+GoRouter:   family => /family/:fid
+GoRouter:   person => /family/:fid/person/:pid
+```
+
+また、go_router はナビゲートする方法が多様で（`context.go()`、`context.goNamed()`、`context.push()`、`context.pushNamed()`、`Link` ウィジェット、その他）
+リダイレクトの方法も複数あるため、これらが実際に裏側で行っている動作を確認したい場合があります。
+これについてもデバッグツールで確認することができます。
+
+```text
+GoRouter: setting initial location /
+GoRouter: location changed to /
+GoRouter: getting location for name: "person", params: {fid: f2, pid: p1}
+GoRouter: going to /family/f2/person/p1
+GoRouter: location changed to /family/f2/person/p1
+```
+
+さらに、アプリ内画面を生成するビルダーとして `pageBuilder` の代わりに `builder` を使用した場合は、
+go_router が認識しているアプリの種類を確認することができます。ページ間の[トランジション効果](/transitions)はこのアプリの種類により異なります。
+
+```text
+GoRouter: MaterialApp found
+```
+
+最後に、ルーティングに関する例外が発生した場合はコールスタックとともにデバッグ出力で確認することができます。
+
+```text
+GoRouter: Exception: no routes for location: /foobarquux
+...call stack elided...
+```
+
+このような出力を有効にするには `GoRouter` 作成時に `debugLogDiagnostics` を設定します。
+
+```dart
+final _router = GoRouter(
+  routes: ...,
+
+  // ルート診断情報の出力を有効にする
+  debugLogDiagnostics: true,
+);
+```
+
+このパラメータは `false`（出力なし）がデフォルトです。

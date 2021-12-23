@@ -1,0 +1,358 @@
+# リダイレクト
+
+go_router はルートからルートへアプリをリダイレクトすることができます。
+ナビゲーションイベントが発生するごとにトップレベル（ルータレベル）でリダイレクトを行うことも可能ですし、特定のルートにてルートレベルで行うことも可能です。
+
+## トップレベル（ルータレベル）におけるリダイレクト
+
+ユーザーがまだログインしていないときなど、その時点で表示されるべきではないページへのアクセスを回避したいことはありませんか。
+例えば、ユーザーのログイン情報を管理するクラスがあるとします。
+
+```dart
+class LoginInfo extends ChangeNotifier {
+  var _userName = '';
+  String get userName => _userName;
+  bool get loggedIn => _userName.isNotEmpty;
+
+  void login(String userName) {
+    _userName = userName;
+    notifyListeners();
+  }
+
+  void logout() {
+    _userName = '';
+    notifyListeners();
+  }
+}
+```
+
+このログイン情報を `GoRouter` コンストラクタの `redirect` 関数で使用します。
+
+```dart
+class App extends StatelessWidget {
+  final loginInfo = LoginInfo();
+  ...
+  late final _router = GoRouter(
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) => HomeScreen(families: Families.data),
+      ),
+      ...,
+      GoRoute(
+        path: '/login',
+        builder: (context, state) => LoginScreen(),
+      ),
+    ],
+
+    // ユーザーがログインしていない場合はログインページにリダイレクト
+    redirect: (state) {
+      final loggedIn = loginInfo.loggedIn;
+      final goingToLogin = state.location == '/login';
+
+      // ユーザーがログインしておらず、かつ /login に向かっていない場合はログインが必要
+      if (!loggedIn && !goingToLogin) return '/login';
+
+      // ユーザーがログイン済みで、かつ /login に向かっている場合はログイン不要
+      if (loggedIn && goingToLogin) return '/';
+
+      // 一切リダイレクトが不要な場合
+      return null;
+    },
+  );
+}
+```
+
+このコードでは、ユーザーがログインしておらず、ロケーション名が `/login` 以外の場合は `/login` にリダイレクトします。
+同様に、ユーザーが_ログインしている_にもかかわらず、ロケーション名が `/login` の場合は `/` にリダイレクトします。
+リダイレクトする必要がない場合は、単純に `null` を返します。
+`redirect` 関数は `null` を返すまで繰り返し呼び出され、[連続リダイレクト](#連続リダイレクト)も可能です。
+
+このようなログイン情報を、ウィジェットツリーに挿入してアプリ内のどこからでもアクセスできるようにするには、
+[provider](https://pub.dev/packages/provider) のような状態管理パッケージの利用をおすすめします。
+
+```dart
+class App extends StatelessWidget {
+  final loginInfo = LoginInfo();
+
+  // ログイン情報をアプリの状態としてウィジェットツリーに挿入
+  @override
+  Widget build(BuildContext context) => ChangeNotifierProvider<LoginInfo>.value(
+        value: loginInfo,
+        child: MaterialApp.router(...),
+      );
+  ...
+}
+```
+
+ウィジェットツリーにログイン情報があることで、ログイン画面を簡単に実装することができます。
+
+```dart
+class LoginScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: Text(_title(context))),
+    body: Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ElevatedButton(
+            onPressed: () {
+              // ユーザーをログインさせてリスナーに通知
+              context.read<LoginInfo>().login('test-user');
+
+              // ホーム画面へ
+              context.go('/');
+            },
+            child: const Text('Login'),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+```
+
+上記コード例ではユーザーをログインさせた後、更にコードを加えてホーム画面にリダイレクトしています。
+これは go_router がルートに影響するような形で、アプリの状態が変化した（ログインした）ことを知る術がないからです。
+アプリの状態の変化によって go_router を自動でリダイレクトさせる場合は
+`GoRouter` コンストラクタの `refreshListenable` 引数を使用してください。
+
+```dart
+class App extends StatelessWidget {
+  final loginInfo = LoginInfo();
+  ...
+  late final _router = GoRouter(
+    routes: ...,
+    redirect: ...
+
+    // listenable に変化があればルータによってルートがリフレッシュされる
+    refreshListenable: loginInfo,
+  );
+}
+```
+
+`loginInfo` は `ChangeNotifier` なので、変更があればそのリスナーに通知されます。
+これを `GoRouter` コンストラクタに渡すことで、go_router はログイン情報の変更を以って、自動的にルートを更新します。
+これによりアプリのログインロジックをシンプルにすることができます。
+
+```dart
+onPressed: () {
+  // ユーザーをログインさせてリスナーに通知
+  context.read<LoginInfo>().login('test-user');
+
+  // loginInfo があるので、/login から / へルータが自動的にリダイレクト
+  //context.go('/');
+},
+```
+
+アプリの状態が変わった際のルートの処理を自動で行うために、
+トップレベルの `redirect` を使う際は `refreshListenable` も同時に使用することをおすすめします。
+
+### `Stream` でルートを更新する
+
+`Stream` が出力する値に応じてルートの更新を行いたい場合は、`GoRouterRefreshStream` を `Stream` のラッパーとして使用してください。
+これにより、BLoC のようなストリームベースの状態管理ソリューションにおいても同様のことが可能になります。
+
+```dart
+class App extends StatelessWidget {
+  final streamController = StreamController();
+  ...
+  late final _router = GoRouter(
+    routes: ...,
+    redirect: ...
+
+    // listenable の変化に応じて、ルータが自身のルートを更新
+    refreshListenable: GoRouterRefreshStream(streamController.stream),
+  );
+}
+```
+
+## ルートレベルにおけるリダイレクト
+
+`GoRouter` コンストラクタで設定するトップレベルのリダイレクトハンドラは、
+アプリの現在の状態を元にナビゲーションイベントを処理したい場合に便利です。
+しかし、特定のルート (サブルート) のみで行われるようなリダイレクト処理を設定したい場合はどのようにしたらいいでしょうか。
+この場合は `GoRoute` コンストラクタで `redirect` 関数を設定してください。
+
+```dart
+final _router = GoRouter(
+  routes: [
+    GoRoute(
+      path: '/',
+      redirect: (_) => '/family/${Families.data[0].id}',
+    ),
+    GoRoute(
+      path: '/family/:fid',
+      builder: ...,
+  ],
+);
+```
+
+上記コード例では、ユーザーが `/` に遷移すると `redirect` 関数が呼び出され、Families の最初のデータを使用して `/family/:id` ルートにリダイレクトされます。
+リダイレクトはサブルートが全てマッチしてから発生するため、別ページへの遷移中に、ロケーション名をパースしているところでリダイレクトが行われる心配はありません。
+
+### 考慮すべき点
+
+ルートレベルのリダイレクトを使用する際、いくつか考慮すべき点があります。
+まず、特定の条件下でのみリダイレクトを行うような `redirect` 関数を持つ場合は、`builder`（`pageBuilder`）関数を併用する必要があります。
+
+```dart
+GoRoute(
+  path: '/',
+  redirect: (_) => kGoElsewhere ? '/elsewhere' : null,
+  builder: (context, state) => ..., // kGoElsewhere == false の場合必要
+)
+```
+
+この場合、`builder` 関数はリダイレクトの条件が false のときに呼び出されます。
+
+また、リダイレクト先がサブルートの場合においても `builder`（`pageBuilder`）関数が必要になります。
+
+```dart
+GoRoute(
+  path: '/profile',
+  redirect: (_) => '/profile/home', // 行き先が /profile のときに呼び出される
+  builder: (c, s) => ..., // /profile/:section のページスタックを生成するために必要
+  routes: [
+    GoRoute(
+      path: ':section',
+      builder: ...ProfileScreen(state.params['section']!)...,
+    ),
+  ],
+)
+```
+
+`redirect` 関数が呼び出されるのは、そのルートが遷移先の終着点であるときに限られます。
+それ以外のルートに `redirect` が設定されている場合は無視され、代わりにスタック用のページを生成するための `builder`（`pageBuilder`）が呼び出されます。
+
+実際、ルートの途中で `redirect` 関数を使用するようなケースはおそらくないでしょう。
+遷移先の終着点で呼び出され、別のトップレベル（`GoRouter.routes` 直下）ルートにリダイレクトする場合がほとんどかと思います。
+
+```dart
+GoRoute(
+  path: '/profile',
+  redirect: (_) => '/profile/home', // この場合 builder は必要ありません
+),
+GoRoute
+  path: '/profile/:section',
+  builder: ...ProfileScreen(state.params['section']!)...,
+)
+```
+
+また、これはある意味当然ですが、ルートレベルに `redirect` 関数が全くない場合は `builder`（`pageBuilder`）は必須です。
+
+## パラメータを伴うリダイレクト
+
+パスがパラメータ化されているケースでは、そのパラメータを考慮に入れてリダイレクトを行いたいことがあります。
+その場合は、`redirect` 関数に渡される `state` オブジェクトの `params` 引数を使用してください。
+
+```dart
+GoRoute(
+  path: '/author/:authorId',
+  redirect: (state) => '/authors/${state.params['authorId']}',
+),
+```
+
+## 連続リダイレクト
+
+単一のナビゲーションイベントから連続で複数のリダイレクトを行うことも可能です。（例: `/ => /foo => /bar`）
+これは時間の経過とともにルートを積み重ねることができ、各ルートへ直接遷移するためのロケーション名を気にかける必要がない点で便利です。
+さらに、トップレベルとルートレベルのリダイレクトは何通りにも組み合わせることが可能です。
+
+リダイレクトが何度も連続で行われた場合は、アプリにバグが発生している可能性が高いことを示しています。
+そのため、デフォルトでは5回のリダイレクトで例外が発生する設定になっています。
+これは `GoRouter` コンストラクタの `redirectLimit` で任意の数字に変更することが可能です。
+
+その他起こりうるトラブルは、`/ => /foo => /` などループが発生することです。
+この場合は例外を受け取ることができます。
+
+## 具体例: リダイレクトとクエリパラメータ
+
+[ディープリンク](/declarative-routing#ディープリンク)を使ってユーザーにページを表示する前に、ログインさせたい場合があります。
+その場合は、リダイレクト関数の中で[クエリパラメータ](/parameters#クエリパラメータ)を使用することで元々の行き先をリダイレクト先に伝えることができます。
+
+```dart
+class App extends StatelessWidget {
+  final loginInfo = LoginInfo();
+  ...
+  late final _router = GoRouter(
+    routes: ...,
+
+    // ユーザーがログインしていない場合はログインページにリダイレクト
+    redirect: (state) {
+      final loggedIn = loginInfo.loggedIn;
+
+      // クエリパラメータが含まれる可能性を考慮して subloc のみチェック
+      final goingToLogin = state.subloc == '/login';
+
+      // ユーザーがログインしておらず、かつ /login に向かっていない場合はログインが必要
+      if (!loggedIn && !goingToLogin) return '/login?from=${state.subloc}';
+
+      // ユーザーがログイン済みで、かつ /login に向かっている場合はログイン不要
+      if (loggedIn && goingToLogin) return '/';
+
+      // 一切リダイレクトが不要な場合
+      return null;
+    },
+
+    // listenable に変化があればルータによってルートがリフレッシュされる
+    refreshListenable: loginInfo,
+  );
+}
+```
+
+この例では、ユーザーがログインしていない場合は、クエリパラメータ `from` に元々のディープリンクがセットされた状態で `/login` にリダイレクトされます。
+`state` オブジェクトから取得できるロケーション名には `location` と `subloc` があります。
+`location` はクエリパラメータを含みますが、`subloc` は含みません。
+リダイレクト先である `/login` ルートはクエリパラメータを含む可能性があるため、この場合は `subloc` を使用するのがベストです。
+ (また、`location` をそのまま使用した場合はスタックオーバーフローが発生するため。詳細は読者の演習とするため割愛)
+
+そして `/login` ルートがマッチしたとき、`LoginScreen` に渡す情報として `state` オブジェクトから
+`from` パラメーターを取り出します。
+
+```dart
+GoRoute(
+  path: '/login',
+  builder: (context, state) =>
+    // 元々の行き先情報を LoginScreen に渡す（あれば）
+    LoginScreen(from: state.queryParams['from']
+  ),
+),
+```
+
+`LoginScreen` に `from` パラメータが渡された場合、
+ログイン処理の後にそれを利用して元々のディープリンクのロケーションに遷移します。
+
+```dart
+class LoginScreen extends StatelessWidget {
+  final String? from;
+  const LoginScreen({this.from, Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(title: Text(_title(context))),
+    body: Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ElevatedButton(
+            onPressed: () {
+              // ユーザーをログインさせてリスナーに通知
+              context.read<LoginInfo>().login('test-user');
+
+              // 元々の行き先があればそこにリダイレクト
+              if (from != null) context.go(from!);
+            },
+            child: const Text('Login'),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+```
+
+上記コード例のように手動でリダイレクトを行う場合でも、ルータに `refreshListenable` を設定することは良いプラクティスです。
+ログイン情報の変化に応じて、正しいルーティングが自動で行われることが保証されるためです。
+これは例えば、ユーザーがログアウトした後にログインページを表示させたい場合などにも対応できることになります。

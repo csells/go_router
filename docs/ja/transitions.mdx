@@ -1,0 +1,161 @@
+# トランジション効果
+
+go_router では Flutter におけるデフォルトのページ間トランジション効果をサポートしていますが、トランジション効果をカスタマイズすることもできます。
+
+## デフォルトのトランジション効果
+
+デフォルトでは go_router はウィジェットツリーを司るアプリの種類に合わせて、適切なページ間トランジション効果を適用します。
+例えば、ウィジェットツリーに `MaterialApp` があればトランジション効果は `MaterialPage` によって決められます。
+この `MaterialPage` は以下の go_router 内部のページビルダー関数によって生成されます。
+
+```dart
+MaterialPage<void> pageBuilderForMaterialApp(
+  LocalKey key,
+  String restorationId,
+  Widget child,
+) =>
+    MaterialPage<void>(
+      key: key,
+      restorationId: restorationId,
+      child: child,
+    );
+```
+
+この `child` パラメータは `GoRoute.build` 関数のアウトプットから来ています。
+これを元に `MaterialPage` が生成され、適切なトランジション効果がページ間遷移に適用されます。
+このページビルダーのおかげで、ルートごとに同様のコードを書く必要がなくなるわけです。
+
+`CupertinoApp` と `CupertinoPage` についても同様のことが言えます。
+
+また、ウィジェットツリーに `MaterialApp` も `CupertinoApp` も存在しない場合は、デフォルトのトランジション効果はナシになります。
+
+## builder の代わりに pageBuilder を使う
+
+ページビルダー関数を独自に実装したい場合は `GoRoute.pageBuilder` により、ルート単位で実装することができます。
+
+```dart
+GoRoute(
+  path: '/page2',
+  pageBuilder: (context, state) => MaterialPage<void>(
+    key: state.pageKey,
+    restorationId: state.pageKey.value,
+    child: const Page2Screen(),
+  ),
+),
+```
+
+上記ページビルダーのコード例は、`builder` を使用した場合に go_router が標準実装するものと機能面で同等です。
+`state.pageKey` プロパティは[ページのスタック](/sub-routes)におけるその時点でのパス情報がベースになっているため、ページの一意性を保つことができます。
+このおかげで、キー情報を何にするか迷ったり、わざわざハードコーディングする手間が省けます。
+また、このキー情報は `MaterialPage` の `key` のみならず `restorationId` プロパティに使用するのにも有用です。
+`child` プロパティには `builder` 関数の戻り値に相当するウィジェットを設定します。
+
+## errorBuilder の代わりに errorPageBuilder を使う
+
+`builder` の代わりに `pageBuilder` を使用したように、エラー画面のページをカスタマイズする場合は、
+`errorBuilder` の代わりに `errorPageBuilder` を使用してください。
+
+```dart
+class App extends StatelessWidget {
+  ...
+  final _router = GoRouter(
+    ...
+    errorPageBuilder: (context, state) => MaterialPage<void>(
+      key: state.pageKey,
+      child: ErrorScreen(state.error),
+    ),
+  );
+}
+```
+
+## カスタムのトランジション効果
+
+`builder` の代わりに `pageBuilder`（もしくは `errorBuilder` の代わりに `errorPageBuilder`）を使う利点の一つは、
+ページ間トランジション効果をデフォルトのものから変更できるという点です。
+go_router が提供する `CustomTransitionPage` クラスを使うことでトラジション効果をカスタマイズできます。
+
+```dart
+GoRoute(
+  path: '/fade',
+  pageBuilder: (context, state) => CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: const TransitionsPage(kind: 'fade', color: Colors.red),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+        FadeTransition(opacity: animation, child: child),
+  ),
+),
+```
+
+`CustomTransitionPage` の `transitionBuilder` 引数は新しいルートに遷移する際に呼び出されます。
+このタイミングがトランジション効果用のウィジェットを使用するチャンスです。
+`transitionBuilder` を使用した[こちらのサンプル](https://github.com/csells/go_router/blob/master/example/lib/transitions.dart)では4種類のトランジション効果を使用していますが、
+どのようなトランジションにも対応することができます。
+
+![カスタムトランジション効果のサンプル](../images/transitions.gif)
+
+`CustomTransitionPage` コンストラクタの `transitionsDuration` でトランジション効果の継続時間を変更することもできます（デフォルト値は 300ms）。
+
+トランジション効果をナシにしたい場合は、同じく go_router が提供する `NoTransitionPage` を使用してください。
+
+```dart
+GoRoute(
+  path: '/none',
+  pageBuilder: (context, state) => NoTransitionPage<void>(
+    key: state.pageKey,
+    child: const ExampleTransitionsScreen(
+      kind: 'none',
+      color: Colors.white,
+    ),
+  ),
+),
+```
+
+## キーと StatefulWidget の関係
+
+`StatefulWidget` を継承したウィジェットを包括するページを `pageBuilder` で生成する場合はキーに注意が必要です。
+例えば、以下のサンプルコードでは複数のルートが同じ `BookstoreScaffold` 画面に遷移します。
+
+```dart
+class Bookstore extends StatelessWidget {
+  final _scaffoldKey = const ValueKey<String>('App scaffold'); // 共通のキー
+
+  late final _router = GoRouter(
+    routes: [
+      ...
+      GoRoute(
+        path: '/authors',
+        pageBuilder: (context, state) => FadeTransitionPage(
+          key: _scaffoldKey, // 共通のキー
+          child: const BookstoreScaffold(
+            selectedTab: ScaffoldTab.authors,
+            child: AuthorsScreen(),
+          ),
+        ),
+        ...
+      ),
+      GoRoute(
+        path: '/settings',
+        pageBuilder: (context, state) => FadeTransitionPage(
+          key: _scaffoldKey, // 共通のキー
+          child: const BookstoreScaffold(
+            selectedTab: ScaffoldTab.settings,
+            child: SettingsScreen(),
+          ),
+        ),
+      ),
+    ],
+    ...
+  );
+  ...
+}
+```
+
+ここではカスタムのトランジション効果を適用したページ（`FadeTransitionPage` は `CustomTransitionPage` を継承）が使用されていることに加えて、
+`/authors` と `/settings` ルートに同一のキーが割り当てられている点に注目してください。
+`BookstoreScaffold` は `selectedTab` プロパティの値に応じてタブを切り替える `StatefulWidget` であるため、同一のキーを割り当てることは重要なことです。
+もしキーが異なっていれば、ユーザーはタブを切り替えるたびに同じトランジション効果を何度も見ることになってしまいます。
+同じページに遷移する異なるルートがある場合は、ページに同一のキーを割り当てることでこのようなことを避けることができます。
+
+Flutter におけるキーのマジックについては以下の動画で学ぶことができます。
+
+<YouTube id="kn0EOS-ZiIc" />
