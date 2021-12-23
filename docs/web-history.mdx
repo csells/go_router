@@ -1,0 +1,42 @@
+# Web History
+
+Sometimes you don't want the browser tracking history when you navigate. In that case, go_router supports [Router.neglect](https://api.flutter.dev/flutter/widgets/Router/neglect.html).
+
+
+```dart
+
+  ElevatedButton(
+    onPressed: () {
+      Router.neglect(context,() {
+        context.go('/page2');
+      });
+    },
+    child: const Text('Go to page 2'),
+    ),
+
+```
+
+
+If you'd like the browser to stop tracking history altogether for your app, set routerNeglect to true.  This
+will suppress history for all navigation made using go_router.
+
+
+
+```dart
+
+  final _router = GoRouter(
+    routerNeglect: true,
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) => const Page1Screen(),
+      ),
+      GoRoute(
+        path: '/page2',
+        builder: (context, state) => const Page2Screen(),
+      ),
+    ],
+  );
+
+```
+

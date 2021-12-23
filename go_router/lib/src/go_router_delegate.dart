@@ -32,6 +32,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     required Uri initUri,
     required this.observers,
     required this.debugLogDiagnostics,
+    required this.routerNeglect,
     this.restorationScopeId,
   }) {
     // check top-level route paths are valid
@@ -82,6 +83,9 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
   /// Set to true to log diagnostic info for your routes.
   final bool debugLogDiagnostics;
+
+  /// Set to true to disable creating history entries on the web.
+  final bool routerNeglect;
 
   /// Restoration ID to save and restore the state of the navigator, including
   /// its history.
@@ -581,11 +585,17 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   }
 
   Widget _builder(BuildContext context, Iterable<GoRouteMatch> matches) {
-    List<Page<dynamic>> pages;
+    var pages = <Page<dynamic>>[];
 
     try {
       // build the stack of pages
-      pages = getPages(context, matches.toList()).toList();
+      if (routerNeglect) {
+        Router.neglect(context, () {
+          pages = getPages(context, matches.toList()).toList();
+        });
+      } else {
+        pages = getPages(context, matches.toList()).toList();
+      }
 
       // note that we need to catch it this way to get all the info, e.g. the
       // file/line info for an error in an inline function impl, e.g. an inline
@@ -616,7 +626,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       context,
       Navigator(
         restorationScopeId: restorationScopeId,
-        key: _key, // needed to enable Android system Back button
+        key: _key,
+        // needed to enable Android system Back button
         pages: pages,
         observers: observers,
         onPopPage: (route, dynamic result) {

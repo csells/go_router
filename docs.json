@@ -32,6 +32,7 @@
         ["Nested Navigation", "/nested-navigation"],
         ["Navigator Builder", "/navigator-builder"],
         ["Navigator Integration", "/navigator-integration"],
+        ["Web history", "/web-history"],
         ["Type Routing Proposal", "/typed-routing"]
 
       ]
