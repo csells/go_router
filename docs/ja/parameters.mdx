@@ -1,0 +1,80 @@
+# パラメータ
+
+ルートのパス（path）は [path_to_regexp パッケージ](https://pub.dev/packages/path_to_regexp)により定義・実装されています。
+これにより、`path` にパラメータを含めることができます。
+
+```dart
+final _router = GoRouter(
+  routes: [
+    GoRoute(
+      path: '/family/:fid',
+      builder: (context, state) {
+        // パスパラメータの値を取得するには state.params を使用
+        final family = Families.family(state.params['fid']!);
+        return FamilyScreen(family: family);
+      },
+    ),
+  ],
+]);
+```
+
+`params` プロパティを使うことで `state` オブジェクト内のパスパラメータを取得することができます。
+
+## 動的リンク
+
+「動的リンク」とは、ユーザーがアプリにオブジェクトを追加する度に、それに対して固有のリンクを発行することです。
+これはまさに、パラメータが可能にしてくれることです。
+例えば、ルートのパスに `/family/:fid` と変数を含めることで、family ごとに固有の識別子を持たせることができます。
+
+## クエリパラメータ
+
+パラメータ変数を `path` に含めることは、ページに情報を渡すための一つの方法です。
+その場合パスパラメータを渡すのは必須であり、遷移先として指定するロケーション名に含める必要があります。
+ロケーション名の指定とともにページに情報を渡す別の方法は、クエリパラメータを使うことです。
+これは URI 末尾の `?` より後の情報を「名称 - 値」ペアのセットとし `GoRouterState` に設定する方法で、指定方法は以下の通りです。
+
+```dart
+void _tap() => context.go('/search?query=kitties');
+```
+
+このクエリパラメータはオプションですが、指定した場合はマッチした通しルートの全てのページに対して、
+`state.queryParams` プロパティ経由で情報を渡すことができます。
+
+```dart
+GoRoute(
+  path: '/search',
+  builder: (context, state) {
+    // 検索クエリのパラメータを取得するには state.queryParams を使用
+    final query = state.queryParams['query']; // nullの可能性あり
+    return SearchPage(query: query);
+  },
+),
+```
+
+クエリパラメータはオプションのため、渡されていない場合の値は `null` となります。
+
+## エキストラ（追加）パラメータ
+
+パスパラメータとクエリパラメータに加えて、エキストラ（追加）パラメータとしてオブジェクトを渡すこともできます。
+
+```dart
+void _tap() => context.go('/family', extra: _family);
+```
+
+このオブジェクトは `state.extra` で取得可能です。
+
+```dart
+GoRoute(
+  path: '/family',
+  builder: (context, state) => FamilyScreen(family: state.extra! as Family),
+),
+```
+
+エキストラパラメータによる `extra` オブジェクトは、URI 経由で識別子を渡してオブジェクトをストアから取得する代わりに、
+シンプルにオブジェクト自体を `builder` 関数に渡したい場合に便利です。
+また `AppBar` の戻るボタンを押してページがポップされた場合も、`extra` オブジェクトは適切に渡されます。
+
+_ただし_、`extra` オブジェクトから動的リンクやディープリンクを作成することはできません。
+さらに、ブラウザの戻るボタンはナビゲーションの目的でディープリンクのように扱われるため、
+ユーザーがブラウザ経由でページを戻ると `extra` オブジェクトは失われます。
+これらの理由から、__`extra` オブジェクトの使用は、ウェブアプリをターゲットにする場合は非推奨です__。

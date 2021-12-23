@@ -1,0 +1,17 @@
+# go_router へようこそ!
+
+MaterialApp.router コンストラクタに代表される [Flutter の Router API](https://api.flutter.dev/flutter/widgets/Router-class.html) では
+[`RouterDelegate`](https://api.flutter.dev/flutter/widgets/RouterDelegate-class.html) と
+[`RouteInformationParser`](https://api.flutter.dev/flutter/widgets/RouteInformationParser-class.html) の実装を必要とします。
+そしてこれら2つの実装はそれ自体が、[`Navigator`](https://api.flutter.dev/flutter/widgets/Navigator-class.html) の生成に関わる「状態」を保持する第3の型の定義を意味します。
+（Router API の詳細については [Medium に素晴らしい記事](https://medium.com/flutter/learning-flutters-new-navigation-and-routing-system-7c9068155ade) があります）
+この「責任の分離」があるおかげで、Flutter 開発者はディープリンクや動的リンクを含む、ルーティングやナビゲーションのポリシーを独自に実装することが可能になります。
+しかし、その仕組みは[複雑](https://www.reddit.com/r/FlutterDev/comments/koxx4w/why_navigator_20_sucks/)です。
+
+この [go_router パッケージ](https://pub.dev/packages/go_router)の目的は次の通りです。
+まず、プラットフォーム（モバイル、ウェブ、デスクトップ）に依ることなく、宣言的なルート生成により Router API の複雑さを軽減すること。
+そして、Android / iOS / ウェブ におけるディープリンクと動的リンク、その他多くのナビゲーションの想定シナリオに対応すること。
+それでも尚、（願わくば）使いやすいと感じてもらえる開発者体験を提供すること。
+
+[![Flutter
+Favorite](../images/flutter-favorite-logo.png)](https://docs.flutter.dev/development/packages-and-plugins/favorites)

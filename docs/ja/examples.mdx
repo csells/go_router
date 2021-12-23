@@ -1,0 +1,50 @@
+# サンプルコード集
+
+以下のサンプルコードから go_router の具体的な使用方法を確認できます。
+
+- [`main.dart`](https://github.com/csells/go_router/blob/main/go_router/example/lib/main.dart):
+  宣言的な `GoRoute` オブジェクトのセットを使い、基本のルーティングポリシーを定義する
+- [`error_screen.dart`](https://github.com/csells/go_router/blob/main/go_router/example/lib/error_screen.dart):
+  ルーティングやビルダーに関するエラーが発生した際に表示するカスタムのエラー画面を定義する
+- [`init_loc.dart`](https://github.com/csells/go_router/blob/main/go_router/example/lib/init_loc.dart):
+  デフォルトのホーム `/` ではなく指定のロケーションでアプリをスタートする
+- [`sub_routes.dart`](https://github.com/csells/go_router/blob/main/go_router/example/lib/sub_routes.dart):
+  サブルートのセットを元にページのスタックを生成する
+- [`push.dart`](https://github.com/csells/go_router/blob/main/go_router/example/lib/push.dart):
+  `context.push()` を連続的に呼び出してページのスタックを生成する
+- [`redirection.dart`](https://github.com/csells/go_router/blob/main/go_router/example/lib/redirection.dart):
+  アプリの状態の変化を元にルートからルートへリダイレクトする
+- [`query_params.dart`](https://github.com/csells/go_router/blob/main/go_router/example/lib/query_params.dart):
+  パスパラメータやオプションのクエリパラメータをビルダー内で受け取る
+- [`router_stream_refresh.dart`](https://github.com/csells/go_router/blob/main/go_router/example/lib/router_stream_refresh.dart):
+  `Listenable` の代わりに `Stream` でルートの更新を行う
+- [`named_routes.dart`](https://github.com/csells/go_router/blob/main/go_router/example/lib/named_routes.dart):
+  ロケーション URI を指定する代わりに名前付きルートで遷移する
+- [`transitions.dart`](https://github.com/csells/go_router/blob/main/go_router/example/lib/transitions.dart):
+  ルーティング中にカスタム・トランジション効果を適用する
+- [`async_data.dart`](https://github.com/csells/go_router/blob/main/go_router/example/lib/async_data.dart):
+  非同期データの参照
+- [`nested_nav.dart`](https://github.com/csells/go_router/blob/main/go_router/example/lib/nested_nav.dart):
+  ページにサブルートの情報を表示する（ネスト型ナビゲーション）
+- [`nav_builder.dart`](https://github.com/csells/go_router/blob/main/go_router/example/lib/nav_builder.dart):
+  `Navigator` ウィジェットの上にウィジェットを挿入する
+- [`url_strategy.dart`](https://github.com/csells/go_router/blob/main/go_router/example/lib/url_strategy.dart):
+  Flutter ウェブで URL から # を除く
+- [`navigator_integration.dart`](https://github.com/csells/go_router/blob/main/go_router/example/lib/navigator_integration.dart):
+  `Navigator` を使ってユーザー入力情報を集めるページに遷移する
+- [`nav_observer.dart`](https://github.com/csells/go_router/blob/main/go_router/example/lib/nav_observer.dart):
+  `MaterialPage` 等に渡すデフォルトの引数を通じて `NavigatorObserver` にルートの追加情報を伝える
+- [`state_restoration.dart`](https://github.com/csells/go_router/blob/main/go_router/example/lib/state_restoration.dart):
+  go_router で状態復元（State Restoration）が動作するかテストする
+- [`cupertino.dart`](https://github.com/csells/go_router/blob/main/go_router/example/lib/cupertino.dart):
+  `MaterialApp` と同様に `CupertinoApp` においても go_router が動作するかテストする
+- [`widgets_app.dart`](https://github.com/csells/go_router/blob/main/go_router/example/lib/widgets_app.dart):
+  `MaterialApp` と同様に `WidgetsApp` においても go_router が動作するかテストする
+- [`books/main.dart`](https://github.com/csells/go_router/blob/main/go_router/example/lib/books/main.dart):
+  Flutter 公式のサンプル、[ナビゲーションとルーティング](https://github.com/flutter/samples/tree/master/navigation_and_routing)の go_router 版
+
+これらのサンプルコードはお好みの IDE で、もしくは `example` フォルダから以下のコマンドラインで実行することができます。
+
+```sh
+$ flutter run lib/main.dart
+```

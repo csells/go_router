@@ -1,0 +1,102 @@
+# 2.5 への移行について
+
+go_router v2.5 では、ルートに紐づく画面をよりシンプルな方法で設定することが可能になりました。
+v2.5 より前のバージョンでは、以下のように `pageBuilder` 関数を実装する他に方法がありませんでした。
+
+```dart
+GoRoute(
+  path: '/',
+  pageBuilder: (context, state) => MaterialPage<void>( // ボイラープレート
+    key: state.pageKey, // ボイラープレート
+    restorationId: state.pageKey.value, // ボイラープレート
+    child: const Page1Page(), // 本質部分
+  ), // ボイラープレート
+),
+```
+
+`MaterialApp`（もしくは `CupertinoApp`）によるデフォルトのトランジション効果を適用する場合は、
+このように全てのルートにおいて `MaterialPage`（または `CupertinoPage`）を生成しなければならないため、ボイラープレートコードを何度も書く必要がありました。
+また、各ページのキーを go_router に自動で生成させる場合（`state.pageKey`）においても、`MaterialPage`（または `CupertinoPage`）のインスタンスにキーを手動で渡す必要がありました。
+これに加えて、`restorationId` を設定する場合はキーと同じことをやる必要がありました。
+
+## pageBuilder の代わりに builder を使う
+
+v2.5 では `pageBuilder` の代わりに `builder` 関数を使用することで、簡単に画面を設定することが可能です。
+go_router がアプリの種類（`MaterialApp` / `CupertinoApp` など）に応じた適切なページの型を選び、キーと状態復元 ID を適切に管理してくれます。
+
+```dart
+GoRoute(
+  path: '/',
+  builder: (context, state) => const Page1Page(),  // 本質部分のみ
+),
+```
+
+このコードによりボイラープレートコードを書く必要がなくなり、`pageBuilder` を利用した場合に実装するであろう標準的なページと同等のページを生成することができます。
+実際、このコードは冒頭に提示したコードと機能面で同等です。
+キーを独自に設定したい場合や、カスタムのページ型に独自のパラメータを設定したい場合は、引き続き `pageBuilder` を使っていただいても問題ありません。
+
+```dart
+GoRoute(
+  path: '/',
+  pageBuilder: (context, state) => MaterialPage<void>(
+    key: _myPage1Key,
+    child: const Page1Screen(),
+  ),
+),
+```
+
+同様に、[カスタムのトランジション効果](/transitions)を設定したい場合も `pageBuilder` を活用できます。
+
+```dart
+GoRoute(
+  path: '/fade',
+  pageBuilder: (context, state) => CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: const ExampleTransitionsScreen(
+      kind: 'fade',
+      color: Colors.red,
+    ),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+        FadeTransition(opacity: animation, child: child),
+  ),
+),
+```
+
+ただ、特段の事情がない限りは `pageBuilder` の代わりに `builder` を使うようにしてください。
+
+## オプションのエラービルダー
+
+go_router v2.5 では `errorPageBuilder` 関数も必須ではなくなりました。
+エラー画面を設定する際は代わりに `errorBuilder` 関数を使用することで、
+go_router がアプリの種類（`MaterialApp` / `CupertinoApp` など）に応じたページを生成してくれます。
+
+```dart
+final _router = GoRouter(
+  routes: ...,
+  errorBuilder: (context, state) => ErrorScreen(state.error!),
+);
+```
+
+`builder` の場合と同様に、`errorBuilder` を使うことで `errorPageBuilder` を利用した場合に実装するであろう標準的なページと同等のページを生成することができます。
+もちろん、`errorPageBuilder` も引き続き使用することができます。
+
+## トランジション効果を適用しない
+
+最後に、特定ルートにおけるトランジション効果を無効にしたい場合は、新しい `NoTransitionPage` 型を使用してください。
+これは既存の `CustomTransitionPage` 型から派生したクラスです。
+
+```dart
+GoRoute(
+  path: '/none',
+  pageBuilder: (context, state) => NoTransitionPage<void>(
+    key: state.pageKey,
+    child: const ExampleTransitionsScreen(
+      kind: 'none',
+      color: Colors.white,
+    ),
+  ),
+),
+```
+
+この `NoTransitionPage` は、アプリのウィジェットツリーに `MaterialApp` や `CupertinoApp` がない場合にも適用されます（`WidgetsApp` を使用している場合など）。
+カスタムのトランジション効果に関する詳細は[こちら](/transitions)をご覧ください。

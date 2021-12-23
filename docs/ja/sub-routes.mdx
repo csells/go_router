@@ -1,0 +1,54 @@
+# サブルート
+
+トップレベルのルート（`GoRouter.routes` 直下に置かれる `GoRoute` インスタンス）は全て、1ページ分のナビゲーションスタックを作成します。
+これを複数ページのスタックにするにはサブルート（`GoRoute.routes`）を使用します。
+トップレベルのルートがロケーション名の一部にしかマッチしない場合は、その一部を除いた残りのロケーション名が以降のサブルートと照合されます。
+このルールはどのレベルのサブルートにおいても変わりません。いずれのレベルでもマッチするルートは1つで、ロケーション名全体がマッチするまで照合は続きます。
+
+例えば、`/family/f1/person/p2` というロケーション名の場合においても、
+ページのスタックを生成するために複数のサブルートとの照合が行われます。
+
+```text
+/             => HomeScreen()
+  family/f1   => FamilyScreen('f1')
+    person/p2 => PersonScreen('f1', 'p2') ← このページで戻るボタンを押すとポップして ↑ が表示
+```
+
+このようなページのセットを作るには、`GoRoute` コンストラクタの `routes` でサブルートを指定します。
+
+```dart
+final _router = GoRouter(
+  routes: [
+    GoRoute(
+      path: '/',
+      builder: (context, state) => HomeScreen(families: Families.data),
+      routes: [
+        GoRoute(
+          path: 'family/:fid',
+          builder: (context, state) {
+            final family = Families.family(state.params['fid']!);
+            return  FamilyScreen(family: family);
+          },
+          routes: [
+            GoRoute(
+              path: 'person/:pid',
+              builder: (context, state) {
+                final family = Families.family(state.params['fid']!);
+                final person = family.person(state.params['pid']!);
+
+                return PersonScreen(family: family, person: person);
+              },
+            ),
+          ],
+        ),
+      ],
+    ),
+  ],
+);
+```
+
+go_router はルートツリーの上位レベルから下位レベルまで照合を続けることで、ページのスタックを生成していきます。
+ロケーション名に対応する通しルートがない場合は、[エラーハンドラ](/declarative-routing#エラーハンドラ)が呼び出されます。
+
+また、go_router ではパラメータは上位レベルのルートから受け継がれていくため、下位レベルのルートでも同じパラメータを使用することができます。
+例えば、`fid` は `family/:fid` ルートに渡されますが、そのサブルートである `person/:pid` へも受け継がれます。
