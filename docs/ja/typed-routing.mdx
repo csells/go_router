@@ -1,0 +1,295 @@
+# 型付けルーティングの提案
+
+*__以降は「型付けルーティング」の提案です。
+部分的に[こちらのプルリクエスト](https://github.com/csells/go_router/pull/130)に実装されていますが、
+完了しておらず、go_router が公式にサポートするものとしてはまだ何もありません。
+私がいつもやるように、実装するコードそのものより、まずは想定されるクライアント側のコードにフォーカスするため、本提案を書いています。
+__*
+
+## 目的
+
+go_router におけるルーティングは基本的に、文字列ベースかつ URI 形式のロケーション名を、
+複数のページビルダーにマッチさせることで成り立っています。
+そしてそれぞれのページは、ロケーション名の一部として渡されるパスパラメータやクエリパラメータを引数とする場合があります。
+go_router は `GoRouterState` の `params` と `queryParams` プロパティを通じて、
+このパスパラメータとクエリパラメータを生成する処理をうまくやってくれますが、
+ページビルダーは往々にして、まずパラメータを `String` 以外の型に変換する必要があります。
+
+```dart
+GoRoute(
+  path: ':authorId',
+  builder: (context, state) {
+    // 取得した authorId を int に変換する必要がある
+    final authorId = int.parse(state.params['authorId']!);
+    return AuthorDetailsScreen(authorId: authorId);
+  },
+),
+```
+
+このサンプルでは、`authorId` パラメータは a) 必須であり、b) `int` である必要があります。
+しかし、このいずれもがランタイムまでチェックされないため、型安全でないコードを書きやすい状況になってしまっています。
+
+```dart
+void _tap() => context.go('/author/a42'); // エラー: `a42` は `int` ではない
+```
+
+Dart は静的型付け言語であるため、こうしたエラーはランタイムまで引き伸ばすのではなく、
+コンパイルタイムで捕捉することが好ましいはずです。
+本提案の目的は、まず特定のルートが消費するパラメータ（必須、オプション問わず）をあらかじめ定義できるようになること、
+そして大量の `go` / `push` / `location` を含むようなボイラープレートコードを書く作業をコード生成によって省くことにあります。
+
+こちらの[試験的実装](https://github.com/csells/go_router/pull/130)において、このようなことを行ってくれるコードジェネレーターは [build_runner](https://pub.dev/packages/build_runner) パッケージですが、
+将来的に Dart に[マクロ機能](https://github.com/dart-lang/language/blob/master/working/macros/feature-specification.md)が導入された場合は、そちらに移行する予定です。
+
+## ルートを定義する
+
+`GoRouteData` を継承するクラスを作り、`build` メソッドをオーバーライドすることで各ルートを定義する。
+
+```dart
+class PersonRoute extends GoRouteData {
+  PersonRoute({required this.fid, required this.pid});
+  final String fid;
+  final String pid;
+
+  @override
+  Widget build(BuildContext context) => PersonScreen(fid: fid, pid: pid);
+}
+```
+
+必須のパラメータは、以下で示すルートツリーで定義された `path` から生成される。
+
+## ルートツリー
+
+ルートツリーは各トップレベル・ルートの属性として定義される。
+
+```dart
+@TypedGoRoute<HomeRoute>(
+  path: '/',
+  routes: [
+    TypedGoRoute<FamilyRoute>(
+      path: 'family/:fid',
+      routes: [
+        TypedGoRoute<PersonRoute>(
+          path: 'person/:pid',
+        ),
+      ],
+    ),
+  ],
+)
+class HomeRoute extends GoRouteData {...}
+class FamilyRoute extends GoRouteData {...}
+class PersonRoute extends GoRouteData {...}
+
+@TypedGoRoute<LoginRoute>(path: '/login')
+class LoginRoute extends GoRouteData {...}
+```
+
+## `GoRouter` の初期化
+
+コードジェネレーターは全てのトップレベル・ルートを、`$appRoutes` という配列に集約する。
+これは `GoRouter` インスタンスの初期化のためである。
+
+```dart
+final _router = GoRouter(routes: $appRoutes);
+```
+
+## エラービルダー
+
+型付けルートはエラービルダーにも使用できる。
+
+```dart
+class ErrorRoute extends GoRouteData {
+  ErrorRoute({required this.error});
+  final Exception error;
+
+  @override
+  Widget build(BuildContext context) => ErrorScreen(error: error);
+}
+```
+
+これにより、`errorBuilder` パラメータを次のように設定することができる。
+
+```dart
+final _router = GoRouter(
+  routes: $appRoutes,
+  errorBuilder: (c, s) => ErrorRoute(s.error!).build(c),
+);
+```
+
+## ナビゲーション
+
+コードジェネレーターにより生成された `go` もしくは `push` メソッドを使用してナビゲーションを行う。
+
+```dart
+void _tap() => PersonRoute(fid: 'f2', pid: 'p1').go(context);
+```
+
+設定を間違えた場合は、コンパイラーから次のような警告を受ける。
+
+```dart
+// エラー: 必須パラメータ 'fid' がありません
+void _tap() => PersonRoute(pid: 'p1').go(context);
+```
+
+もちろん、これが型付けルーティングの核心である。間違ったことをやれば、コンパイラーが知らせてくれる。
+
+## クエリパラメータ
+
+オプションのパラメータは、それがクエリパラメータであるということを示している。
+
+```dart
+class LoginRoute extends GoRouteData {
+  LoginRoute({this.from});
+  final String? from;
+
+  @override
+  Widget build(BuildContext context) => LoginScreen(from: from);
+}
+```
+
+## エキストラパラメータ
+
+`$extra` という特殊な名称をコンストラクタのパラメータに使用し、型付けされたオブジェクトを渡すことでルートはそれを消費することができる。
+
+```dart
+class PersonRouteWithExtra extends GoRouteData {
+  PersonRouteWithExtra(this.$extra);
+  final Person $extra;
+
+  @override
+  Widget build(BuildContext context) => PersonScreen(person: $extra);
+}
+```
+
+エキストラパラメータを型付けオブジェクトとして渡す。
+
+```dart
+void _tap() => PersonRouteWithExtra(Person(name: 'Marvin', age: 42)).go(context);
+```
+
+`$extra` パラメータがロケーション名とは無関係に渡される点、動的リンクとディープリンク（ブラウザの戻るボタンを含む）が無効になる点は変わらない。
+従って Flutter ウェブをターゲットとするアプリにおいて、エキストラパラメータの使用が非推奨である点にも変わりはない。
+
+## ミックスパラメータ
+
+パスパラメータとクエリパラメータ、そしてエキストラパラメータを組み合わせることは当然可能である。
+
+```dart
+class HotdogRouteWithEverything extends GoRouteData {
+  HotdogRouteWithEverything(this.ketchup, this.mustard, this.$extra);
+  final bool ketchup; // 必須のパスパラメータ
+  final String? mustard; // オプションのクエリパラメータ
+  final Sauce $extra; // 特殊なエキストラパラメータ
+
+  @override
+  Widget build(BuildContext context) => HotdogScreen(ketchup, mustard, $extra);
+}
+```
+
+これは一見ばかげているが、機能する。
+
+## リダイレクト
+
+コードジェネレーターにより生成されたルートの `location` プロパティを使用してリダイレクトを行う。
+
+```dart
+redirect: (state) {
+  final loggedIn = loginInfo.loggedIn;
+  final loggingIn = state.subloc == LoginRoute().location;
+  if( !loggedIn && !loggingIn ) return LoginRoute(from: state.subloc).location;
+  if( loggedIn && loggingIn ) return HomeRoute().location;
+  return null;
+}
+```
+
+## ルートレベルのリダイレクト
+
+ルートレベルのリダイレクトは、ルートの `redirect` メソッドを実装することで処理を行う。
+
+```dart
+class HomeRoute extends GoRouteData {
+  // 無条件にリダイレクトさせる場合は build メソッドは不要
+  @override
+  String? redirect() => BooksRoute().location;
+}
+```
+
+## 型変換
+
+コードジェネレーターは `int` や `enum` といったシンプルな型と、土台となるパラメータの `String` 型との相互変換を行うことができる。
+
+```dart
+enum BookKind { all, popular, recent }
+
+class BooksRoute extends GoRouteData {
+  BooksRoute({this.kind = BookKind.popular});
+  final BookKind kind;
+
+  @override
+  Widget build(BuildContext context) => BooksScreen(kind: kind);
+}
+```
+
+## トランジション効果
+
+デフォルトでは `GoRouter` はウィジェットツリーから見つけたアプリの種類（`MaterialApp` / `CupertinoApp` / `WidgetApp` など）に応じて適切なページを生成する。
+そしてそのページは、ルートの `build` メソッドにより生成されたウィジェットを包括する。
+さらに、ページの `key` および `restorationId` プロパティには `state.pageKey` が使われる。
+
+### トランジション効果のオーバーライド
+
+デフォルトとは異なるページ型を使いたい、もしくはページ生成にカスタムのキーを使いたいなど、
+ページ生成をカスタムで行いたい場合は、ベースクラスの `build` メソッドの代わりに `buildPage` メソッドをオーバーライドする。
+
+```dart
+class MyMaterialRouteWithKey extends GoRouteData {
+  static final _key = LocalKey('my-route-with-key');
+
+  @override
+  MaterialPage<void> buildPage(BuildContext context, GoRouterState state) =>
+    MaterialPage<void>(
+      key: _key,
+      child: MyPage(),
+    );
+}
+```
+
+### カスタム・トランジション効果
+
+`buildPage` メソッドのオーバーライドはトランジション効果をカスタムするのにも有用である。
+
+```dart
+class FancyRoute extends GoRouteData {
+  @override
+  MaterialPage<void> buildPage(BuildContext context, GoRouterState state) =>
+    CustomTransitionPage<void>(
+      key: state.pageKey,
+      child: FancyPage(),
+      transitionsBuilder: (context, animation, animation2, child) =>
+          RotationTransition(turns: animation, child: child),
+    ),
+}
+```
+
+## 実装メモ
+
+1. The `@TypedGoRoute` annotation:
+   - It's only valid to annotate implementations of `GoRouteData`.
+   - The type parameter MUST be provided.
+   - The root `@TypedGoRoute` type param must match the annotated class.
+   - Later, maybe:
+     - Expand the set of things that can be annotated. Widgets? Libraries?
+2. `GoRouteData` implementations
+   - Must have a default constructor (or factory).
+   - All constructor parameters must map 1-to-1 name and type to fields or
+     getters on the type.
+   - Only fields that align getters with constructor parameters
+   - It is valid to have a `const` constructor. In the case of a no-param
+     constructor, `const` will be used to initailze the type.
+   - Valid parameter/field/property types:
+     - `String`: as-is
+     - `num`, `int`, `bool`, `DateTime`, `Duration`, `BigInt`, `double`, `Uri`:
+       encoded with `toString`, decoded with parse or similar.
+     - `Enum`: encoded/decoded using kebab cased names.
+   - Later, maybe:
+     - Support for using writeable fields and/or setters

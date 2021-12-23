@@ -1,0 +1,64 @@
+# 2.0 への移行について
+
+[需要](https://twitter.com/csells/status/1445520767190388738)により go_router 2.0 リリースから破壊的変更があります。
+`GoRouterState` オブジェクトの `params` プロパティが2つのプロパティに分割されました。
+
+- `params` : パスパラメータ。パスの一部として渡されるパラメータ。`/family/:fid` など。
+- `queryParams` : クエリパラメータ。ロケーション名の末尾にオプションとして追加されるパラメータ。`/login?from=/family/f2` など。
+
+1.x リリースでは、`params` プロパティはパスパラメータとクエリパラメータの両方を含む単一の Map オブジェクトでした。
+例えば、クエリパラメータを取得するには以下のように `params` プロパティを使用していました。
+
+```dart
+GoRoute(
+  path: '/login',
+  pageBuilder: (context, state) => MaterialPage<void>(
+    key: state.pageKey,
+    // 1.x: クエリパラメータを取得
+    child: LoginScreen(from: state.params['from']),
+  ),
+),
+```
+
+2.0 以降のリリースでは、クエリパラメータを取得するには次のようにする必要があります。
+
+```dart
+GoRoute(
+  path: '/login',
+  pageBuilder: (context, state) => MaterialPage<void>(
+    key: state.pageKey,
+    // 2.0: クエリパラメータを取得
+    child: LoginScreen(from: state.queryParams['from']),
+  ),
+),
+```
+
+同様に 1.x リリースでは、名前付きルートを使用する際、パスパラメータとクエリパラメータを以下のように渡していたかと思います。
+
+```dart
+ListTile(
+  title: Text(p.name),
+  // 1.x: パスパラメータとクエリパラメータの両方を渡す
+  onTap: () => context.goNamed(
+    'person',
+    // パスパラメータに該当しないものは全てクエリパラメータとみなされていた
+    {'fid': family.id, 'pid': p.id, 'qid': 'quid'},
+  ),
+),
+```
+
+2.0 以降のリリースでは、次のようにする必要があります。
+
+```dart
+ListTile(
+  title: Text(p.name),
+  // 2.0: パスパラメータとクエリパラメータの両方を渡す
+  onTap: () => context.goNamed(
+    'person',
+    params: {'fid': family.id, 'pid': p.id},
+    queryParams: {'qid': 'quid'},
+  ),
+),
+```
+
+種類が異なる2つのパラメータをそれぞれ単一のスコープとすることで、より分かりやすくなるといいのですが。

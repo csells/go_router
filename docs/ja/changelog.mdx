@@ -1,0 +1,347 @@
+# 変更履歴
+
+### 2.5.6
+
+- [PR 259](https://github.com/csells/go_router/pull/259): ルートに変更があったことをルータに通知する際のハックが不要になったため削除
+- 非同期データ取得のサンプルコードを改善。画面ウィジェットの `mounted` のプロパティのチェックにより、データ取得後に既にページが存在しないケースに対処。
+
+### 2.5.5
+
+- デバッグ診断の実装に logging パッケージを使用するアップデート。
+  [johnpryan](https://github.com/johnpryan) に感謝します。
+
+### 2.5.4
+
+- `GoRouterRefreshStream` の実装を修正。また export への追加、サンプルコードとドキュメントの追記。
+
+### 2.5.3
+
+- `GoRouterRefreshStream` の追加。`Stream` を `Listenable` にマッピングするクラスであり `refreshListenable` に使用する。
+  [flutter_bloc](https://pub.dev/packages/flutter_bloc) のようなストリームベースの状態管理ソリューションとの組み合わせに最適。
+  （[jopmiddelkamp](https://github.com/jopmiddelkamp) より）
+- API ドキュメントの修正（[mehade369](https://github.com/mehade369) より）
+- サンプルコードのリンク修正（[ben-milanko](https://github.com/ben-milanko) より）
+
+### 2.5.2
+
+- `MaterialPage` 等に渡すデフォルトの引数を通じて `NavigatorObserver` にルートの追加情報が伝わるように修正
+
+### 2.5.1
+
+- [fix 205](https://github.com/csells/go_router/issues/205): `NoTransitionPage` で `Duration.zero` を使用した際の Flutter による assertion エラーを回避
+
+### 2.5.0
+
+- より簡単にページを生成することができる `GoRouter.build` メソッドの追加（`GoRoute.pageBuilder` にデフォルトの実装を追加）
+- より簡単にページを生成することができる `GoRouter.errorBuilder` メソッドの追加（`GoRoute.errorPageBuilder` にデフォルトの実装を追加）
+- カスタムのエラーページビルダーを実装する必要がないように `GoRouter.errorBuilder` のデフォルトの実装を提供
+- ドキュメントに [2.5 への移行について](https://gorouter.dev/migrating-to-25)のセクションを追加（新しい `builder` の利用方法や、デフォルトのエラーページについて）
+- `launch.json` は VSCode 用のファイルであり、閲覧や実行には不要なため削除
+- [カスタムのエラー画面のサンプルコード](https://github.com/csells/go_router/blob/master/example/lib/error_screen.dart)を追加
+- [WidgetsApp のサンプルコード](https://github.com/csells/go_router/blob/master/example/lib/widgets_app.dart)を追加
+- `NoTransitionPage` クラスを追加
+- エキストラパラメータ `extra` がなぜブラウザの戻るボタンとの相性が良くないかの補足説明をドキュメントに追加
+- README に新しいドキュメントサイトへのリンクを追加（[gorouter.dev](https://gorouter.dev)）
+
+### 2.3.1
+
+- [fix 191](https://github.com/csells/go_router/issues/191): ロケーション名の末尾に / がある場合等でも適切にパスが処理されるよう修正
+  （例: `/foo/` と `/foo` は同じ扱いとなる）
+
+### 2.3.0
+
+- サブルートでリダイレクト関数を使用した際に出る、ミスリードを招くおそれのあるエラーメッセージを修正
+
+### 2.2.9
+
+- [fix 182](https://github.com/csells/go_router/issues/182): [#163](https://github.com/csells/go_router/issues/163)
+  の修正で発生していたネスト型ナビゲーションのリグレッション問題を修正。
+  [lulupointu](https://github.com/lulupointu) による修正に感謝します。
+
+### 2.2.8
+
+- 変更履歴ファイルのフォーマットを変更（ pub.dev に適合するといいが...）
+- 制作中のドキュメントサイトを https://docs.page/csells/go_router に公開
+- 通知なく失敗するテストの修正
+- サブルートのリダイレクトにより親ルートのパラメータが欠落するバグを修正
+
+### 2.2.7
+
+- [fix 163](https://github.com/csells/go_router/issues/163): 不必要な再構築を避ける修正
+- [fix 139](https://github.com/csells/go_router/issues/139): ディープリンクの際のページのちらつきを避ける修正
+- [fix 158](https://github.com/csells/go_router/issues/158): トップレベルのリダイレクトにおいて無名関数を設定した場合においても、デバッグ出力に例外情報が表示されるよう修正
+- [fix 151](https://github.com/csells/go_router/issues/151): `Navigator.pop()` を呼び出す `GoRouter.pop()` を追加（簡単に見つけられるように）
+
+### 2.2.6
+
+- [fix 127](https://github.com/csells/go_router/issues/127): ドキュメントに go_router の概要を紹介する YouTube へのリンクを追加（文字よりも映像、という人のために）
+- [fix 108](https://github.com/csells/go_router/issues/108): `state` の全プロパティが使用の度に設定される旨をドキュメントで明確化
+
+### 2.2.5
+
+- [fix 120 again](https://github.com/csells/go_router/issues/120): 本当のバグを隠すバグをテストコードで見つけ、2文字変更することで問題を修正
+
+### 2.2.4
+
+- [fix 116](https://github.com/csells/go_router/issues/116): `context.go` など拡張メソッドを使用する際の自動インポート候補が正しく表示されない問題を回避する修正
+
+### 2.2.3
+
+- [fix 132](https://github.com/csells/go_router/issues/132): ルート名がケース・インセンシティブ方式で保存・照合されるようアップデート
+
+### 2.2.2
+
+- [fix 120](https://github.com/csells/go_router/issues/120): パラメータ類のエンコードとデコードを改善
+
+### 2.2.1
+
+- [fix 114](https://github.com/csells/go_router/issues/114): `GoRouter.of(context)` でウィジェットツリーに `GoRouter` が見つからなかった場合のエラーメッセージを改善
+  [aoatmon](https://github.com/aoatmon) による素晴らしい[バグレポート](https://github.com/csells/go_router/issues/114)に感謝します。
+
+### 2.2.0
+
+- `GoRouter` コンストラクタに新しい [`navigatorBuilder`](https://gorouter.dev/navigator-builder) 引数を追加。[andyduke](https://github.com/andyduke) に感謝します。
+- 状態復元を改善するためのアップデート（[andyduke](https://github.com/andyduke) より）
+- メンテナンス性を上げるためのリファクタリング（[kevmoo](https://github.com/kevmoo) より）
+- ドキュメントに新しいセクション、[Navigator との併用](https://gorouter.dev/navigator-integration)を追加
+
+### 2.1.2
+
+- [fix 61 again](https://github.com/csells/go_router/issues/61): 画像とファイルのリンクを pub.dev/documentation で機能するよう修正
+- [fix 62](https://github.com/csells/go_router/issues/62): 以前の Android システムバックボタンの修正（Navigator へのキー設定）によって修正されたことを再テストにより確認
+- [fix 91](https://github.com/csells/go_router/issues/91): `errorPageBuilder` のリグレッションを修正
+- [fix 92](https://github.com/csells/go_router/issues/92): 名前付きサブルートが見つからない特殊なケースに対応する修正
+- [fix 89](https://github.com/csells/go_router/issues/89): `push` においてもクエリパラメータとエキストラパラメータを有効化
+- テストのリファクタリングの結果、カバレッジがより高く、より少ないメソッドが `@visibleForTesting` となった
+
+### 2.1.1
+
+- [fix 86](https://github.com/csells/go_router/issues/86): URI フリーなナビゲーションのサポートを完成させるため、
+  `GoRouterState` に `name` を追加
+- [fix 83](https://github.com/csells/go_router/issues/83): `extra` オブジェクトが `null` になるのを修正
+
+### 2.1.0
+
+- [fix 80](https://github.com/csells/go_router/issues/80): リダイレクトによるエラー多発をキャッチするためリダイレクト数に制限を追加
+- [fix 81](https://github.com/csells/go_router/issues/81): ナビゲーション時に `extra` オブジェクトをパラメータとして渡せるようアップデート
+
+### 2.0.1
+
+- README へのバッジ類追加と GitHub コミットアクションへの codecov の追加。
+  [rydmike](https://github.com/rydmike) に感謝します。
+
+### 2.0.0
+
+- 破壊的変更と [fix #50](https://github.com/csells/go_router/issues/50):
+  `params` を `params` と `queryParams` に分割。1.x から 2.0 への移行方法については、ドキュメントの
+  [2.0 への移行について](https://gorouter.dev/migrating-to-20)のセクションを参照してください。
+- [fix 69](https://github.com/csells/go_router/issues/69): リダイレクトで名前付きルートのロケーション名を使用できるようアップデート
+- [fix 57](https://github.com/csells/go_router/issues/57): Android のシステムバックボタンを `AppBar` の戻るボタンと同じ挙動をするよう修正。
+  修正方法を指摘いただいた [SunlightBro](https://github.com/SunlightBro) に感謝します。
+- [fix 59](https://github.com/csells/go_router/issues/59): トップレベルのリダイレクトにクエリパラメータを追加
+- [fix 44](https://github.com/csells/go_router/issues/44): ネスト型ナビゲーションにおいて `AutomaticKeepAliveClientMixin`
+  を使用してウィジェットの状態を保つ方法を示したサンプルコードを追加。[rydmike](https://github.com/rydmike) に感謝します。
+
+### 1.1.3
+
+- パスパラメータとクエリパラメータの大文字小文字はそのままに、パスの照合をケース・インセンシティブ方式とした
+- [sort_constructors_first](https://dart-lang.github.io/linter/lints/sort_constructors_first.html) に従い、クラスにおいてコンストラクタが先頭になるよう修正。
+  これまで身に付けてきた習癖だった。プルリクエストに感謝します、[Abhishek01039](https://github.com/Abhishek01039)!
+- トランジション効果のサンプルコードの最初のルートを `/none` に設定。最初に「fade transition」ボタンを押してもらうため。
+- 非同期データのサンプルコードのエラーを修正
+
+### 1.1.2
+
+- 2人の Mike に感謝します!
+  - API ドキュメントの更新（[rydmike](https://github.com/rydmike) より）
+  - GitHub の CI action 設定（[Salakar](https://github.com/Salakar) より）
+  - コミュニティの力でこのプロジェクトが成長していることを実感...
+
+### 1.1.1
+
+- デバッグログにルーティングの例外が表示されるようアップデート
+- リダイレクト関数が `null` を返すまで繰り返し呼び出される点をドキュメントで強調
+
+### 1.1.0
+
+- `NavigatorObserver` オブジェクトが変更通知を受けられるようアップデート
+
+### 1.0.1
+
+- ユーザーからのフィードバックに基づき、明確化のためドキュメントを更新
+- `main()` で URL パスストラテジーを設定するための修正
+- `push()` が `AppBar` の戻るボタンを無効にする問題の修正
+
+### 1.0.0
+
+- 最初のリリースのため、バージョン番号をアップデート
+- 明確化、そして transitionsBuilder との整合性のため以下の名称変更
+  - `GoRoute.builder` => `GoRoute.pageBuilder`
+  - `GoRoute.error` => `GoRoute.errorPageBuilder`
+- `push` と `pushNamed` に対応した診断ロギングを追加
+
+### 0.9.6
+
+- `go` に加えて `push` のサポートを追加
+- トランジション効果のサンプルコードに「none」を追加
+- トランジション効果ナシのアニメーションのサンプルコードを更新し、ドキュメントに gif 動画を追加
+
+### 0.9.5
+
+- ルート間のトランジション効果をカスタムするためのクラスを追加
+
+### 0.9.4
+
+- API ドキュメントを更新
+- `GoRouterState` のドキュメントを更新
+
+### 0.9.3
+
+- API ドキュメントを更新
+
+### 0.9.2
+
+- 名前付きルートの参照が O(1) となるようにアップデート
+- 名前付きルートの一覧を表示できるよう診断出力をアップデート
+
+### 0.9.1
+
+- 名前付きルートの参照を表示できるよう診断出力をアップデート
+- ドキュメントの更新
+
+### 0.9.0
+
+- 名前付きルートのサポートを追加
+
+### 0.8.8
+
+- ポップ時に `GoRouter` から通知を受けられるよう修正
+
+### 0.8.7
+
+- `location` に変化があった際に通知を受けられるよう `GoRouter` を `ChangeNotifier` にした
+
+### 0.8.6
+
+- Books のサンプルコードのバグ修正
+
+### 0.8.5
+
+- Cupertino のサンプルコードを追加
+- 非同期データ取得のサンプルコードを追加
+
+### 0.8.4
+
+- 状態復元のサンプルコードを追加
+
+### 0.8.3
+
+- `debugOutputFullPaths` を `debugLogDiagnostics` に変更し、デバッグログ情報を更に追加
+- パラメータ化されたリダイレクトに対応
+
+### 0.8.2
+
+- `Link` ウィジェットのサポートに関する記述をドキュメントに追加
+
+### 0.8.1
+
+- Books のサンプルコードを追加（いくつかの問題を修正）
+
+### 0.8.0
+
+- APIをリファクタリングしてシンプルかつ高機能にするための破壊的ビルド
+- 固定ルーティングから条件的ルーティングへの移行。これにより API がシンプルになり、ルートレベルでのリダイレクトが可能になる。
+- ルートレベルにおけるリダイレクトを追加
+- Guard オブジェクトをリダイレクト関数に置き換える
+- `refresh` メソッドと `refreshListener` を追加
+- `GoRouter` から `.builder` コンストラクタを削除（実装する必然性がない）
+- ドキュメントに動的リンクのセクションを追加
+- Books のサンプルをネスト型ナビゲーションのものに差し替え
+- 存在するルートのフルパスをデバッグ出力に表示する機能を追加
+
+### 0.7.1
+
+- サブルートを考慮に入れた pageKey のアップデート
+
+### 0.7.0
+
+- 破壊的変更: 世の中にある他のルータに合わせて `pattern` を `path` に名称変更
+- ログインページにリダイレクトするパターンに対応するため `GoRouterLoginGuard` を追加
+
+### 0.6.2
+
+- リダイレクト前にホームのページが1秒だけ表示される問題を修正
+
+### 0.6.1
+
+- `GoRouterState.pageKey` を追加
+- メインの `pubspec.yaml` から `cupertino_icons` を削除
+
+### 0.6.0
+
+- 複数ルートをマッチさせる方式に代わって新たにサブルートを導入し、そこからページのスタックを生成できるようリファクタリング
+- ページのスタックを生成するユニットテストを追加
+- 一部型名の変更（`Four04Page` => `ErrorPage`、`FamiliesPage` => `HomePage` など）
+- デバッグ出力のリダイレクトエラー表示を修正
+
+### 0.5.2
+
+- `GoRouter` コンストラクタに `urlPathStrategy` 引数を追加
+
+### 0.5.1
+
+- ドキュメントと pubspec の description を更新
+
+### 0.5.0
+
+- シンプルさ重視のためリダイレクトをルートレベルからトップレベルに移動
+
+### 0.4.1
+
+- 変更履歴のフォーマットを修正
+
+### 0.4.0
+
+- ページ生成の際に利用できるルート処理に関する様々な変数を `GoRouterState` に含めた
+- ドキュメントの URL パスストラテジーのセクションで `flutter run` について触れるよう更新
+
+### 0.3.2
+
+- pub.dev の神を鎮めるためフォーマットを更新...
+
+### 0.3.1
+
+- 変更履歴の更新
+
+### 0.3.0
+
+- リダイレクトを `GoRoute` コンストラクタの引数に移動
+- 変更履歴のアップデートを忘れていた
+
+### 0.2.3
+
+- 未対応の issue を [issue トラッカー](https://github.com/csells/go_router/issues)に移動
+- ディープリンクに関する説明をドキュメントに追加
+- pub.dev のスコアガイドラインに沿うようフォーマットの整理
+
+### 0.2.2
+
+- ドキュメントの更新
+
+### 0.2.1
+
+- 変更履歴のフォーマットを変更
+
+### 0.2.0
+
+- 最初の有用なリリース
+- `GoRoute` インスタンスによる宣言的ルートのサポートを追加
+- `GoRoute.builder` による命令的ルーティングのサポートを追加
+- URL パスストラテジーの設定に関するサポートを追加
+- 条件的ルーティングのサポートを追加
+- リダイレクトのサポートを追加
+- ルート名における位置パラメータとオプションのクエリパラメータのサポートを追加
+
+### 0.1.0
+
+- パッケージ名確保のためのリリース（あまり自慢にならない）

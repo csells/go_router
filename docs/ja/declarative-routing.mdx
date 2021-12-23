@@ -1,0 +1,104 @@
+# 宣言的なルーティング（Routing）
+
+go_router は、`GoRouter` コンストラクタで指定するルート（Route）の集合体によって全体が制御され、管理されています。
+
+```dart
+class App extends StatelessWidget {
+  ...
+  final _router = GoRouter(
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) => const Page1Screen(),
+      ),
+      GoRoute(
+        path: '/page2',
+        builder: (context, state) => const Page2Screen(),
+      ),
+    ],
+  );
+}
+```
+
+この例ではルートを2つ定義しました。go_router ではそれぞれのルートの `path` に対して、ユーザーが遷移する先のロケーション名（UI 側から指定する行き先）との照合が行われます。
+照合によりマッチする通しルートは1パターンのみです。つまり、`path` 単体もしくはそのサブルートの `path` の組み合わせが、ロケーション名と完全に一致するルートでなければなりません。
+（従って、配列の中におけるルートの順番は挙動に影響しません）
+また、[パラメータ](/parameters)の大文字小文字はそのままロケーション名に反映されますが、`path` との照合はケース・インセンシティブ（大文字小文字を区別しない）方式で行われます。
+
+`path` に加え、各ルートは一般的には `builder` 関数を持つことになります。
+この関数はアプリ画面の全体を占める `Widget` の生成を担当します。
+この `builder` 関数を使用する場合は、ページ間の遷移には[デフォルトのトランジション効果](/transitions)が適用されます。
+これはウィジェットツリーの先頭に配置したアプリの種類に応じて変わります。
+（例: `MaterialApp` を使用すると、`MaterialPage` のトランジション効果が適用される）
+
+## ルータ（Router）の状態
+
+上記コード例では使用していませんが、`builder` 関数には `state` オブジェクトが渡されます。
+これは `GoRouterState` のインスタンスであり、いくつか有用な「状態」を含んでいます。
+
+| `GoRouterState` のプロパティ | 説明                                               | 具体例 1                  | 具体例 2                     |
+| -------------------------- | -------------------------------------------------- | ------------------------ | -------------------------- |
+| `location`                 | クエリパラメータを含む通しルートのロケーション名           | `/login?from=/family/f2` | `/family/f2/person/p1`     |
+| `subloc`                   | クエリパラメータを含まない、このサブルートのロケーション名   | `/login`                 | `/family/f2`               |
+| `name`                     | ルートの名前                                         | `login`                  | `family`                   |
+| `path`                     | ルートのパス                                         | `/login`                 | `family/:fid`              |
+| `fullpath`                 | このサブルートへの通しパス                             | `/login`                 | `/family/:fid`             |
+| `params`                   | ロケーション名から抽出したパスパラメータ                  | `{}`                     | `{'fid': 'f2'}`            |
+| `queryParams`              | ロケーション名の末尾におけるオプションのクエリパラメータ     | `{'from': '/family/f1'}` | `{}`                       |
+| `extra`                    | オプションのエキストラ（追加）パラメータ                  | `null`                   | `null`                     |
+| `error`                    | このサブルートに紐づく `Exception` （あれば）           | `Exception('404')`       | ...                        |
+| `pageKey`                  | このサブルートのユニークキー                           | `ValueKey('/login')`     | `ValueKey('/family/:fid')` |
+
+`state` オブジェクトは[パラメータ化されたルート](/parameters)にパラメータを渡したり、[リダイレクト](/redirection)するときに活用できます。
+また、各状態はすべてが毎度設定されるわけではありません。
+基本的には `GoRouterState` は `GoRouter` インスタンスの現在の潜在的状態の上位セットとして定義されるものです。
+例えば、`error` パラメータは実際にエラーが発生した場合にだけ設定されます。
+
+## 初期化
+
+ルート（Route）の集合体から `GoRouter` インスタンスは作られます。
+そしてこのインスタンスは、`MaterialApp.router` コンストラクタ（もしくは `CupertinoApp.router` コンストラクタ）で設定が必要になるオブジェクトを提供してくれます。
+
+```dart
+class App extends StatelessWidget {
+  App({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) => MaterialApp.router(
+        routeInformationParser: _router.routeInformationParser,
+        routerDelegate: _router.routerDelegate,
+      );
+
+  final _router = GoRouter(routes: ...);
+}
+```
+
+このルータ（Router）の設定により、アプリは[ナビゲーション](/navigation)が可能になります。
+
+## エラーハンドラ
+
+go_router には `MaterialApp` と `CupertinoApp` 用のデフォルトのエラー画面が用意されています。
+（いずれも使用しない場合でも、同様のエラー画面が表示されます）
+このデフォルトのエラー画面は `GoRouter` の `errorBuilder` パラメータを設定することで、置き換えることができます。
+
+```dart
+class App extends StatelessWidget {
+  ...
+  final _router = GoRouter(
+    ...
+    errorBuilder: (context, state) => ErrorScreen(state.error),
+  );
+}
+```
+
+デフォルトの画面であるか否かに関わらず、エラー画面は次のような場合に表示されます。
+ロケーション名がいずれのルートとともマッチしない場合、ロケーション名に対して2つ以上のルートがマッチした場合、
+`builder` もしくは `pageBuilder` 関数で例外が発生した場合、です。
+
+## Deep Linking
+## ディープリンク
+
+Flutter における「ディープリンク」は、「URL を開いて特定の画面をアプリ内に表示すること」と定義されています。
+`GoRoute` として登録されている画面は、Android / iOS / ウェブ を問わず、ディープリンクによりアクセスすることができます。
+ウェブではアドレスバーから直接アクセスすることができますが、Android と iOS においては
+[Flutter のドキュメント](https://flutter.dev/docs/development/ui/navigation/deep-linking)で解説されている追加の設定が必要です。
