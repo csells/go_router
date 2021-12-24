@@ -49,7 +49,7 @@ final _router = GoRouter(
 This example checks the login status in the `navigatorBuilder`:
 
 - if the user is logged in, an instance of the `AuthOverlay` widget is created,
-  which wraps the the `Navigator` passed to `navigationBuilder` via the `child`
+  which wraps the the `Navigator` passed to `navigatorBuilder` via the `child`
   parameter and provides a logout button on every page
 - if the user is not logged in, return the `Navigator` via the `child` parameter
 
@@ -85,5 +85,5 @@ class AuthOverlay extends StatelessWidget {
 
 Here's what this look like in action:
 
-![navigationBuilder in
+![navigatorBuilder in
 action](images/nav_builder.gif)
