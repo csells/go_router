@@ -6,11 +6,11 @@ not just the screen from a route but also the widgets nested inside the screen.
 That's called "nested navigation". The key differentiator for "nested"
 navigation is that there's no transition on the part of the page that stays the
 same, e.g. the app bar stays the same as you navigate to different tabs on this
-`TabView`:
+`TabBarView`:
 
 ![nested navigation example](images/nested-nav.gif)
 
-Of course, you can easily do this using the `TabView` widget, but what makes
+Of course, you can easily do this using the `TabBarView` widget, but what makes
 this nested "navigation" is that the location changes, i.e. notice the address
 bar as the user transitions from tab to tab. This makes it easy for the user to
 capture a [dynamic link](/parameters/#dynamic-linking) for any object in the
@@ -19,7 +19,7 @@ app, enabling [deep linking](/declarative-routing#deep-linking).
 To use nested navigation using go_router, you can simply navigate to the same
 page via different paths or to the same path with different parameters, with the
 differences dictating the different state of the page. For example, to implement
-that screen with the `TabView` above, you need a widget that changes the
+that screen with the `TabBarView` above, you need a widget that changes the
 selected tab via a parameter:
 
 ```dart
@@ -126,7 +126,7 @@ one that sets up nested navigation. It does this by first creating an
 instance of `FamilyTabsScreen` with the family that matches the `fid` parameter.
 And second, it uses `state.pageKey` to signal to Flutter that this is the same
 page as before. This combination is what causes the router to leave the page
-alone, to update the browser's address bar and to let the `TabView` navigate to
+alone, to update the browser's address bar and to let the `TabBarView` navigate to
 the new selection.
 
 This may seem like a lot, but in summary, you need to do two things with the
@@ -141,7 +141,7 @@ page you create in your page builder to support nested navigation:
    wrapper is in place, Flutter will call `didUpdateWidget` so that you can use
    the new data to update the existing widgets, e.g. the selected tab.
 
-This example shows off the selected tab on a `TabView` but you can use it for
+This example shows off the selected tab on a `TabBarView` but you can use it for
 any nested content of a page your app navigates to.
 
 ## Keeping State

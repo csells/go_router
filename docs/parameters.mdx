@@ -47,7 +47,7 @@ These parameters are optional and, if passed, will be provided in the
 GoRoute(
   path: '/search',
   builder: (context, state) {
-    // use state.params to get search query from query parameter
+    // use state.queryParams to get search query from query parameter
     final query = state.queryParams['query']; // may be null
     return SearchPage(query: query);
   },
