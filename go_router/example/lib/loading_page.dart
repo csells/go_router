@@ -32,7 +32,7 @@ class AppState extends ChangeNotifier {
 class App extends StatelessWidget {
   App({Key? key}) : super(key: key);
 
-  static const title = 'GoRouter Example: Repository Pattern';
+  static const title = 'GoRouter Example: Loading Page';
   final appState = AppState();
 
   @override
@@ -106,6 +106,7 @@ class App extends StatelessWidget {
         ? AuthOverlay(
             onLogout: () async {
               await appState.loginInfo.logout();
+              _router.go('/'); // clear query parameters
             },
             child: child!)
         : child!,
@@ -131,7 +132,7 @@ class AuthOverlay extends StatelessWidget {
             right: 4,
             child: ElevatedButton(
               onPressed: onLogout,
-              child: const Icon(Icons.logout),
+              child: const Icon(Icons.logout)
             ),
           ),
         ],

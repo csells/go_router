@@ -88,6 +88,10 @@ class LoginScreen extends StatelessWidget {
                 onPressed: () {
                   // log a user in, letting all the listeners know
                   context.read<LoginInfo>().login('test-user');
+
+                  // router will automatically redirect from /login to / using
+                  // refreshListenable
+                  //context.go('/');
                 },
                 child: const Text('Login'),
               ),

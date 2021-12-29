@@ -1,12 +1,5 @@
 # Changelog
 
-### 2.5.8
-
-- updated the examples using the `from` query parameter to be more
-  self-contained in the `redirect` function (TODO: docs)
-- updated the async data example to be simpler (TODO: docs)
-- added a new repository pattern example (TODO)
-
 ### 2.5.7
 
 - [PR 262](https://github.com/csells/go_router/pull/262): add support for
@@ -16,6 +9,10 @@
   [toshi-kuji](https://github.com/toshi-kuji)! Unfortunately I don't yet know
   how to properly display them via docs.page, but [I'm working on
   it](https://github.com/csells/go_router/issues/266)
+- updated the examples using the `from` query parameter to be completely
+  self-contained in the `redirect` function, simplifying usage
+- updated the async data example to be simpler
+- added a new example to show how to implement a loading page
 
 ### 2.5.6
 

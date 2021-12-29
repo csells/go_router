@@ -50,14 +50,14 @@ class App extends StatelessWidget {
 
     // redirect to the login page if the user is not logged in
     redirect: (state) {
+      // if the user is not logged in, they need to login
       final loggedIn = loginInfo.loggedIn;
-      final goingToLogin = state.location == '/login';
+      final loggingIn = state.subloc == '/login';
+      if (!loggedIn) return loggingIn ? null : '/login';
 
-      // the user is not logged in and not headed to /login, they need to login
-      if (!loggedIn && !goingToLogin) return '/login';
-
-      // the user is logged in and headed to /login, no need to login again
-      if (loggedIn && goingToLogin) return '/';
+      // if the user is logged in but still on the login page, send them to
+      // the home page
+      if (loggingIn) return '/';
 
       // no need to redirect at all
       return null;
@@ -66,14 +66,20 @@ class App extends StatelessWidget {
 }
 ```
 
-In this code, if the user is not logged in and not going to the `/login`
-path, we redirect to `/login`. Likewise, if the user _is_ logged in but going to
-`/login`, we redirect to `/`. If there is no redirect, then we just return
-`null`. The `redirect` function will be called again until `null` is returned to
-enable [multiple redirects](#multiple-redirections).
+In this code, if the user is not logged in, we either let them continue to the
+`/login` location that they were already headed to by returning `null` or we
+redirect them to `/login` by returning `'/login'`.
 
-To make it easy to access this info wherever it's needed in the app, consider
-using a state management option like
+On the other hand, if the user is already logged in but headed to `/login`, we
+redirect them to `/` instead.
+
+Finally, if the user is logged in and heading to somewhere besides `/login`, we
+just return `null`, letting them continue on their merry way. The `redirect`
+function will be called over and over until `null` is returned to enable
+[multiple redirects](#multiple-redirections).
+
+To make it easy to access the login info wherever it's needed in the app,
+consider using a state management option like
 [provider](https://pub.dev/packages/provider) to put the login info into the
 widget tree:
 
@@ -150,7 +156,8 @@ onPressed: () {
   // log a user in, letting all the listeners know
   context.read<LoginInfo>().login('test-user');
 
-  // router will automatically redirect from /login to / because login info
+  // router will automatically redirect from /login to / using
+  // refreshListenable
   //context.go('/');
 },
 ```
@@ -161,9 +168,10 @@ app's data changes.
 
 ### Refreshing with a `Stream`
 
-If you've got a `Stream` to react to you can wrap your stream with a 
-`GoRouterRefreshStream` which makes it possible for `GoRouter` to react to any
-stream based state managmenet solutions like for example BLoC.
+If your route-driving state is not available as a `Listenable` but instead as a
+`Stream`, you can wrap your stream with a `GoRouterRefreshStream`. This makes it
+possible for `GoRouter` to react to a stream-based state managmenet solution
+like [flutter_bloc](https://pub.dev/packages/flutter_bloc).
 
 ```dart
 class App extends StatelessWidget {
@@ -295,7 +303,7 @@ The other trouble you need worry about is getting into a loop, e.g. `/ => /foo
 ## Example: Redirection and Query Parameters
 
 Sometimes you're doing [deep linking](/declarative-routing#deep-linking) and
-you'd like a user to first login before going to the location that represents
+you'd like a user to login first before going to the location that represents
 the deep link. In that case, you can use [query
 parameters](/parameters#query-parameters) in the redirect function:
 
@@ -308,16 +316,17 @@ class App extends StatelessWidget {
 
     // redirect to the login page if the user is not logged in
     redirect: (state) {
+      // if the user is not logged in, they need to login
       final loggedIn = loginInfo.loggedIn;
+      final loggingIn = state.subloc == '/login';
 
-      // check just the subloc in case there are query parameters
-      final goingToLogin = state.subloc == '/login';
+      // bundle the location they user is coming from into a query parameter
+      final fromp = state.subloc == '/' ? '' : '?from=${state.subloc}';
+      if (!loggedIn) return loggingIn ? null : '/login$fromp';
 
-      // the user is not logged in and not headed to /login, they need to login
-      if (!loggedIn && !goingToLogin) return '/login?from=${state.subloc}';
-
-      // the user is logged in and headed to /login, no need to login again
-      if (loggedIn && goingToLogin) return '/';
+      // if the user is logged in, send them where they were going before (or
+      // home if they weren't going anywhere)
+      if (loggingIn) return state.queryParams['from'] ?? '/';
 
       // no need to redirect at all
       return null;
@@ -330,59 +339,23 @@ class App extends StatelessWidget {
 ```
 
 In this example, if the user isn't logged in, they're redirected to `/login`
-with a `from` query parameter set to the deep link. The `state` object has the
-`location` and the `subloc` to choose from. The `location` includes the query
-parameters whereas the `subloc` does not. Since the `/login` route may include
-query parameters, it's easiest to use the `subloc` in this case (and using the
-raw `location` will cause a stack overflow, an exercise that I'll leave to the
-reader).
+with a `from` query parameter set to the deep link. When deciding on the value
+of the `from` parameter, the `state` object has the `location` and the `subloc`
+to choose from. The `location` includes any query parameters on the location
+whereas the `subloc` does not. For simplicity, we'll just use the `subloc`.
+However, since the query parameters will be URL encoded, you could use the
+`location` instead. Dealer's choice.
 
-Now, when the `/login` route is matched, we want to pull the `from` parameter
-out of the `state` object to pass along to the `LoginScreen`:
+Once the user logs in, the router will be triggered to refresh the route,
+resulting in a call to `redirect`. In this case, since they're now logged in but
+at the `/login` location, they'll be sent to either the `from` link in the query
+parameters, if there is one, or to `/` otherwise.
 
-```dart
-GoRoute(
-  path: '/login',
-  builder: (context, state) => 
-    // pass the original location to the LoginScreen (if there is one)
-    LoginScreen(from: state.queryParams['from']
-  ),
-),
-```
+And that's it. The combination of the `redirect` function and the
+`refreshListenable` means that the login page doesn't even have to worry about
+the `from` value -- it's just sent in the location during redirection and then
+stripped off when it's no longer needed. Easy peasy lemon squeezy.
 
-In the `LoginScreen`, if the `from` parameter was passed, we use it to go to the
-deep link location after a successful login:
-
-```dart
-class LoginScreen extends StatelessWidget {
-  final String? from;
-  const LoginScreen({this.from, Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text(_title(context))),
-    body: Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          ElevatedButton(
-            onPressed: () {
-              // log a user in, letting all the listeners know
-              context.read<LoginInfo>().login('test-user');
-
-              // if there's a deep link, go there
-              if (from != null) context.go(from!);
-            },
-            child: const Text('Login'),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-```
-
-It's still good practice to pass in the `refreshListenable` when manually
-redirecting, as we do in this case, to ensure any change to the login info
-causes the right routing to happen automatically, e.g. the user logging out will
-cause them to be routed back to the login page.
+This same technique can be extended to include more than just the login page, as
+shown in the [loading page
+example](https://github.com/csells/go_router/blob/main/go_router/example/lib/loading_page.dart).
