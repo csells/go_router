@@ -17,6 +17,7 @@ dependencies:
     path: ..
   logging: ^1.0.0
   provider: ^5.0.0
+  shared_preferences: ^2.0.11
   url_launcher: ^6.0.7
 
 dev_dependencies:

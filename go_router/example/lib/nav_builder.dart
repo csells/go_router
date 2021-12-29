@@ -52,30 +52,32 @@ class App extends StatelessWidget {
       GoRoute(
         name: 'login',
         path: '/login',
-        builder: (context, state) =>
-            // pass the original location to the LoginPage (if there is one)
-            LoginScreen(from: state.queryParams['from']),
+        builder: (context, state) => const LoginScreen(),
       ),
     ],
 
     // redirect to the login page if the user is not logged in
     redirect: (state) {
+      // if the user is not logged in, they need to login
       final loggedIn = loginInfo.loggedIn;
+      final loginloc = state.namedLocation('login');
+      final loggingIn = state.subloc == loginloc;
 
-      // check just the subloc in case there are query parameters
-      final loginLoc = state.namedLocation('login');
-      final goingToLogin = state.subloc == loginLoc;
-
-      // the user is not logged in and not headed to /login, they need to login
-      if (!loggedIn && !goingToLogin) {
-        return state.namedLocation(
-          'login',
-          queryParams: {'from': state.subloc},
-        );
+      // bundle the location they user is coming from into a query parameter
+      final homeloc = state.namedLocation('home');
+      final fromloc = state.subloc == homeloc ? '' : state.subloc;
+      if (!loggedIn) {
+        return loggingIn
+            ? null
+            : state.namedLocation(
+                'login',
+                queryParams: {if (fromloc.isNotEmpty) 'from': fromloc},
+              );
       }
 
-      // the user is logged in and headed to /login, no need to login again
-      if (loggedIn && goingToLogin) return state.namedLocation('home');
+      // if the user is logged in, send them where they were going before (or
+      // home if they weren't going anywhere)
+      if (loggingIn) return state.queryParams['from'] ?? homeloc;
 
       // no need to redirect at all
       return null;
@@ -184,8 +186,7 @@ class PersonScreen extends StatelessWidget {
 }
 
 class LoginScreen extends StatelessWidget {
-  const LoginScreen({this.from, Key? key}) : super(key: key);
-  final String? from;
+  const LoginScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -198,9 +199,6 @@ class LoginScreen extends StatelessWidget {
                 onPressed: () {
                   // log a user in, letting all the listeners know
                   context.read<LoginInfo>().login('test-user');
-
-                  // if there's a deep link, go there
-                  if (from != null) context.go(from!);
                 },
                 child: const Text('Login'),
               ),

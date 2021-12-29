@@ -9,7 +9,7 @@ void main() => runApp(const App());
 class App extends StatefulWidget {
   const App({Key? key}) : super(key: key);
 
-  static const title = 'GoRouter Example: Redirection';
+  static const title = 'GoRouter Example: Stream Refresh';
 
   @override
   State<App> createState() => _AppState();
@@ -54,19 +54,21 @@ class _AppState extends State<App> {
 
       // redirect to the login page if the user is not logged in
       redirect: (state) {
+        // if the user is not logged in, they need to login
         final loggedIn = loggedInState.state;
-        final goingToLogin = state.location == '/login';
+        final loggingIn = state.subloc == '/login';
 
-        // the user is not logged in and not headed to /login, they need to login
-        if (!loggedIn && !goingToLogin) return '/login';
+        // bundle the location they user is coming from into a query parameter
+        final fromp = state.subloc == '/' ? '' : '?from=${state.subloc}';
+        if (!loggedIn) return loggingIn ? null : '/login$fromp';
 
-        // the user is logged in and headed to /login, no need to login again
-        if (loggedIn && goingToLogin) return '/';
+        // if the user is logged in, send them where they were going before (or
+        // home if they weren't going anywhere)
+        if (loggingIn) return state.queryParams['from'] ?? '/';
 
         // no need to redirect at all
         return null;
       },
-
       // changes on the listenable will cause the router to refresh it's route
       refreshListenable: GoRouterRefreshStream(loggedInState.stream),
     );

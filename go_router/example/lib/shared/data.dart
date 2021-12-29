@@ -94,6 +94,24 @@ class LoginInfo extends ChangeNotifier {
   }
 }
 
+class LoginInfo2 extends ChangeNotifier {
+  var _userName = '';
+  String get userName => _userName;
+  bool get loggedIn => _userName.isNotEmpty;
+
+  Future<void> login(String userName) async {
+    await Future<void>.delayed(const Duration(microseconds: 2500));
+    _userName = userName;
+    notifyListeners();
+  }
+
+  Future<void> logout() async {
+    await Future<void>.delayed(const Duration(microseconds: 2500));
+    _userName = '';
+    notifyListeners();
+  }
+}
+
 class FamilyPerson {
   FamilyPerson({required this.family, required this.person});
 
@@ -102,6 +120,38 @@ class FamilyPerson {
 }
 
 class Repository {
+  static final rnd = Random();
+
+  Future<List<Family>> getFamilies() async {
+    // simulate network delay
+    await Future<void>.delayed(const Duration(seconds: 1));
+
+    // simulate error
+    // if (rnd.nextBool()) throw Exception('error fetching families');
+
+    // return data "fetched over the network"
+    return Families.data;
+  }
+
+  Future<Family> getFamily(String fid) async =>
+      (await getFamilies()).family(fid);
+
+  Future<FamilyPerson> getPerson(String fid, String pid) async {
+    final family = await getFamily(fid);
+    return FamilyPerson(family: family, person: family.person(pid));
+  }
+}
+
+class Repository2 {
+  Repository2._(this.userName);
+  final String userName;
+
+  static Future<Repository2> get(String userName) async {
+    // simulate network delay
+    await Future<void>.delayed(const Duration(seconds: 1));
+    return Repository2._(userName);
+  }
+
   static final rnd = Random();
 
   Future<List<Family>> getFamilies() async {

@@ -26,17 +26,17 @@ class App extends StatelessWidget {
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => const HomeScreenWithAsync(),
+        builder: (context, state) => const HomeScreen(),
         routes: [
           GoRoute(
             path: 'family/:fid',
-            builder: (context, state) => FamilyScreenWithAsync(
+            builder: (context, state) => FamilyScreen(
               fid: state.params['fid']!,
             ),
             routes: [
               GoRoute(
                 path: 'person/:pid',
-                builder: (context, state) => PersonScreenWithAsync(
+                builder: (context, state) => PersonScreen(
                   fid: state.params['fid']!,
                   pid: state.params['pid']!,
                 ),
@@ -49,195 +49,193 @@ class App extends StatelessWidget {
   );
 }
 
-class HomeScreenWithAsync extends StatefulWidget {
-  const HomeScreenWithAsync({Key? key}) : super(key: key);
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({Key? key}) : super(key: key);
 
   @override
-  State<HomeScreenWithAsync> createState() => _HomeScreenWithAsyncState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenWithAsyncState extends State<HomeScreenWithAsync> {
+class _HomeScreenState extends State<HomeScreen> {
   Future<List<Family>>? _future;
-  List<Family>? _families;
 
   @override
   void initState() {
     super.initState();
-    fetch();
+    _fetch();
   }
 
   @override
-  void didUpdateWidget(covariant HomeScreenWithAsync oldWidget) {
+  void didUpdateWidget(covariant HomeScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     // refresh cached data
-    //fetch(); // no need
+    _fetch();
   }
 
-  void fetch() {
-    _families = null;
-    _future = App.repo.getFamilies();
-    _future!.then(
-      (families) {
-        if (mounted) setState(() => _families = families); // update AppBar
-      },
-    );
-  }
+  void _fetch() => _future = App.repo.getFamilies();
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          title: Text(
-            '${App.title}: ${_families != null ? '${_families!.length} '
-                'families' : 'loading...'}',
-          ),
-        ),
-        body: FutureBuilder<List<Family>>(
-          future: _future,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
+  Widget build(BuildContext context) => FutureBuilder<List<Family>>(
+        future: _future,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Scaffold(
+              appBar: AppBar(title: const Text('${App.title}: Loading...')),
+              body: const Center(child: CircularProgressIndicator()),
+            );
+          }
 
-            if (snapshot.hasError) return SnapshotError(snapshot.error!);
+          if (snapshot.hasError) {
+            return Scaffold(
+              appBar: AppBar(title: const Text('${App.title}: Error')),
+              body: SnapshotError(snapshot.error!),
+            );
+          }
 
-            assert(snapshot.hasData);
-            return ListView(
+          assert(snapshot.hasData);
+          final families = snapshot.data!;
+          return Scaffold(
+            appBar: AppBar(
+              title: Text('${App.title}: ${families.length} families'),
+            ),
+            body: ListView(
               children: [
-                for (final f in _families!)
+                for (final f in families)
                   ListTile(
                     title: Text(f.name),
                     onTap: () => context.go('/family/${f.id}'),
                   )
               ],
-            );
-          },
-        ),
+            ),
+          );
+        },
       );
 }
 
-class FamilyScreenWithAsync extends StatefulWidget {
-  const FamilyScreenWithAsync({required this.fid, Key? key}) : super(key: key);
+class FamilyScreen extends StatefulWidget {
+  const FamilyScreen({required this.fid, Key? key}) : super(key: key);
   final String fid;
 
   @override
-  State<FamilyScreenWithAsync> createState() => _FamilyScreenWithAsyncState();
+  State<FamilyScreen> createState() => _FamilyScreenState();
 }
 
-class _FamilyScreenWithAsyncState extends State<FamilyScreenWithAsync> {
+class _FamilyScreenState extends State<FamilyScreen> {
   Future<Family>? _future;
-  Family? _family;
 
   @override
   void initState() {
     super.initState();
-    fetch();
+    _fetch();
   }
 
   @override
-  void didUpdateWidget(covariant FamilyScreenWithAsync oldWidget) {
+  void didUpdateWidget(covariant FamilyScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     // refresh cached data
-    if (oldWidget.fid != widget.fid) fetch();
+    if (oldWidget.fid != widget.fid) _fetch();
   }
 
-  void fetch() {
-    _family = null;
-    _future = App.repo.getFamily(widget.fid);
-    _future!.then(
-      (family) {
-        if (mounted) setState(() => _family = family); // update AppBar
-      },
-    );
-  }
+  void _fetch() => _future = App.repo.getFamily(widget.fid);
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: Text(_family?.name ?? 'loading...')),
-        body: FutureBuilder<Family>(
-          future: _future,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
+  Widget build(BuildContext context) => FutureBuilder<Family>(
+        future: _future,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Scaffold(
+              appBar: AppBar(title: const Text('Loading...')),
+              body: const Center(child: CircularProgressIndicator()),
+            );
+          }
 
-            if (snapshot.hasError) return SnapshotError(snapshot.error!);
+          if (snapshot.hasError) {
+            return Scaffold(
+              appBar: AppBar(title: const Text('Error')),
+              body: SnapshotError(snapshot.error!),
+            );
+          }
 
-            assert(snapshot.hasData);
-            return ListView(
+          assert(snapshot.hasData);
+          final family = snapshot.data!;
+          return Scaffold(
+            appBar: AppBar(title: Text(family.name)),
+            body: ListView(
               children: [
-                for (final p in _family!.people)
+                for (final p in family.people)
                   ListTile(
                     title: Text(p.name),
-                    onTap: () =>
-                        context.go('/family/${_family!.id}/person/${p.id}'),
+                    onTap: () => context.go(
+                      '/family/${family.id}/person/${p.id}',
+                    ),
                   ),
               ],
-            );
-          },
-        ),
+            ),
+          );
+        },
       );
 }
 
-class PersonScreenWithAsync extends StatefulWidget {
-  const PersonScreenWithAsync({required this.fid, required this.pid, Key? key})
+class PersonScreen extends StatefulWidget {
+  const PersonScreen({required this.fid, required this.pid, Key? key})
       : super(key: key);
 
   final String fid;
   final String pid;
 
   @override
-  State<PersonScreenWithAsync> createState() => _PersonScreenWithAsyncState();
+  State<PersonScreen> createState() => _PersonScreenState();
 }
 
-class _PersonScreenWithAsyncState extends State<PersonScreenWithAsync> {
+class _PersonScreenState extends State<PersonScreen> {
   Future<FamilyPerson>? _future;
-  FamilyPerson? _famper;
 
   @override
   void initState() {
     super.initState();
-    fetch();
+    _fetch();
   }
 
   @override
-  void didUpdateWidget(covariant PersonScreenWithAsync oldWidget) {
+  void didUpdateWidget(covariant PersonScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     // refresh cached data
-    if (oldWidget.fid != widget.fid || oldWidget.pid != widget.pid) fetch();
+    if (oldWidget.fid != widget.fid || oldWidget.pid != widget.pid) _fetch();
   }
 
-  void fetch() {
-    _famper = null;
-    _future = App.repo.getPerson(widget.fid, widget.pid);
-    _future!.then(
-      (famper) {
-        if (mounted) setState(() => _famper = famper); // update AppBar
-      },
-    );
-  }
+  void _fetch() => _future = App.repo.getPerson(widget.fid, widget.pid);
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: Text(_famper?.person.name ?? 'loading...')),
-        body: FutureBuilder<FamilyPerson>(
-          future: _future,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            if (snapshot.hasError) return SnapshotError(snapshot.error!);
-
-            assert(snapshot.hasData);
-            return Text(
-              '${_famper!.person.name} ${_famper!.family.name} is '
-              '${_famper!.person.age} years old',
+  Widget build(BuildContext context) => FutureBuilder<FamilyPerson>(
+        future: _future,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Scaffold(
+              appBar: AppBar(title: const Text('Loading...')),
+              body: const Center(child: CircularProgressIndicator()),
             );
-          },
-        ),
+          }
+
+          if (snapshot.hasError) {
+            return Scaffold(
+              appBar: AppBar(title: const Text('Error')),
+              body: SnapshotError(snapshot.error!),
+            );
+          }
+
+          assert(snapshot.hasData);
+          final famper = snapshot.data!;
+          return Scaffold(
+            appBar: AppBar(title: Text(famper.person.name)),
+            body: Text(
+              '${famper.person.name} ${famper.family.name} is '
+              '${famper.person.age} years old',
+            ),
+          );
+        },
       );
 }
 

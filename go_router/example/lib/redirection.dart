@@ -56,14 +56,14 @@ class App extends StatelessWidget {
 
     // redirect to the login page if the user is not logged in
     redirect: (state) {
+      // if the user is not logged in, they need to login
       final loggedIn = loginInfo.loggedIn;
-      final goingToLogin = state.location == '/login';
+      final loggingIn = state.subloc == '/login';
+      if (!loggedIn) return loggingIn ? null : '/login';
 
-      // the user is not logged in and not headed to /login, they need to login
-      if (!loggedIn && !goingToLogin) return '/login';
-
-      // the user is logged in and headed to /login, no need to login again
-      if (loggedIn && goingToLogin) return '/';
+      // if the user is logged in but still on the login page, send them to
+      // the home page
+      if (loggingIn) return '/';
 
       // no need to redirect at all
       return null;
@@ -72,6 +72,29 @@ class App extends StatelessWidget {
     // changes on the listenable will cause the router to refresh it's route
     refreshListenable: loginInfo,
   );
+}
+
+class LoginScreen extends StatelessWidget {
+  const LoginScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: const Text(App.title)),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  // log a user in, letting all the listeners know
+                  context.read<LoginInfo>().login('test-user');
+                },
+                child: const Text('Login'),
+              ),
+            ],
+          ),
+        ),
+      );
 }
 
 class HomeScreen extends StatelessWidget {
@@ -136,28 +159,5 @@ class PersonScreen extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: Text(person.name)),
         body: Text('${person.name} ${family.name} is ${person.age} years old'),
-      );
-}
-
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: const Text(App.title)),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: () {
-                  // log a user in, letting all the listeners know
-                  context.read<LoginInfo>().login('test-user');
-                },
-                child: const Text('Login'),
-              ),
-            ],
-          ),
-        ),
       );
 }

@@ -1,5 +1,12 @@
 # Changelog
 
+### 2.5.8
+
+- updated the examples using the `from` query parameter to be more
+  self-contained in the `redirect` function (TODO: docs)
+- updated the async data example to be simpler (TODO: docs)
+- added a new repository pattern example (TODO)
+
 ### 2.5.7
 
 - [PR 262](https://github.com/csells/go_router/pull/262): add support for
