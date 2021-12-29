@@ -1,0 +1,27 @@
+# ウェブ履歴
+
+ページ間を遷移する際にウェブブラウザに履歴エントリーを作成させたくない場合は
+[Router.neglect](https://api.flutter.dev/flutter/widgets/Router/neglect.html) を使用してください。
+
+```dart
+ElevatedButton(
+  // この遷移におけるブラウザによる履歴の追跡をオフにする
+  onPressed: () => Router.neglect(context, () => context.go('/page2'))},
+  ...
+),
+```
+
+`Router.neglect` を使用することで Flutter のルータは遷移先のページをブラウザの履歴に追加しません。
+アプリ全体で履歴の追跡を停止したい場合は、`GoRouter` コンストラクタの `routerNeglect` パラメータを設定してください。
+これにより go_router を介して行われるナビゲーションは全て履歴エントリーが作成されなくなります。
+
+```dart
+final _router = GoRouter(
+  // 全てのナビゲーションにおけるブラウザの履歴追跡をオフにする
+  routerNeglect: true,
+  ...
+);
+```
+
+尚、これらの設定を行ってもディープリンクと動的リンクには影響せず、ブラウザのアドレスバーも通常通り更新されます。
+影響が出るのはブラウザの戻るボタンだけです。
