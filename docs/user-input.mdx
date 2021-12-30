@@ -1,0 +1,234 @@
+# User Input Forms
+
+Often when you're gathering user input, you will to create a screen containing a
+form and then add the data to your app's data store. You can do that in your
+go_router app using the built-in `Navigator` in the same way you normally would.
+In addition, you can also use go_router without the use of the `Navigator` to
+accomplish the same thing. Let's take a look at both.
+
+## Navigator-style
+
+To push a page on the stack to gather data using the `Navigator` looks like
+this:
+
+```dart
+...
+
+IconButton(
+  onPressed: () => _addPerson(context),
+  tooltip: 'Add Person',
+  icon: const Icon(Icons.add),
+),
+
+...
+
+Future<void> _addPerson(BuildContext context) async {
+  // gather the user input
+  final person = await Navigator.push<Person>(
+    context,
+    MaterialPageRoute(
+      builder: (context) => NewPersonScreen(family: widget.family),
+    ),
+  );
+
+  if (person != null) {
+    // add the person to the data store
+    setState(() => widget.family.people.add(person));
+
+    // go to the new person's detail page
+    context.goNamed('person', params: {
+      'fid': widget.family.id,
+      'pid': person.id,
+    });
+  }
+}
+```
+
+This example shows how to use the `Navigator` widget to push a new page and
+gather the result. It doesn't use the `GoRouter` but works just the way you'd
+expect, e.g. it will create a new page on the stack of pages, show a Back button
+in the `AppBar`, etc. To return results, use `Navigator.pop` as you normally
+would:
+
+```dart
+ButtonBar(children: [
+  TextButton(
+    onPressed: () => Navigator.pop(context),
+    child: const Text('Cancel'),
+  ),
+  ElevatedButton(
+    onPressed: () {
+      if (_formKey.currentState!.validate()) {
+        final person = Person(
+          id: 'p${widget.family.people.length + 1}',
+          name: _nameController.text,
+          age: int.parse(_ageController.text),
+        );
+
+        Navigator.pop(context, person);
+      }
+    },
+    child: const Text('Create'),
+  ),
+]),
+```
+
+You can feel free to use `GoRouter` and `Navigator` together like this. However,
+one thing that using `Navigator.push` in this way will not do is update the
+browser's address bar. If you want that, you'll need to use `GoRouter.go` or
+`GoRouter.push`.
+
+## GoRouter-style
+
+If you do want to gather input using a `GoRoute` page, you can. You'll notice,
+however, that neither `go` nor `push` provides for waiting on results. That's
+because `GoRouter` is meant for use with deep and dynamic linking, i.e.
+everything about a location in your app can be expressed as a link. If you're
+calling `Navigator.push` and waiting on the results from some random place in
+your app, that's not something that can be represented in a link.
+
+That doesn't mean that you can't use `GoRouter` to navigate to a page that
+gathers user input; in fact, that's a common scenario that `GoRouter` supports.
+Because the results of the navigation are not available to the caller when using
+the `GoRouter`, the screen itself would be responsible for managing what happens
+to the user input, e.g.
+
+```dart
+ButtonBar(children: [
+  TextButton(
+    onPressed: () {
+      // Navigator.pop(context) would work here, too
+      context.pop();
+    },
+    child: const Text('Cancel'),
+  ),
+  ElevatedButton(
+    onPressed: () {
+      if (_formKey.currentState!.validate()) {
+        final person = Person(
+          id: 'p${widget.family.people.length + 1}',
+          name: _nameController.text,
+          age: int.parse(_ageController.text),
+        );
+
+        // add the person to the data store
+        widget.family.people.add(person);
+
+        // go to the new person's detail page
+        context.goNamed('person', params: {
+          'fid': widget.family.id,
+          'pid': person.id,
+        });
+      }
+    },
+    child: const Text('Create'),
+  ),
+]),
+```
+
+With this implementation, you can set up a sub-route to provide a page to add a
+new person:
+
+```dart
+GoRoute(
+  name: 'home',
+  path: '/',
+  builder: ...,
+  routes: [
+    GoRoute(
+      name: 'family',
+      path: 'family/:fid',
+      builder: ...,
+      routes: [
+        GoRoute(
+          name: 'person',
+          path: 'person/:pid',
+          builder: ...,
+        ),
+        GoRoute(
+          name: 'new-person',
+          path: 'new-person',
+          builder: (context, state) {
+            final family = Families.family(state.params['fid']!);
+            return NewPersonScreen(family: family);
+          },
+        ),
+      ],
+    ),
+  ],
+),
+```
+
+And now your `_addPerson` method would look like this:
+
+```dart
+void _addPerson(BuildContext context) {
+  context.goNamed('new-person', params: {'fid': widget.family.id});
+}
+```
+
+The benefit of using `GoRouter` for this kind of scenario is that the user input
+form shows up in the browser bar, so works with deep linking. Also, since the
+page itself is managing the user input, when the user presses the OK button, you
+can navigate directly to the new person's detail page, saving a little flash of
+the parent page first as you'd get with the `Navigator` approach.
+
+## Canceling a pop
+
+When you're gathering user input in a form-style page, pressing the Cancel
+button will drop the user's data, which you may want to warn the user about,
+e.g.
+
+```dart
+TextButton(
+  onPressed: () async {
+    // ask the user if they'd like to adandon their data
+    if (await abandonNewPerson(context)) context.pop();
+  },
+  child: const Text('Cancel'),
+),
+
+...
+
+Future<bool> abandonNewPerson(BuildContext context) async {
+  final result = await showOkCancelAlertDialog(
+    context: context,
+    title: 'Abandon New Person',
+    message: 'Are you sure you abandon this new person?',
+    okLabel: 'Keep',
+    cancelLabel: 'Abandon',
+  );
+
+  return result == OkCancelResult.cancel;
+}
+```
+
+Here if the user presses the Cancel button, the dialog will be shown to ask them
+if they'd like to abandon the data they've entered. If they says that they do,
+the page is popped without the data being saved. This is also handy when the
+user presses the Back button on the AppBar. You can control the behavior in that
+case with the use of the `WillPopScope` widget:
+
+```dart
+class _NewPersonScreenState extends State<NewPersonScreen> {
+  @override
+  Widget build(BuildContext context) => WillPopScope(
+        // ask the user if they'd like to adandon their data
+        onWillPop: () async => abandonNewPerson(context),
+        child: Scaffold(...),
+  );
+  ...
+}
+```
+
+By returning `false` from `onWillPop`, the page will not be popped. This
+technique works for pages put on the stack by the `Navigator` as well as by the
+`GoRouter`
+
+![WillPopScope in action](/images/willpopscope.png)
+
+However, this won't stop the user from pressing the browser's Back button and
+losing the data they've entered. Flutter's Router API provides no hook for that,
+unfortunately. If you'd like to disable the Back button for navigation in your
+go_router app, you can use the "router neglect" options described in [the Web
+Browser docs](/web-history).

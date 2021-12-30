@@ -20,6 +20,7 @@
     ["Sub-routes", "/sub-routes"],
     ["Redirection", "/redirection"],
     ["Named Routes", "/named-routes"],
+    ["User Input", "/user-input"],
     ["URL Path Strategy", "/url-path-strategy"],
     ["Debugging Your Routes", "/debugging"],
     ["Examples", "/examples"],
@@ -31,7 +32,6 @@
         ["Async Data", "/async-data"],
         ["Nested Navigation", "/nested-navigation"],
         ["Navigator Builder", "/navigator-builder"],
-        ["Navigator Integration", "/navigator-integration"],
         ["Web History", "/web-history"],
         ["Type Routing Proposal", "/typed-routing"]
       ]

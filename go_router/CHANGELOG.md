@@ -13,6 +13,8 @@
   self-contained in the `redirect` function, simplifying usage
 - updated the async data example to be simpler
 - added a new example to show how to implement a loading page
+- renamed the navigator_integration example to user_input and added an example
+  of `WillPopScope` for go_router apps
 
 ### 2.5.6
 
