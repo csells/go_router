@@ -132,7 +132,7 @@ class AuthOverlay extends StatelessWidget {
             right: 4,
             child: ElevatedButton(
               onPressed: onLogout,
-              child: const Icon(Icons.logout)
+              child: const Icon(Icons.logout),
             ),
           ),
         ],
