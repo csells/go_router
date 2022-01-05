@@ -1,0 +1,127 @@
+# Migrating to 3.0
+
+go_router v3.0 comes with two breaking changes:
+
+1. signature of the `navigatorBuilder` function
+1. behavior and signature of the `GoRouter.pop` function
+
+## New `navigatorBuilder` function signature
+
+In previous version, the `navigatorBuilder` function was called with a
+`BuildContext` and a `Widget?`. You could implement it like so:
+
+```dart
+final _router = GoRouter(
+  routes: ...,
+
+  // add a wrapper around the navigator to put loginInfo into the widget tree
+  navigatorBuilder: (context, child) => ChangeNotifierProvider<LoginInfo>.value(
+    value: loginInfo,
+    child: child,
+    builder: (context, child) => child!,
+  ),
+);
+```
+
+Two problems with this signature were that the `child` parameter was nullable,
+even though it would never be `null`. This was done to reuse the
+`TransitionBuilder` typedef, but the result was that a `navigatorBuilder`
+function implementation would need to need to check for `null`; annoying!
+
+Even worse, if you wanted to drive the `navigatorBuilder` function
+implementation with information like the navigation location, it wasn't
+available as a parameter; super annoying!
+
+In v3, both of these problems were addressed by changing the signature of
+`navigatorBuilder`:
+
+```dart
+/// The signature of the navigatorBuilder callback.
+typedef GoRouterNavigatorBuilder = Widget Function(
+  BuildContext context,
+  GoRouterState state,
+  Widget child,
+);
+```
+
+This allows an implementation to use the location, e.g. like this from the
+[nested navigation
+samples](https://github.com/csells/go_router/blob/main/go_router/example/lib/nested_nav.dart):
+
+```dart
+navigatorBuilder: (context, state, child) => Material(
+    child: Column(
+      children: [
+        Expanded(child: child),
+        Padding(
+          padding: const EdgeInsets.all(8),
+          child: Text(state.location), // now you can use GoRouterState
+        ),
+      ],
+    ),
+  ),
+```
+
+This implementation shows the current location as the user navigates through the
+app, something that was harder to do in previous versions.
+
+## Change to the `GoRouter.pop` function behavior and signature
+
+In previous versions, the `GoRouter.pop` function simply called `Navigator.pop`.
+This was somewhat non-intuitive, since, unlike the rest of the `GoRouter`
+methods, it required a `BuildContext` parameter:
+
+```dart
+// global GoRouter
+final _router = GoRouter(...);
+
+...
+
+TextButton(
+  onPressed: () async {
+    if (await abandonNewPerson(context)) {
+      _router.pop(context); // pass the context, please
+    }
+  },
+  child: const Text('Cancel'),
+),
+```
+
+Some developers prefer to make their `GoRouter` instance global so that they can
+call them without the use of a context, which meant they couldn't call `pop`.
+This was done as a simple way to implement `GoRouter.pop` by simply forwarding
+to `Navigator.pop`, which itself was non-intuitive; go_router has it's own stack
+of pages, calling `pop` should just work with those pages, right?
+
+Either way, you can continue to call `Naviator.pop(context)` if that's the
+behavior you want. Otherwise, you can use the simpler version of `GoRouter.pop`:
+
+```dart
+// global GoRouter
+final _router = GoRouter(...);
+
+...
+
+TextButton(
+  onPressed: () async {
+    if (await abandonNewPerson(context)) {
+      _router.pop(); // no context for you!
+    }
+  },
+  child: const Text('Cancel'),
+),
+```
+
+If you do have context and are using the Dart extension, your code won't need to
+change at all:
+
+```dart
+TextButton(
+  onPressed: () async {
+    if (await abandonNewPerson(context)) {
+      context.pop(); // no code changes needed in this case
+    }
+  },
+  child: const Text('Cancel'),
+),
+```

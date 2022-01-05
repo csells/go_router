@@ -100,15 +100,15 @@ class LoginInfo2 extends ChangeNotifier {
   bool get loggedIn => _userName.isNotEmpty;
 
   Future<void> login(String userName) async {
-    await Future<void>.delayed(const Duration(microseconds: 2500));
     _userName = userName;
     notifyListeners();
+    await Future<void>.delayed(const Duration(microseconds: 2500));
   }
 
   Future<void> logout() async {
-    await Future<void>.delayed(const Duration(microseconds: 2500));
     _userName = '';
     notifyListeners();
+    await Future<void>.delayed(const Duration(microseconds: 2500));
   }
 }
 
