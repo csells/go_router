@@ -1,5 +1,16 @@
 # Changelog
 
+### 3.0.0
+
+- breaking change: added `GoRouterState` to `navigatorBuilder` function
+- breaking change: removed `BuildContext` from `GoRouter.pop()` to remove the
+  need to use `context` parameter when calling the `GoRouter` API; this changes
+  the behavior of `GoRouter.pop()` to only pop what's on the `GoRouter` page
+  stack and no longer calls `Navigator.pop()`
+- new [Migrating to 3.0 section](https://gorouter.dev/migrating-to-30) in the
+  docs to describe the details of the breaking changes and how to update your
+  code
+
 ### 2.5.7
 
 - [PR 262](https://github.com/csells/go_router/pull/262): add support for

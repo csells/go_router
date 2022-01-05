@@ -16,6 +16,8 @@ class AppState extends ChangeNotifier {
   final repo = ValueNotifier<Repository2?>(null);
 
   Future<void> loginChange() async {
+    notifyListeners();
+
     // this will call notifyListeners(), too
     repo.value =
         loginInfo.loggedIn ? await Repository2.get(loginInfo.userName) : null;
@@ -102,26 +104,18 @@ class App extends StatelessWidget {
       return null;
     },
     refreshListenable: appState,
-    navigatorBuilder: (context, child) => appState.loginInfo.loggedIn
-        ? AuthOverlay(
-            onLogout: () async {
-              await appState.loginInfo.logout();
-              _router.go('/'); // clear query parameters
-            },
-            child: child!)
-        : child!,
+    navigatorBuilder: (context, state, child) =>
+        appState.loginInfo.loggedIn ? AuthOverlay(child: child) : child,
   );
 }
 
 class AuthOverlay extends StatelessWidget {
   const AuthOverlay({
-    required this.onLogout,
     required this.child,
     Key? key,
   }) : super(key: key);
 
   final Widget child;
-  final VoidCallback onLogout;
 
   @override
   Widget build(BuildContext context) => Stack(
@@ -131,8 +125,13 @@ class AuthOverlay extends StatelessWidget {
             top: 90,
             right: 4,
             child: ElevatedButton(
-              onPressed: onLogout,
-              child: const Icon(Icons.logout)
+              onPressed: () async {
+                // ignore: unawaited_futures
+                context.read<AppState>().loginInfo.logout();
+                // ignore: use_build_context_synchronously
+                context.go('/'); // clear query parameters
+              },
+              child: const Icon(Icons.logout),
             ),
           ),
         ],
@@ -156,7 +155,8 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               ElevatedButton(
                 onPressed: () async {
-                  await context.read<AppState>().loginInfo.login('test-user');
+                  // ignore: unawaited_futures
+                  context.read<AppState>().loginInfo.login('test-user');
                 },
                 child: const Text('Login'),
               ),
@@ -173,7 +173,15 @@ class LoadingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
         appBar: AppBar(title: const Text(App.title)),
-        body: const Center(child: Text('loading...')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              CircularProgressIndicator(),
+              Text('loading repository...'),
+            ],
+          ),
+        ),
       );
 }
 
