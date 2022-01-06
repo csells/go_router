@@ -1,10 +1,21 @@
 # Changelog
 
-### 2.6.0-dev
+### 3.1.0-dev
 
 - added `GoRouteData` and `TypedGoRoute` to enable
   [typed routing](https://gorouter.dev/typed-routing).
 - require Dart 2.14 (Flutter 2.5) or greater.
+
+### 3.0.0
+
+- breaking change: added `GoRouterState` to `navigatorBuilder` function
+- breaking change: removed `BuildContext` from `GoRouter.pop()` to remove the
+  need to use `context` parameter when calling the `GoRouter` API; this changes
+  the behavior of `GoRouter.pop()` to only pop what's on the `GoRouter` page
+  stack and no longer calls `Navigator.pop()`
+- new [Migrating to 3.0 section](https://gorouter.dev/migrating-to-30) in the
+  docs to describe the details of the breaking changes and how to update your
+  code
 
 ### 2.5.7
 

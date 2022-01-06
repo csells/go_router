@@ -213,8 +213,7 @@ class _NewPersonScreen1State extends State<NewPersonScreen1> {
                         onPressed: () async {
                           // ask the user if they'd like to adandon their data
                           if (await abandonNewPerson(context)) {
-                            // Navigator.pop(context) would work here, too
-                            context.pop();
+                            Navigator.pop(context);
                           }
                         },
                         child: const Text('Cancel'),

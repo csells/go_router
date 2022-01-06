@@ -29,7 +29,7 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
     UrlPathStrategy? urlPathStrategy,
     List<NavigatorObserver>? observers,
     bool debugLogDiagnostics = false,
-    TransitionBuilder? navigatorBuilder,
+    GoRouterNavigatorBuilder? navigatorBuilder,
     String? restorationScopeId,
   }) {
     if (urlPathStrategy != null) setUrlPathStrategy(urlPathStrategy);
@@ -50,9 +50,9 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
       restorationScopeId: restorationScopeId,
       // wrap the returned Navigator to enable GoRouter.of(context).go() et al,
       // allowing the caller to wrap the navigator themselves
-      builderWithNav: (context, nav) => InheritedGoRouter(
+      builderWithNav: (context, state, nav) => InheritedGoRouter(
         goRouter: this,
-        child: navigatorBuilder?.call(context, nav) ?? nav,
+        child: navigatorBuilder?.call(context, state, nav) ?? nav,
       ),
     );
   }
@@ -116,9 +116,8 @@ class GoRouter extends ChangeNotifier with NavigatorObserver {
         extra: extra,
       );
 
-  /// Pop the top page off the Navigator's page stack by calling
-  /// [Navigator.pop].
-  void pop(BuildContext context) => Navigator.pop(context);
+  /// Pop the top page off the GoRouter's page stack.
+  void pop() => routerDelegate.pop();
 
   /// Refresh the route.
   void refresh() => routerDelegate.refresh();

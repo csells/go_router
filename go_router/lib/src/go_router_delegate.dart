@@ -163,10 +163,22 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     notifyListeners();
   }
 
-  /// push the given location onto the page stack
+  /// Push the given location onto the page stack
   void push(String location, {Object? extra}) {
     log.info('pushing $location');
     _push(location, extra: extra);
+    notifyListeners();
+  }
+
+  /// Pop the top page off the GoRouter's page stack.
+  void pop() {
+    _matches.remove(_matches.last);
+    if (_matches.isEmpty) {
+      throw Exception(
+        'have popped the last page off of the stack; '
+        'there are no pages left to show',
+      );
+    }
     notifyListeners();
   }
 
@@ -309,7 +321,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
             GoRouterState(
               this,
               location: loc,
-              name: null,
+              name: null, // no name available at the top level
               // trim the query params off the subloc to match route.redirect
               subloc: uri.path,
               // pass along the query params 'cuz that's all we have right now
@@ -627,8 +639,18 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     assert(pages != null);
 
     // wrap the returned Navigator to enable GoRouter.of(context).go()
+    final uri = Uri.parse(location);
     return builderWithNav(
       context,
+      GoRouterState(
+        this,
+        location: location,
+        name: null, // no name available at the top level
+        // trim the query params off the subloc to match route.redirect
+        subloc: uri.path,
+        // pass along the query params 'cuz that's all we have right now
+        queryParams: uri.queryParameters,
+      ),
       Navigator(
         restorationScopeId: restorationScopeId,
         key: _key, // needed to enable Android system Back button
@@ -636,19 +658,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         observers: observers,
         onPopPage: (route, dynamic result) {
           if (!route.didPop(result)) return false;
-
-          _matches.remove(_matches.last);
-          if (_matches.isEmpty) {
-            throw Exception(
-              'have popped the last page off of the stack; '
-              'there are no pages left to show',
-            );
-          }
-
-          // this hack allows the browser's address bar to be updated after a
-          // push and pressing the Back button, but it shouldn't be necessary...
-          notifyListeners();
-
+          pop();
           return true;
         },
       ),

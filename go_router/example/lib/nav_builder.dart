@@ -89,32 +89,22 @@ class App extends StatelessWidget {
     // add a wrapper around the navigator to:
     // - put loginInfo into the widget tree, and to
     // - add an overlay to show a logout option
-    navigatorBuilder: (context, child) =>
+    navigatorBuilder: (context, state, child) =>
         ChangeNotifierProvider<LoginInfo>.value(
       value: loginInfo,
-      child: child,
-      builder: (context, child) => loginInfo.loggedIn
-          ? AuthOverlay(
-              onLogout: () {
-                loginInfo.logout();
-                _router.goNamed('home'); // clear out the `from` query param
-              },
-              child: child!)
-          : child!,
+      builder: (context, _) {
+        debugPrint('navigatorBuilder: ${state.subloc}');
+        return loginInfo.loggedIn ? AuthOverlay(child: child) : child;
+      },
     ),
   );
 }
 
 // A simple class for placing an exit button on top of all screens
 class AuthOverlay extends StatelessWidget {
-  const AuthOverlay({
-    required this.onLogout,
-    required this.child,
-    Key? key,
-  }) : super(key: key);
+  const AuthOverlay({required this.child, Key? key}) : super(key: key);
 
   final Widget child;
-  final VoidCallback onLogout;
 
   @override
   Widget build(BuildContext context) => Stack(
@@ -124,7 +114,10 @@ class AuthOverlay extends StatelessWidget {
             top: 90,
             right: 4,
             child: ElevatedButton(
-              onPressed: onLogout,
+              onPressed: () {
+                context.read<LoginInfo>().logout();
+                context.goNamed('home'); // clear out the `from` query param
+              },
               child: const Icon(Icons.logout),
             ),
           ),

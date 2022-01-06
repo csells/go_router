@@ -12,6 +12,7 @@ typedef GoRouterBuilderWithMatches = Widget Function(
 /// Signature of a go router builder function with navigator.
 typedef GoRouterBuilderWithNav = Widget Function(
   BuildContext context,
+  GoRouterState state,
   Navigator navigator,
 );
 
@@ -29,3 +30,10 @@ typedef GoRouterWidgetBuilder = Widget Function(
 
 /// The signature of the redirect callback.
 typedef GoRouterRedirect = String? Function(GoRouterState state);
+
+/// The signature of the navigatorBuilder callback.
+typedef GoRouterNavigatorBuilder = Widget Function(
+  BuildContext context,
+  GoRouterState state,
+  Widget child,
+);
