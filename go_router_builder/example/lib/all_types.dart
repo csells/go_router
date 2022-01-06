@@ -54,7 +54,17 @@ class AllTypesRoute extends GoRouteData {
   final Uri? uriField;
 
   @override
-  Widget build(BuildContext context) => const Text('built!');
+  Widget build(BuildContext context) => Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('built!'),
+              SelectableText(location),
+            ],
+          ),
+        ),
+      );
 
   @override
   int get hashCode => Object.hashAll(_items);
@@ -123,6 +133,15 @@ class AllTypesApp extends StatelessWidget {
           requiredNumField: 3.15,
           requiredStringField: r'$!/#bob%%20',
           requiredUriField: Uri.parse('https://dart.dev'),
+          bigIntField: BigInt.zero,
+          boolField: false,
+          dateTimeField: DateTime(0),
+          doubleField: 3.14,
+          enumField: PersonDetails.favoriteSport,
+          intField: -42,
+          numField: 3.15,
+          stringField: r'$!/#bob%%20',
+          uriField: Uri.parse('https://dart.dev'),
         ).location;
 
         return location;
