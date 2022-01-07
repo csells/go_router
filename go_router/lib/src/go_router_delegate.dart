@@ -596,18 +596,31 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     return '${parentFullLoc == '/' ? '' : parentFullLoc}/$path';
   }
 
+  // Use an overlay so that things like bottom navigation bar can be build
+  // inside the navigatorBuilder; use the null value to know if this
+  // [OverlayEntry] as been created or not; it will be created during the first
+  // [build]
+  OverlayEntry? _overlayEntry;
+  final _overlayKey = GlobalKey<OverlayState>();
+
+  // Store the pages and state here otherwise the [_overlayEntry] is not updated
+  List<Page<dynamic>>? _overlayPages;
+  GoRouterState? _overlayState;
+
   Widget _builder(BuildContext context, Iterable<GoRouteMatch> matches) {
-    List<Page<dynamic>>? pages;
+    // clear page stack and state passed to overlay
+    _overlayPages = null;
+    _overlayState = null;
 
     try {
       // build the stack of pages
       if (routerNeglect) {
         Router.neglect(
           context,
-          () => pages = getPages(context, matches.toList()).toList(),
+          () => _overlayPages = getPages(context, matches.toList()).toList(),
         );
       } else {
-        pages = getPages(context, matches.toList()).toList();
+        _overlayPages = getPages(context, matches.toList()).toList();
       }
 
       // note that we need to catch it this way to get all the info, e.g. the
@@ -619,7 +632,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
       // if there's an error, show an error page
       final uri = Uri.parse(location);
-      pages = [
+      _overlayPages = [
         _errorPageBuilder(
           context,
           GoRouterState(
@@ -635,33 +648,43 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     }
 
     // we should've set pages to something by now
-    assert(pages != null);
+    assert(_overlayPages != null);
 
-    // wrap the returned Navigator to enable GoRouter.of(context).go()
+    // create a state object to pass to the navigatorBuilder
     final uri = Uri.parse(location);
-    return builderWithNav(
-      context,
-      GoRouterState(
-        this,
-        location: location,
-        name: null, // no name available at the top level
-        // trim the query params off the subloc to match route.redirect
-        subloc: uri.path,
-        // pass along the query params 'cuz that's all we have right now
-        queryParams: uri.queryParameters,
-      ),
-      Navigator(
-        restorationScopeId: restorationScopeId,
-        key: _key, // needed to enable Android system Back button
-        pages: pages!,
-        observers: observers,
-        onPopPage: (route, dynamic result) {
-          if (!route.didPop(result)) return false;
-          pop();
-          return true;
-        },
+    _overlayState = GoRouterState(
+      this,
+      location: location,
+      name: null, // no name available at the top level
+      // trim the query params off the subloc to match route.redirect
+      subloc: uri.path,
+      // pass along the query params 'cuz that's all we have right now
+      queryParams: uri.queryParameters,
+    );
+
+    // use an overlay so that things like bottom navigation bar can be build
+    // inside the navigatorBuilder
+    _overlayEntry ??= OverlayEntry(
+      // wrap the returned Navigator to enable GoRouter.of(context).go()
+      builder: (context) => builderWithNav(
+        context,
+        _overlayState!,
+        Navigator(
+          restorationScopeId: restorationScopeId,
+          key: _key, // needed to enable Android system Back button
+          pages: _overlayPages!,
+          observers: observers,
+          onPopPage: (route, dynamic result) {
+            if (!route.didPop(result)) return false;
+            pop();
+            return true;
+          },
+        ),
       ),
     );
+
+    _overlayEntry!.markNeedsBuild();
+    return Overlay(key: _overlayKey, initialEntries: [_overlayEntry!]);
   }
 
   /// Get the stack of sub-routes that matches the location and turn it into a
