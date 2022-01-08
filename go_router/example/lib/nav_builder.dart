@@ -63,7 +63,7 @@ class App extends StatelessWidget {
       final loginloc = state.namedLocation('login');
       final loggingIn = state.subloc == loginloc;
 
-      // bundle the location they user is coming from into a query parameter
+      // bundle the location the user is coming from into a query parameter
       final homeloc = state.namedLocation('home');
       final fromloc = state.subloc == homeloc ? '' : state.subloc;
       if (!loggedIn) {

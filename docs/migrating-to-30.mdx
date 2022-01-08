@@ -3,7 +3,7 @@
 go_router v3.0 comes with two breaking changes:
 
 1. signature of the `navigatorBuilder` function
-1. behavior and signature of the `GoRouter.pop` function
+2. behavior and signature of the `GoRouter.pop` function
 
 ## New `navigatorBuilder` function signature
 
@@ -26,7 +26,7 @@ final _router = GoRouter(
 Two problems with this signature were that the `child` parameter was nullable,
 even though it would never be `null`. This was done to reuse the
 `TransitionBuilder` typedef, but the result was that a `navigatorBuilder`
-function implementation would need to need to check for `null`; annoying!
+function implementation would need to check for `null`; annoying!
 
 Even worse, if you wanted to drive the `navigatorBuilder` function
 implementation with information like the navigation location, it wasn't

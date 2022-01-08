@@ -56,7 +56,7 @@ class _FamilyScreenState extends State<FamilyScreen> {
   void didUpdateWidget(covariant FamilyScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    // refresh cached data
+    // キャッシュデータを更新
     if (oldWidget.fid != widget.fid) _fetch();
   }
 
