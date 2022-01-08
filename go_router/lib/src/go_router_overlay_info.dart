@@ -1,5 +1,8 @@
 // ignore_for_file: public_member_api_docs
 
+import 'dart:html';
+
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 import '../go_router.dart';
@@ -36,6 +39,16 @@ class OverlayBuilder {
 
     _entry!.markNeedsBuild();
     return Overlay(key: _overlayKey, initialEntries: [_entry!]);
-    // return _entry!.builder(context);
+
+    // NOTE: this provides a root Navigator for dialogs, allows for
+    // Navigator.pop() to close a Drawer and can be done directly in the
+    // navigatorBuilder w/o changes to go_router
+    // return Navigator(
+    //   pages: [MaterialPage<void>(child: _entry!.builder(context))],
+    //   onPopPage: (route, dynamic result) {
+    //     route.didPop(result);
+    //     return false;
+    //   },
+    // );
   }
 }

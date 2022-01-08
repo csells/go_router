@@ -1,11 +1,9 @@
 import 'package:adaptive_navigation/adaptive_navigation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 void main() => runApp(App());
-
-// TODO
-// - close the drawer after a selection: https://stackoverflow.com/questions/43807184/how-to-close-scaffolds-drawer-after-an-item-tap
 
 class App extends StatelessWidget {
   App({Key? key}) : super(key: key);
@@ -53,19 +51,33 @@ class SharedScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => AdaptiveNavigationScaffold(
+        // key: _scaffoldKey,
         selectedIndex: selectedIndex,
         destinations: const [
           AdaptiveScaffoldDestination(title: 'Page 1', icon: Icons.first_page),
           AdaptiveScaffoldDestination(title: 'Page 2', icon: Icons.last_page),
+          AdaptiveScaffoldDestination(title: 'About', icon: Icons.info),
         ],
         appBar: AdaptiveAppBar(title: const Text(App.title)),
-        onDestinationSelected: (value) {
+        onDestinationSelected: (value) async {
           switch (value) {
             case 0:
+              Navigator.pop(context);
               context.go('/');
               break;
             case 1:
+              Navigator.pop(context);
               context.go('/page2');
+              break;
+            case 2:
+              Navigator.pop(context);
+              final packageInfo = await PackageInfo.fromPlatform();
+              showAboutDialog(
+                context: context,
+                applicationName: packageInfo.appName,
+                applicationVersion: 'v${packageInfo.version}',
+                applicationLegalese: 'Copyright © 2022, Acme, Corp.',
+              );
               break;
             default:
               throw Exception('Invalid index');

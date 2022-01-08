@@ -1,5 +1,13 @@
 # Changelog
 
+### 3.1.0
+
+- [fix 197](https://github.com/csells/go_router/issues/197): wrap the
+  `Navigator` in an `Overlay` to allow the for things like like bottom
+  navigation bar to be build inside the navigatorBuilder
+- added a new [shared scaffold](TODO) sample to show off the benefits of
+  wrapping the `Navigator` in an `Overlay`
+
 ### 3.0.0
 
 - breaking change: added `GoRouterState` to `navigatorBuilder` function
