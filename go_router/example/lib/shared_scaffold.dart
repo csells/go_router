@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 
 void main() => runApp(App());
 
+// TODO
+// - close the drawer after a selection: https://stackoverflow.com/questions/43807184/how-to-close-scaffolds-drawer-after-an-item-tap
+
 class App extends StatelessWidget {
   App({Key? key}) : super(key: key);
 
@@ -28,10 +31,13 @@ class App extends StatelessWidget {
         builder: (context, state) => const Page2View(),
       ),
     ],
-    navigatorBuilder: (context, state, child) => SharedScaffold(
-      selectedIndex: state.subloc == '/' ? 0 : 1,
-      body: child,
-    ),
+    navigatorBuilder: (context, state, child) {
+      debugPrint('navigatorBuilder: ${state.subloc}');
+      return SharedScaffold(
+        selectedIndex: state.subloc == '/' ? 0 : 1,
+        body: child,
+      );
+    },
   );
 }
 

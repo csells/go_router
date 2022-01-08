@@ -9,6 +9,7 @@ import 'go_route_match.dart';
 import 'go_router_cupertino.dart';
 import 'go_router_error_page.dart';
 import 'go_router_material.dart';
+import 'go_router_overlay_info.dart';
 import 'go_router_state.dart';
 import 'logging.dart';
 import 'typedefs.dart';
@@ -95,6 +96,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
   final List<GoRouteMatch> _matches = [];
   final _namedMatches = <String, GoRouteMatch>{};
   final _pushCounts = <String, int>{};
+  final _overlayBuilder = OverlayBuilder();
 
   void _cacheNamedRoutes(
     List<GoRoute> routes,
@@ -596,31 +598,18 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     return '${parentFullLoc == '/' ? '' : parentFullLoc}/$path';
   }
 
-  // Use an overlay so that things like bottom navigation bar can be build
-  // inside the navigatorBuilder; use the null value to know if this
-  // [OverlayEntry] as been created or not; it will be created during the first
-  // [build]
-  OverlayEntry? _overlayEntry;
-  final _overlayKey = GlobalKey<OverlayState>();
-
-  // Store the pages and state here otherwise the [_overlayEntry] is not updated
-  List<Page<dynamic>>? _overlayPages;
-  GoRouterState? _overlayState;
-
   Widget _builder(BuildContext context, Iterable<GoRouteMatch> matches) {
-    // clear page stack and state passed to overlay
-    _overlayPages = null;
-    _overlayState = null;
+    List<Page<dynamic>>? pages;
 
     try {
       // build the stack of pages
       if (routerNeglect) {
         Router.neglect(
           context,
-          () => _overlayPages = getPages(context, matches.toList()).toList(),
+          () => pages = getPages(context, matches.toList()).toList(),
         );
       } else {
-        _overlayPages = getPages(context, matches.toList()).toList();
+        pages = getPages(context, matches.toList()).toList();
       }
 
       // note that we need to catch it this way to get all the info, e.g. the
@@ -632,7 +621,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
       // if there's an error, show an error page
       final uri = Uri.parse(location);
-      _overlayPages = [
+      pages = [
         _errorPageBuilder(
           context,
           GoRouterState(
@@ -648,14 +637,15 @@ class GoRouterDelegate extends RouterDelegate<Uri>
     }
 
     // we should've set pages to something by now
-    assert(_overlayPages != null);
+    assert(pages != null);
 
     // create a state object to pass to the navigatorBuilder
     final uri = Uri.parse(location);
-    _overlayState = GoRouterState(
+    final state = GoRouterState(
       this,
       location: location,
-      name: null, // no name available at the top level
+      // no name available at the top level
+      name: null,
       // trim the query params off the subloc to match route.redirect
       subloc: uri.path,
       // pass along the query params 'cuz that's all we have right now
@@ -664,15 +654,19 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
     // use an overlay so that things like bottom navigation bar can be build
     // inside the navigatorBuilder
-    _overlayEntry ??= OverlayEntry(
-      // wrap the returned Navigator to enable GoRouter.of(context).go()
-      builder: (context) => builderWithNav(
+    return _overlayBuilder.build(
+      context: context,
+      pages: pages!,
+      state: state,
+      // let the GoRouter wrap the returned Navigator to enable
+      // GoRouter.of(context).go()
+      builder: (context, state, pages) => builderWithNav(
         context,
-        _overlayState!,
+        state,
         Navigator(
           restorationScopeId: restorationScopeId,
           key: _key, // needed to enable Android system Back button
-          pages: _overlayPages!,
+          pages: pages,
           observers: observers,
           onPopPage: (route, dynamic result) {
             if (!route.didPop(result)) return false;
@@ -682,9 +676,6 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         ),
       ),
     );
-
-    _overlayEntry!.markNeedsBuild();
-    return Overlay(key: _overlayKey, initialEntries: [_overlayEntry!]);
   }
 
   /// Get the stack of sub-routes that matches the location and turn it into a
