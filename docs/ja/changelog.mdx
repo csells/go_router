@@ -1,5 +1,13 @@
 # 変更履歴
 
+### 3.0.0
+
+- 破壊的変更: `navigatorBuilder` 関数に `GoRouterState` を追加
+- 破壊的変更: `GoRouter.pop()` で `BuildContext` を渡す必要がなくなった。これは内部の処理を `Navigator.pop()`
+  を呼び出すものから、`GoRouter` ページスタックのページをポップする処理に変更したことによる。
+- 新しいドキュメント [3.0 への移行について](https://gorouter.dev/migrating-to-30) を追加。
+  今回の破壊的変更の詳細および既存コードのアップデート方法を記載。
+
 ### 2.5.7
 
 - [PR 262](https://github.com/csells/go_router/pull/262): `Router.neglect` のサポートを追加。
@@ -7,6 +15,10 @@
 - [PR 265](https://github.com/csells/go_router/pull/265): ドキュメントの日本語版を追加。
   [toshi-kuji](https://github.com/toshi-kuji) に感謝します。
   docs.page での多言語化については対応方法を[模索中](https://github.com/csells/go_router/issues/266)です。
+- クエリパラメータ `from` を使用するサンプルコードを全て `redirect` 関数の中で自己完結するよう修正し、使用方法をシンプルにした
+- 非同期データを参照するサンプルコードをよりシンプルにアップデート
+- ローディング画面を表示する方法を示すサンプルコードを追加
+- navigator_integration のサンプルコードを user_input に名称変更し、go_router で `WillPopScope` を使用する内容にアップデート
 
 ### 2.5.6
 
