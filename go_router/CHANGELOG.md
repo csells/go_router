@@ -1,5 +1,11 @@
 # Changelog
 
+### 3.1.0-dev
+
+- added `GoRouteData` and `TypedGoRoute` to enable
+  [typed routing](https://gorouter.dev/typed-routing).
+- require Dart 2.14 (Flutter 2.5) or greater.
+
 ### 3.0.0
 
 - breaking change: added `GoRouterState` to `navigatorBuilder` function

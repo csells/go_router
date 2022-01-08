@@ -1,20 +1,20 @@
 # Typed Routing Proposal
 
-*__The following is a proposal for a typed routing system. Some of it is
+_**The following is a proposal for a typed routing system. Some of it is
 implemented in [a PR](https://github.com/csells/go_router/pull/130), but it is
 not done yet nor is it currently available as a supported part of the go_router
 package. I'm writing this down as a way to do what I like doing: focusing on the
-client code I want to write instead of focusing only on the implementation.__*
+client code I want to write instead of focusing only on the implementation.**_
 
 ## Goal
 
-Routing in go_router fundamentally relies on the ability to match a string-based
-location in a URI format into one or more page builders, each that require zero
-or more arguments that are passed as path and query parameters as part of the
-location. go_router does a good job of making the path and query parameters
-available via the `params` and `queryParams` properties of the `GoRouterState`
-object, but often the page builder must first parse the parameters into types
-that aren't `String`s, e.g.
+Routing in `go_router` fundamentally relies on the ability to match a
+string-based location in a URI format into one or more page builders, each that
+require zero or more arguments that are passed as path and query parameters as
+part of the location. go_router does a good job of making the path and query
+parameters available via the `params` and `queryParams` properties of the
+`GoRouterState` object, but often the page builder must first parse the
+parameters into types that aren't `String`s, e.g.
 
 ```dart
 GoRoute(
@@ -189,10 +189,10 @@ You can, of course, combine the use of path, query and $extra parameters:
 
 ```dart
 class HotdogRouteWithEverything extends GoRouteData {
-  HotdogRouteWithEverything(this.ketchup, this.mustard, this.$extra);
+  HotdogRouteWithEverything(this.ketchup, {this.mustard, this.$extra});
   final bool ketchup; // required path parameter
   final String? mustard; // optional query parameter
-  final Sauce $extra; // special $extra parameter
+  final Sauce? $extra; // special $extra parameter
 
   @override
   Widget build(BuildContext context) => HotdogScreen(ketchup, mustard, $extra);
