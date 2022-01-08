@@ -1,0 +1,120 @@
+# 3.0 への移行について
+
+go_router v3.0 には2点の破壊的変更があります。
+
+1. `navigatorBuilder` 関数のシグネチャ
+2. `GoRouter.pop` 関数の動作とシグネチャ
+
+## `navigatorBuilder` 関数のシグネチャの変更
+
+以前のバージョンでは `navigatorBuilder` 関数には `BuildContext` と `Widget?` が渡されていました。
+例えば、次のように。
+
+```dart
+final _router = GoRouter(
+  routes: ...,
+
+  // loginInfo をウィジェットツリーに挿入するために Navigator にラッパーを追加する
+  navigatorBuilder: (context, child) => ChangeNotifierProvider<LoginInfo>.value(
+    value: loginInfo,
+    child: child,
+    builder: (context, child) => child!,
+  ),
+);
+```
+
+このシグネチャには2つの問題点がありました。
+まず、`child` は絶対に `null` になることがないにも関わらず null 許容型でした。
+これは Flutter のタイプデフ `TransitionBuilder` を再利用していたことによるものだったのですが、
+このため `navigatorBuilder` 関数を実装する際は `null` チェックをする必要がありました（なんて面倒だ!）。
+
+さらに、`navigatorBuilder` 関数の中でロケーション情報に応じた処理を行いたくても
+`GoRouterState` がパラメータにありませんでした（スーパー面倒だ!）。
+
+v3 では、`navigatorBuilder` のシグネチャを変更することでこの2つの問題を解決しました。
+
+```dart
+/// navigatorBuilder コールバックのシグネチャ
+typedef GoRouterNavigatorBuilder = Widget Function(
+  BuildContext context,
+  GoRouterState state,
+  Widget child,
+);
+```
+
+これによりロケーション情報を使用した実装が可能になりました。
+例えば、次のように（[ネスト型ナビゲーションのサンプル](https://github.com/csells/go_router/blob/main/go_router/example/lib/nested_nav.dart)から抜粋）。
+
+```dart
+navigatorBuilder: (context, state, child) => Material(
+    child: Column(
+      children: [
+        Expanded(child: child),
+        Padding(
+          padding: const EdgeInsets.all(8),
+          child: Text(state.location), // GoRouterState が使用可能
+        ),
+      ],
+    ),
+  ),
+```
+
+この実装では、ユーザーが画面遷移する度に現在のロケーション情報を表示します。
+これは以前のバージョンでは実現が難しかったことです。
+
+## `GoRouter.pop` 関数の動作とシグネチャの変更
+
+以前のバージョンでは `GoRouter.pop` 関数は単純に `Navigator.pop` を呼び出すだけでした。
+そのため、他の `GoRouter` メソッドと異なり `BuildContext` が必要でした。
+
+```dart
+// グローバルの GoRouter
+final _router = GoRouter(...);
+
+...
+
+TextButton(
+  onPressed: () async {
+    if (await abandonNewPerson(context)) {
+      _router.pop(context); // context が必要
+    }
+  },
+  child: const Text('Cancel'),
+),
+```
+
+また開発者の中には `GoRouter` を context レスで呼び出すために `GoRouter` インスタンスをグローバルに置く人もいますが、
+その場合でも `pop` を呼び出すには context が必要でした。
+go_router がページのスタックを管理しているのだから、`pop` だけで済むはずだと思いますよね？
+このシグネチャはあまり直感的とは言えないものでした。
+
+本バージョンでは内部の動作を変えることで context が不要になりました（引き続き `Naviator.pop(context)` を使うこともできます）。
+
+```dart
+// グローバルの GoRouter
+final _router = GoRouter(...);
+
+...
+
+TextButton(
+  onPressed: () async {
+    if (await abandonNewPerson(context)) {
+      _router.pop(); // context 不要！
+    }
+  },
+  child: const Text('Cancel'),
+),
+```
+
+Dart の拡張メソッドを通じて `pop` を使用している場合は、現状のコードを変更する必要はありません。
+
+```dart
+TextButton(
+  onPressed: () async {
+    if (await abandonNewPerson(context)) {
+      context.pop(); // この場合は現状のコードで問題なし
+    }
+  },
+  child: const Text('Cancel'),
+),
+```

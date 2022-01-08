@@ -47,14 +47,14 @@ class App extends StatelessWidget {
 
     // ユーザーがログインしていない場合はログインページにリダイレクト
     redirect: (state) {
+      // ユーザーがログインしていない場合はログインが必要
       final loggedIn = loginInfo.loggedIn;
-      final goingToLogin = state.location == '/login';
+      final loggingIn = state.subloc == '/login';
+      if (!loggedIn) return loggingIn ? null : '/login';
 
-      // ユーザーがログインしておらず、かつ /login に向かっていない場合はログインが必要
-      if (!loggedIn && !goingToLogin) return '/login';
-
-      // ユーザーがログイン済みで、かつ /login に向かっている場合はログイン不要
-      if (loggedIn && goingToLogin) return '/';
+      // ユーザーがログインしているにも関わらず、まだログイン画面にいる場合は
+      // ホーム画面に誘導する
+      if (loggingIn) return '/';
 
       // 一切リダイレクトが不要な場合
       return null;
@@ -63,10 +63,13 @@ class App extends StatelessWidget {
 }
 ```
 
-このコードでは、ユーザーがログインしておらず、ロケーション名が `/login` 以外の場合は `/login` にリダイレクトします。
-同様に、ユーザーが_ログインしている_にもかかわらず、ロケーション名が `/login` の場合は `/` にリダイレクトします。
-リダイレクトする必要がない場合は、単純に `null` を返します。
-`redirect` 関数は `null` を返すまで繰り返し呼び出され、[連続リダイレクト](#連続リダイレクト)も可能です。
+このコードでは、ユーザーがログインしていない場合は、`null` を返すことで元々行く予定の `/login` にそのまま誘導するか、
+`'/login'` を返すことで `/login` にリダイレクトします。
+
+一方、ユーザーが既にログインしているにも関わらず `/login` に向かっている場合は、代わりに `/` へリダイレクトします。
+
+そして、ユーザーが既にログインしており `/login` 以外のロケーションへ向かっている場合は、`null` を返すことで元々の行き先に誘導します。
+`redirect` 関数は `null` を返すまで繰り返し呼び出され、[連続リダイレクト](#multiple-redirections) します。
 
 このようなログイン情報を、ウィジェットツリーに挿入してアプリ内のどこからでもアクセスできるようにするには、
 [provider](https://pub.dev/packages/provider) のような状態管理パッケージの利用をおすすめします。
@@ -141,7 +144,7 @@ onPressed: () {
   // ユーザーをログインさせてリスナーに通知
   context.read<LoginInfo>().login('test-user');
 
-  // loginInfo があるので、/login から / へルータが自動的にリダイレクト
+  // ルータが refreshListenable を利用して /login から / へ自動的にリダイレクトする
   //context.go('/');
 },
 ```
@@ -151,7 +154,7 @@ onPressed: () {
 
 ### `Stream` でルートを更新する
 
-`Stream` が出力する値に応じてルートの更新を行いたい場合は、`GoRouterRefreshStream` を `Stream` のラッパーとして使用してください。
+ルートの決定に関わる状態を `Listenable` ではなく `Stream` で管理している場合は、`GoRouterRefreshStream` を `Stream` のラッパーとして使用してください。
 これにより、BLoC のようなストリームベースの状態管理ソリューションにおいても同様のことが可能になります。
 
 ```dart
@@ -281,16 +284,17 @@ class App extends StatelessWidget {
 
     // ユーザーがログインしていない場合はログインページにリダイレクト
     redirect: (state) {
+      // ユーザーがログインしていない場合はログインが必要
       final loggedIn = loginInfo.loggedIn;
+      final loggingIn = state.subloc == '/login';
 
-      // クエリパラメータが含まれる可能性を考慮して subloc のみチェック
-      final goingToLogin = state.subloc == '/login';
+      // ユーザーの元々の行き先のロケーション名をクエリパラメータに紐づける
+      final fromp = state.subloc == '/' ? '' : '?from=${state.subloc}';
+      if (!loggedIn) return loggingIn ? null : '/login$fromp';
 
-      // ユーザーがログインしておらず、かつ /login に向かっていない場合はログインが必要
-      if (!loggedIn && !goingToLogin) return '/login?from=${state.subloc}';
-
-      // ユーザーがログイン済みで、かつ /login に向かっている場合はログイン不要
-      if (loggedIn && goingToLogin) return '/';
+      // ユーザーがログインしている場合はユーザーを元々の行き先に誘導する
+      // 行き先がない場合はホーム画面へ
+      if (loggingIn) return state.queryParams['from'] ?? '/';
 
       // 一切リダイレクトが不要な場合
       return null;
@@ -302,57 +306,19 @@ class App extends StatelessWidget {
 }
 ```
 
-この例では、ユーザーがログインしていない場合は、クエリパラメータ `from` に元々のディープリンクがセットされた状態で `/login` にリダイレクトされます。
-`state` オブジェクトから取得できるロケーション名には `location` と `subloc` があります。
-`location` はクエリパラメータを含みますが、`subloc` は含みません。
-リダイレクト先である `/login` ルートはクエリパラメータを含む可能性があるため、この場合は `subloc` を使用するのがベストです。
- (また、`location` をそのまま使用した場合はスタックオーバーフローが発生するため。詳細は読者の演習とするため割愛)
+この例では、ユーザーがログインしていない場合はクエリパラメータ `from` に元々のディープリンクをセットし、`/login` にリダイレクトします。
 
-そして `/login` ルートがマッチしたとき、`LoginScreen` に渡す情報として `state` オブジェクトから
-`from` パラメーターを取り出します。
+`from` パラメータの値は `state` オブジェクトの `location` か `subloc` から生成することができます。
+`location` と `subloc` の違いは、そのロケーションにおけるクエリパラメータを含むか含まないかです。
+ここではシンプルさを優先してクエリパラメータを含まない `subloc` を選択しています。
+ただ、クエリパラメータは URL エンコードされるため `location` を使用しても問題ありません。ここはディーラーズ・チョイスです。
 
-```dart
-GoRoute(
-  path: '/login',
-  builder: (context, state) =>
-    // 元々の行き先情報を LoginScreen に渡す（あれば）
-    LoginScreen(from: state.queryParams['from']
-  ),
-),
-```
+ユーザーがログインするとルータによるルート更新のトリガーが発動し、その結果 `redirect` が呼び出されます。
+この時点ではユーザーはログインしている状態にも関わらず `/login` ロケーションにいるため、
+クエリパラメータ `from` にセットされている行き先か、`from` が空であれば `/` に誘導します。
 
-`LoginScreen` に `from` パラメータが渡された場合、
-ログイン処理の後にそれを利用して元々のディープリンクのロケーションに遷移します。
+それだけです。`redirect` 関数と `refreshListenable` の組み合わせでは、ログイン画面は `from` の値さえ知る必要はないのです。
+リダイレクトが続く間は `from` のロケーション名が渡され、必要がなくなれば削除されるだけです。朝飯前ですね。
 
-```dart
-class LoginScreen extends StatelessWidget {
-  final String? from;
-  const LoginScreen({this.from, Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text(_title(context))),
-    body: Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          ElevatedButton(
-            onPressed: () {
-              // ユーザーをログインさせてリスナーに通知
-              context.read<LoginInfo>().login('test-user');
-
-              // 元々の行き先があればそこにリダイレクト
-              if (from != null) context.go(from!);
-            },
-            child: const Text('Login'),
-          ),
-        ],
-      ),
-    ),
-  );
-}
-```
-
-上記コード例のように手動でリダイレクトを行う場合でも、ルータに `refreshListenable` を設定することは良いプラクティスです。
-ログイン情報の変化に応じて、正しいルーティングが自動で行われることが保証されるためです。
-これは例えば、ユーザーがログアウトした後にログインページを表示させたい場合などにも対応できることになります。
+これと同じテクニックはログイン画面以外にも応用できます。
+詳しくは[ローディング画面のサンプル](https://github.com/csells/go_router/blob/main/go_router/example/lib/loading_page.dart)をご覧ください。

@@ -14,11 +14,11 @@ final _router = GoRouter(
   routes: ...,
 
   // loginInfo をウィジェットツリーに挿入するために Navigator にラッパーを追加する
-  navigatorBuilder: (context, child) => ChangeNotifierProvider<LoginInfo>.value(
-    value: loginInfo,
-    child: child,
-    builder: (context, child) => child!,
-  ),
+  navigatorBuilder: (context, state, child) =>
+    ChangeNotifierProvider<LoginInfo>.value(
+      value: loginInfo,
+      builder: (context, _) => child,
+    ),
 );
 ```
 
@@ -31,13 +31,13 @@ final _router = GoRouter(
   // 次の2点の目的のために Navigator にラッパーを追加
   // - loginInfo をウィジェットツリーに挿入
   // - ログアウト用のオーバーレイを追加
-  navigatorBuilder: (context, child) => ChangeNotifierProvider<LoginInfo>.value(
-    value: loginInfo,
-    child: child,
-    builder: (context, child) => loginInfo.loggedIn
-        ? AuthOverlay(onLogout: loginInfo.logout, child: child!)
-        : child!,
-  ),
+    navigatorBuilder: (context, state, child) =>
+        ChangeNotifierProvider<LoginInfo>.value(
+      value: loginInfo,
+      builder: (context, _) =>
+        loginInfo.loggedIn ? AuthOverlay(child: child) : child;
+      },
+    ),
 );
 ```
 
@@ -51,14 +51,9 @@ final _router = GoRouter(
 
 ```dart
 class AuthOverlay extends StatelessWidget {
-  const AuthOverlay({
-    required this.onLogout,
-    required this.child,
-    Key? key,
-  }) : super(key: key);
+  const AuthOverlay({required this.child, Key? key}) : super(key: key);
 
   final Widget child;
-  final VoidCallback onLogout;
 
   @override
   Widget build(BuildContext context) => Stack(
@@ -68,7 +63,10 @@ class AuthOverlay extends StatelessWidget {
             top: 90,
             right: 4,
             child: ElevatedButton(
-              onPressed: onLogout,
+              onPressed: () {
+                context.read<LoginInfo>().logout();
+                context.goNamed('home'); // クエリパラメータ `from` をクリア
+              },
               child: const Icon(Icons.logout),
             ),
           ),
