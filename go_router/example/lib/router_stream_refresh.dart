@@ -58,7 +58,7 @@ class _AppState extends State<App> {
         final loggedIn = loggedInState.state;
         final loggingIn = state.subloc == '/login';
 
-        // bundle the location they user is coming from into a query parameter
+        // bundle the location the user is coming from into a query parameter
         final fromp = state.subloc == '/' ? '' : '?from=${state.subloc}';
         if (!loggedIn) return loggingIn ? null : '/login$fromp';
 

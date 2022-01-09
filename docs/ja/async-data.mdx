@@ -35,65 +35,68 @@ late final _router = GoRouter(
 [Flutter の FutureBuilder](https://api.flutter.dev/flutter/widgets/FutureBuilder-class.html) を使用してデータのロードと表示を行っています。
 
 ```dart
-class FamilyScreenWithAsync extends StatefulWidget {
-  const FamilyScreenWithAsync({required this.fid, Key? key}) : super(key: key);
+class FamilyScreen extends StatefulWidget {
+  const FamilyScreen({required this.fid, Key? key}) : super(key: key);
   final String fid;
 
   @override
-  State<FamilyScreenWithAsync> createState() => _FamilyScreenWithAsyncState();
+  State<FamilyScreen> createState() => _FamilyScreenState();
 }
 
-class _FamilyScreenWithAsyncState extends State<FamilyScreenWithAsync> {
+class _FamilyScreenState extends State<FamilyScreen> {
   Future<Family>? _future;
-  Family? _family;
 
   @override
   void initState() {
     super.initState();
-    fetch();
+    _fetch();
   }
 
   @override
-  void didUpdateWidget(covariant FamilyScreenWithAsync oldWidget) {
+  void didUpdateWidget(covariant FamilyScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     // キャッシュデータを更新
-    if (oldWidget.fid != widget.fid) fetch();
+    if (oldWidget.fid != widget.fid) _fetch();
   }
 
-  void fetch() {
-    _family = null;
-    _future = App.repo.getFamily(widget.fid);
-    _future!.then(
-      (family) => setState(() => _family = family), // AppBar を更新
-    );
-  }
+  void _fetch() => _future = App.repo.getFamily(widget.fid);
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(title: Text(_family?.name ?? 'loading...')),
-        body: FutureBuilder<Family>(
-          future: _future,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
+  Widget build(BuildContext context) => FutureBuilder<Family>(
+        future: _future,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Scaffold(
+              appBar: AppBar(title: const Text('Loading...')),
+              body: const Center(child: CircularProgressIndicator()),
+            );
+          }
 
-            if (snapshot.hasError) return SnapshotError(snapshot.error!);
+          if (snapshot.hasError) {
+            return Scaffold(
+              appBar: AppBar(title: const Text('Error')),
+              body: SnapshotError(snapshot.error!),
+            );
+          }
 
-            assert(snapshot.hasData);
-            return ListView(
+          assert(snapshot.hasData);
+          final family = snapshot.data!;
+          return Scaffold(
+            appBar: AppBar(title: Text(family.name)),
+            body: ListView(
               children: [
-                for (final p in _family!.people)
+                for (final p in family.people)
                   ListTile(
                     title: Text(p.name),
-                    onTap: () =>
-                        context.go('/family/${_family!.id}/person/${p.id}'),
+                    onTap: () => context.go(
+                      '/family/${family.id}/person/${p.id}',
+                    ),
                   ),
               ],
-            );
-          },
-        ),
+            ),
+          );
+        },
       );
 }
 ```

@@ -166,7 +166,7 @@
 
 ### 2.2.0
 
-- added a new [`navigatorBuilder`](#navigator-builder) argument to the
+- added a new [`navigatorBuilder`](https://gorouter.dev/navigator-builder) argument to the
   `GoRouter` constructor; thanks to [andyduke](https://github.com/andyduke)!
 - also from [andyduke](https://github.com/andyduke) is an update to
   improve state restoration
