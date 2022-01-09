@@ -29,6 +29,9 @@ class App extends StatelessWidget {
         builder: (context, state) => const Page2View(),
       ),
     ],
+    // adding a Navigator at the root provides an Overlay needed for the
+    // adaptive navigation scaffold and provides a root Navigator to show the
+    // About box
     navigatorBuilder: (context, state, child) => Navigator(
         onPopPage: (route, dynamic result) {
           route.didPop(result);
