@@ -1,5 +1,10 @@
 # Changelog
 
+### 3.0.1
+
+- pass along the error to the `navigatorBuilder` to allow for different
+  implementations based on the presence of an error
+
 ### 3.0.0
 
 - breaking change: added `GoRouterState` to `navigatorBuilder` function

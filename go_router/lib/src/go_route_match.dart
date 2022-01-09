@@ -16,6 +16,7 @@ class GoRouteMatch {
     required this.encodedParams,
     required this.queryParams,
     required this.extra,
+    required this.error,
     this.pageKey,
   })  : assert(subloc.startsWith('/')),
         assert(Uri.parse(subloc).queryParameters.isEmpty),
@@ -70,6 +71,7 @@ class GoRouteMatch {
       encodedParams: encodedParams,
       queryParams: queryParams,
       extra: extra,
+      error: null,
     );
   }
 
@@ -98,6 +100,7 @@ class GoRouteMatch {
       encodedParams: encodedParams,
       queryParams: queryParams,
       extra: extra,
+      error: null,
     );
   }
 
@@ -118,6 +121,9 @@ class GoRouteMatch {
 
   /// An extra object to pass along with the navigation.
   final Object? extra;
+
+  /// An exception if there was an error during matching.
+  final Exception? error;
 
   /// Optional value key of type string, to hold a unique reference to a page.
   final ValueKey<String>? pageKey;

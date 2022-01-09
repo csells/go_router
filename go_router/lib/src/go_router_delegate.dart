@@ -120,6 +120,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
           encodedParams: {},
           queryParams: {},
           extra: null,
+          error: null,
         );
 
         namedFullpaths[name] = match;
@@ -268,6 +269,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       encodedParams: top.encodedParams,
       queryParams: top.queryParams,
       extra: extra,
+      error: null,
       pageKey: pageKey,
     );
 
@@ -373,6 +375,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       log.severe('Exception during GoRouter navigation', err, stack);
 
       // create a match that routes to the error page
+      final error = err is Exception ? err : Exception(err);
       final uri = Uri.parse(location);
       matches = [
         GoRouteMatch(
@@ -381,6 +384,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
           encodedParams: {},
           queryParams: uri.queryParameters,
           extra: null,
+          error: error,
           route: GoRoute(
             path: location,
             pageBuilder: (context, state) => _errorPageBuilder(
@@ -391,7 +395,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
                 subloc: state.subloc,
                 name: state.name,
                 path: state.path,
-                error: err is Exception ? err : Exception(err),
+                error: error,
                 fullpath: state.path,
                 params: state.params,
                 queryParams: state.queryParams,
@@ -598,6 +602,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
   Widget _builder(BuildContext context, Iterable<GoRouteMatch> matches) {
     List<Page<dynamic>>? pages;
+    Exception? error;
 
     try {
       // build the stack of pages
@@ -618,6 +623,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       log.severe('Exception during GoRouter navigation', err, stack);
 
       // if there's an error, show an error page
+      error = err is Exception ? err : Exception(err);
       final uri = Uri.parse(location);
       pages = [
         _errorPageBuilder(
@@ -628,7 +634,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
             subloc: uri.path,
             name: null,
             queryParams: uri.queryParameters,
-            error: err is Exception ? err : Exception(err),
+            error: error,
           ),
         ),
       ];
@@ -636,6 +642,12 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
     // we should've set pages to something by now
     assert(pages != null);
+
+    // pass either the match error or the build error along to the navigator
+    // builder, preferring the match error
+    if (matches.length == 1 && matches.first.error != null) {
+      error = matches.first.error;
+    }
 
     // wrap the returned Navigator to enable GoRouter.of(context).go()
     final uri = Uri.parse(location);
@@ -649,6 +661,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
         subloc: uri.path,
         // pass along the query params 'cuz that's all we have right now
         queryParams: uri.queryParameters,
+        // pass along the error, if there is one
+        error: error,
       ),
       Navigator(
         restorationScopeId: restorationScopeId,

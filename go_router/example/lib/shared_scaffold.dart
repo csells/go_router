@@ -29,6 +29,8 @@ class App extends StatelessWidget {
         builder: (context, state) => _build(const Page2View()),
       ),
     ],
+    errorBuilder: (context, state) => _build(ErrorView(state.error!)),
+
     // use the navigatorBuilder to keep the SharedScaffold from being animated
     // as new pages as shown; wrap that in single-page Navigator at the root
     // provides an Overlay needed for the adaptive navigation scaffold and a
@@ -40,11 +42,13 @@ class App extends StatelessWidget {
       },
       pages: [
         MaterialPage<void>(
-          child: SharedScaffold(
-            selectedIndex: state.subloc == '/' ? 0 : 1,
-            body: child,
-          ),
-        )
+          child: state.error != null
+              ? ErrorScaffold(body: child)
+              : SharedScaffold(
+                  selectedIndex: state.subloc == '/' ? 0 : 1,
+                  body: child,
+                ),
+        ),
       ],
     ),
   );
@@ -138,6 +142,39 @@ class Page2View extends StatelessWidget {
             ElevatedButton(
               onPressed: () => context.go('/'),
               child: const Text('Go to home page'),
+            ),
+          ],
+        ),
+      );
+}
+
+class ErrorScaffold extends StatelessWidget {
+  const ErrorScaffold({
+    required this.body,
+    Key? key,
+  }) : super(key: key);
+
+  final Widget body;
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AdaptiveAppBar(title: const Text('Page Not Found')),
+        body: body,
+      );
+}
+
+class ErrorView extends StatelessWidget {
+  const ErrorView(this.error, {Key? key}) : super(key: key);
+  final Exception error;
+
+  @override
+  Widget build(BuildContext context) => Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SelectableText(error.toString()),
+            TextButton(
+              onPressed: () => context.go('/'),
+              child: const Text('Home'),
             ),
           ],
         ),
