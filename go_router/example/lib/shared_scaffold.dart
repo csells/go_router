@@ -32,9 +32,9 @@ class App extends StatelessWidget {
     errorBuilder: (context, state) => _build(ErrorView(state.error!)),
 
     // use the navigatorBuilder to keep the SharedScaffold from being animated
-    // as new pages as shown; wrap that in single-page Navigator at the root
-    // provides an Overlay needed for the adaptive navigation scaffold and a
-    // root Navigator to show the About box
+    // as new pages as shown; wrappiong that in single-page Navigator at the
+    // root provides an Overlay needed for the adaptive navigation scaffold and
+    // a root Navigator to show the About box
     navigatorBuilder: (context, state, child) => Navigator(
       onPopPage: (route, dynamic result) {
         route.didPop(result);
