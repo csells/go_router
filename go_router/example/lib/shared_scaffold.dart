@@ -17,36 +17,41 @@ class App extends StatelessWidget {
         title: title,
       );
 
-  final _router = GoRouter(
+  late final _router = GoRouter(
     debugLogDiagnostics: true,
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => const Page1View(),
+        builder: (context, state) => _build(const Page1View()),
       ),
       GoRoute(
         path: '/page2',
-        builder: (context, state) => const Page2View(),
+        builder: (context, state) => _build(const Page2View()),
       ),
     ],
-    // adding a Navigator at the root provides an Overlay needed for the
-    // adaptive navigation scaffold and provides a root Navigator to show the
-    // About box
+    // use the navigatorBuilder to keep the SharedScaffold from being animated
+    // as new pages as shown; wrap that in single-page Navigator at the root
+    // provides an Overlay needed for the adaptive navigation scaffold and a
+    // root Navigator to show the About box
     navigatorBuilder: (context, state, child) => Navigator(
-        onPopPage: (route, dynamic result) {
-          route.didPop(result);
-          return false; // don't pop the single page on the root navigator
-        },
-        pages: [
-          MaterialPage<void>(
-            child: SharedScaffold(
-              selectedIndex: state.subloc == '/' ? 0 : 1,
-              body: child,
-            ),
-          )
-        ],
-      ),
+      onPopPage: (route, dynamic result) {
+        route.didPop(result);
+        return false; // don't pop the single page on the root navigator
+      },
+      pages: [
+        MaterialPage<void>(
+          child: SharedScaffold(
+            selectedIndex: state.subloc == '/' ? 0 : 1,
+            body: child,
+          ),
+        )
+      ],
+    ),
   );
+
+  // wrap the view widgets in a Scaffold to get the exit animation just right on
+  // the page being replaced
+  Widget _build(Widget child) => Scaffold(body: child);
 }
 
 class SharedScaffold extends StatefulWidget {
