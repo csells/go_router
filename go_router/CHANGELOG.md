@@ -10,6 +10,10 @@
 - new [Migrating to 3.0 section](https://gorouter.dev/migrating-to-30) in the
   docs to describe the details of the breaking changes and how to update your
   code
+- added a new [shared
+  scaffold](https://github.com/csells/go_router/blob/main/go_router/example/lib/shared_scaffold.dart)
+  sample to show how to use the `navigatorBuilder` function to build a custom
+  shared scaffold outside of the animations provided by go_router
 
 ### 2.5.7
 
