@@ -14,7 +14,9 @@ class GoRoute {
     required this.path,
     this.name,
     this.pageBuilder,
+    this.onCreate,
     this.builder = _builder,
+    this.onDispose,
     this.routes = const [],
     this.redirect = _redirect,
   }) {
@@ -57,6 +59,9 @@ class GoRoute {
         );
       }
     }
+
+    // perform custom logic on GoRoute create
+    onCreate?.call();
   }
 
   final _pathParams = <String>[];
@@ -113,6 +118,35 @@ class GoRoute {
   /// ```
   ///
   final GoRouterWidgetBuilder builder;
+
+  /// An optional callback to perform custom actions before the page is spawned,
+  /// e.g. register some dependencies
+  ///
+  /// For example
+  /// ```
+  /// GoRoute(
+  ///   path: '/',
+  ///   onCreate: () => GetIt.I.registerSingleton(() => MyController()),
+  ///   builder: (context, state) => const MyPage(),
+  ///   ),
+  /// ),
+  /// ```
+  final VoidCallback? onCreate;
+
+  /// A place to cleanup resources, e.g. remove dependencies
+  ///
+  /// For example
+  /// ```
+  /// GoRoute(
+  ///   path: '/',
+  ///   onCreate: () => GetIt.I.registerSingleton(() => MyController()),
+  ///   builder: (context, state) => const MyPage(),
+  ///   onDispose: () => GetIt.I.unregister<MyController>(
+  ///     disposingFunction: (controller) => controller.dispose(),
+  ///   ),
+  /// ),
+  /// ```
+  final VoidCallback? onDispose;
 
   /// A list of sub go routes for this route.
   ///

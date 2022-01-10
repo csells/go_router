@@ -172,6 +172,8 @@ class GoRouterDelegate extends RouterDelegate<Uri>
 
   /// Pop the top page off the GoRouter's page stack.
   void pop() {
+    // perform custom logic on GoRoute destroy
+    _matches.last.route.onDispose?.call();
     _matches.remove(_matches.last);
     if (_matches.isEmpty) {
       throw Exception(
