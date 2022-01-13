@@ -18,6 +18,7 @@ class GoRoute {
     this.routes = const [],
     this.redirect = _redirect,
   }) {
+    print('REMOVE ME - JUST TESTING THE GITHUB ACTION');
     if (path.isEmpty) {
       throw Exception('GoRoute path cannot be empty');
     }
