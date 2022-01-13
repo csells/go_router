@@ -25,7 +25,10 @@ jobs:
       - name: "Install Tools"
         run: ../.github/workflows/scripts/install-tools.sh
       - name: "Dart Analyzer"
-        run: dart analyze . --fatal-infos
+        uses: invertase/github-action-dart-analyzer@v1
+        with:
+          fatal-infos: true
+          fatal-warnings: true
       - name: "Formatting Check"
         run: |
           flutter format .
