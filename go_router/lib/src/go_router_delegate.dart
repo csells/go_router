@@ -656,6 +656,7 @@ class GoRouterDelegate extends RouterDelegate<Uri>
       GoRouterState(
         this,
         location: location,
+        extra: matches.last.extra,
         name: null, // no name available at the top level
         // trim the query params off the subloc to match route.redirect
         subloc: uri.path,
