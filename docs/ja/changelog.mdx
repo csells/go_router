@@ -1,5 +1,10 @@
 # 変更履歴
 
+### 3.0.1
+
+- `navigatorBuilder` にエラー情報を渡すように実装を変更。
+  エラーの有無などによって処理内容を変更することが可能になった。
+
 ### 3.0.0
 
 - 破壊的変更: `navigatorBuilder` 関数に `GoRouterState` を追加
@@ -7,6 +12,8 @@
   を呼び出すものから、`GoRouter` ページスタックのページをポップする処理に変更したことによる。
 - 新しいドキュメント [3.0 への移行について](https://gorouter.dev/migrating-to-30) を追加。
   今回の破壊的変更の詳細および既存コードのアップデート方法を記載。
+- 新しいサンプルコード [`shared_scaffold.dart`](https://github.com/csells/go_router/blob/main/go_router/example/lib/shared_scaffold.dart) を追加。
+  `navigatorBuilder` を使ってページ間で共通のカスタム scaffold を使用し、go_router によるトランジション効果の適用範囲を制限する。
 
 ### 2.5.7
 

@@ -30,6 +30,8 @@
   ページにサブルートの情報を表示する（ネスト型ナビゲーション）
 - [`nav_builder.dart`](https://github.com/csells/go_router/blob/main/go_router/example/lib/nav_builder.dart):
   `Navigator` ウィジェットの上にウィジェットを挿入する
+- [`shared_scaffold.dart`](https://github.com/csells/go_router/blob/main/go_router/example/lib/shared_scaffold.dart):
+  `navigatorBuilder` を使ってページ間で共通のカスタム scaffold を使用し、go_router によるトランジション効果の適用範囲を制限する
 - [`url_strategy.dart`](https://github.com/csells/go_router/blob/main/go_router/example/lib/url_strategy.dart):
   Flutter ウェブで URL から # を除く
 - [`user_input.dart`](https://github.com/csells/go_router/blob/main/go_router/example/lib/user-input.dart):
@@ -47,7 +49,7 @@
 - [`books/main.dart`](https://github.com/csells/go_router/blob/main/go_router/example/lib/books/main.dart):
   Flutter 公式のサンプル、[ナビゲーションとルーティング](https://github.com/flutter/samples/tree/master/navigation_and_routing)の go_router 版
 
-これらのサンプルコードはお好みの IDE で、もしくは `example` フォルダから以下のコマンドラインで実行することができます。
+これらのサンプルコードは IDE から直接、もしくは `example` フォルダから次のコマンドラインで実行することができます。
 
 ```sh
 $ flutter run lib/main.dart
