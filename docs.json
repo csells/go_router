@@ -2,39 +2,116 @@
   "name": "go_router",
   "zoomImages": "false",
   "zoomImages-Comment": "turning off zoom site-wide to enable images w/ links",
+  "docsearch": {
+    "appId": "VFJ1638LIS",
+    "apiKey": "2ff50d339da84829e844f7ec73c0708d",
+    "indexName": "gorouter"
+  },
   "sidebar": [
     [
       "Welcome",
       [
-        ["Overview", "/"],
-        ["Contributors", "/contributors"],
-        ["Changelog", "/changelog"],
-        ["Migrating to 3.0", "/migrating-to-30"],
-        ["Migrating to 2.5", "/migrating-to-25"],
-        ["Migrating to 2.0", "/migrating-to-20"]
+        [
+          "Overview",
+          "/"
+        ],
+        [
+          "Contributors",
+          "/contributors"
+        ],
+        [
+          "Changelog",
+          "/changelog"
+        ],
+        [
+          "Migrating to 3.0",
+          "/migrating-to-30"
+        ],
+        [
+          "Migrating to 2.5",
+          "/migrating-to-25"
+        ],
+        [
+          "Migrating to 2.0",
+          "/migrating-to-20"
+        ]
       ]
     ],
-    ["Getting Started", "/getting-started"],
-    ["Declarative Routing", "/declarative-routing"],
-    ["Navigation", "/navigation"],
-    ["Parameters", "/parameters"],
-    ["Sub-routes", "/sub-routes"],
-    ["Redirection", "/redirection"],
-    ["Named Routes", "/named-routes"],
-    ["User Input", "/user-input"],
-    ["URL Path Strategy", "/url-path-strategy"],
-    ["Debugging Your Routes", "/debugging"],
-    ["Examples", "/examples"],
-    ["Issues", "/issues"],
+    [
+      "Getting Started",
+      "/getting-started"
+    ],
+    [
+      "Declarative Routing",
+      "/declarative-routing"
+    ],
+    [
+      "Navigation",
+      "/navigation"
+    ],
+    [
+      "Parameters",
+      "/parameters"
+    ],
+    [
+      "Sub-routes",
+      "/sub-routes"
+    ],
+    [
+      "Redirection",
+      "/redirection"
+    ],
+    [
+      "Named Routes",
+      "/named-routes"
+    ],
+    [
+      "User Input",
+      "/user-input"
+    ],
+    [
+      "URL Path Strategy",
+      "/url-path-strategy"
+    ],
+    [
+      "Debugging Your Routes",
+      "/debugging"
+    ],
+    [
+      "Examples",
+      "/examples"
+    ],
+    [
+      "Issues",
+      "/issues"
+    ],
     [
       "Advanced Routing",
       [
-        ["Transitions", "/transitions"],
-        ["Async Data", "/async-data"],
-        ["Nested Navigation", "/nested-navigation"],
-        ["Navigator Builder", "/navigator-builder"],
-        ["Web History", "/web-history"],
-        ["Type Routing Proposal", "/typed-routing"]
+        [
+          "Transitions",
+          "/transitions"
+        ],
+        [
+          "Async Data",
+          "/async-data"
+        ],
+        [
+          "Nested Navigation",
+          "/nested-navigation"
+        ],
+        [
+          "Navigator Builder",
+          "/navigator-builder"
+        ],
+        [
+          "Web History",
+          "/web-history"
+        ],
+        [
+          "Type Routing Proposal",
+          "/typed-routing"
+        ]
       ]
     ]
   ]
