@@ -27,11 +27,11 @@ void main() {
     await tester.pumpWidget(ChangeNotifierProvider<LoginInfo>.value(
       value: loginInfo,
       child: Builder(builder: (context) {
-        final _router = routerBuilder(context, '/login');
+        final router = routerBuilder(context, '/login');
 
         return MaterialApp.router(
-          routeInformationParser: _router.routeInformationParser,
-          routerDelegate: _router.routerDelegate,
+          routeInformationParser: router.routeInformationParser,
+          routerDelegate: router.routerDelegate,
           debugShowCheckedModeBanner: false,
         );
       }),
@@ -95,11 +95,11 @@ void main() {
     await tester.pumpWidget(ChangeNotifierProvider<LoginInfo>.value(
       value: loginInfo,
       child: Builder(builder: (context) {
-        final _router = routerBuilder(context, '/family/f1/person/p1');
+        final router = routerBuilder(context, '/family/f1/person/p1');
 
         return MaterialApp.router(
-          routeInformationParser: _router.routeInformationParser,
-          routerDelegate: _router.routerDelegate,
+          routeInformationParser: router.routeInformationParser,
+          routerDelegate: router.routerDelegate,
           debugShowCheckedModeBanner: false,
         );
       }),

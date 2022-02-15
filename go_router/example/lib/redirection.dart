@@ -17,11 +17,11 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) => ChangeNotifierProvider<LoginInfo>.value(
         value: loginInfo,
         child: Builder(builder: (context) {
-          final _router = routerBuilder(context);
+          final router = routerBuilder(context);
 
           return MaterialApp.router(
-            routeInformationParser: _router.routeInformationParser,
-            routerDelegate: _router.routerDelegate,
+            routeInformationParser: router.routeInformationParser,
+            routerDelegate: router.routerDelegate,
             title: title,
             debugShowCheckedModeBanner: false,
           );
