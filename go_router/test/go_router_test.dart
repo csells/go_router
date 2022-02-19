@@ -1419,7 +1419,7 @@ void main() {
     const location = '/page1';
     const extra = 'Hello';
 
-    testWidgets('calls `namedLocation` on closest GoRouter ', (tester) async {
+    testWidgets('calls [namedLocation] on closest GoRouter', (tester) async {
       final router = GoRouterNamedLocationSpy(routes: routes);
       await tester.pumpWidget(
         MaterialApp.router(
@@ -1438,7 +1438,7 @@ void main() {
       expect(router.queryParams, queryParams);
     });
 
-    testWidgets('calls `go` on closest GoRouter ', (tester) async {
+    testWidgets('calls [go] on closest GoRouter', (tester) async {
       final router = GoRouterGoSpy(routes: routes);
       await tester.pumpWidget(
         MaterialApp.router(
@@ -1455,7 +1455,7 @@ void main() {
       expect(router.extra, extra);
     });
 
-    testWidgets('calls `goNamed` on closest GoRouter ', (tester) async {
+    testWidgets('calls [goNamed] on closest GoRouter', (tester) async {
       final router = GoRouterGoNamedSpy(routes: routes);
       await tester.pumpWidget(
         MaterialApp.router(
@@ -1476,7 +1476,7 @@ void main() {
       expect(router.extra, extra);
     });
 
-    testWidgets('calls `push` on closest GoRouter ', (tester) async {
+    testWidgets('calls [push] on closest GoRouter', (tester) async {
       final router = GoRouterPushSpy(routes: routes);
       await tester.pumpWidget(
         MaterialApp.router(
@@ -1493,7 +1493,7 @@ void main() {
       expect(router.extra, extra);
     });
 
-    testWidgets('calls `pushNamed` on closest GoRouter ', (tester) async {
+    testWidgets('calls [pushNamed] on closest GoRouter', (tester) async {
       final router = GoRouterPushNamedSpy(routes: routes);
       await tester.pumpWidget(
         MaterialApp.router(
@@ -1514,7 +1514,7 @@ void main() {
       expect(router.extra, extra);
     });
 
-    testWidgets('calls `pop` on closest GoRouter ', (tester) async {
+    testWidgets('calls [pop] on closest GoRouter', (tester) async {
       final router = GoRouterPopSpy(routes: routes);
       await tester.pumpWidget(
         MaterialApp.router(
