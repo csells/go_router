@@ -48,3 +48,10 @@ class Page2Screen extends StatelessWidget {...}
 But go_router can do oh so much more!
 
 # See [gorouter.dev](https://gorouter.dev) for go_router docs & samples
+
+# go_router is now published and maintained by the Flutter team
+As of the 3.0.2 release, [the go_router package](https://pub.dev/packages/go_router) is published by the Flutter team and maintained by Flutter engineering in [the flutter/packages repository](https://github.com/flutter/packages/tree/main/packages/go_router).
+
+Existing go_router issues will be moved to [the flutter issues list](https://github.com/flutter/flutter/issues) and new go_router-related issues should be filed there instead of on this repo.
+
+The docs on [gorouter.dev](https://gorouter.dev) will also be moving to [docs.flutter.dev](https://docs.flutter.dev) over time.
