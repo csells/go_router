@@ -10,7 +10,7 @@ class CustomTransitionPage<T> extends Page<T> {
   /// To be used instead of MaterialPage or CupertinoPage, which provide
   /// their own transitions.
   const CustomTransitionPage({
-    required this.child,
+    required this.pageBuilder,
     required this.transitionsBuilder,
     this.transitionDuration = const Duration(milliseconds: 300),
     this.maintainState = true,
@@ -31,7 +31,7 @@ class CustomTransitionPage<T> extends Page<T> {
         );
 
   /// The content to be shown in the Route created by this page.
-  final Widget child;
+  final RoutePageBuilder pageBuilder;
 
   /// A duration argument to customize the duration of the custom page
   /// transition.
@@ -134,7 +134,7 @@ class _CustomTransitionPageRoute<T> extends PageRoute<T> {
       Semantics(
         scopesRoute: true,
         explicitChildNodes: true,
-        child: _page.child,
+        child: _page.pageBuilder(context, animation, secondaryAnimation),
       );
 
   @override
@@ -155,26 +155,21 @@ class _CustomTransitionPageRoute<T> extends PageRoute<T> {
 /// Custom transition page with no transition.
 class NoTransitionPage<T> extends CustomTransitionPage<T> {
   /// Constructor for a page with no transition functionality.
-  const NoTransitionPage({
-    required Widget child,
+  NoTransitionPage({
+    required this.child,
+    LocalKey? key,
     String? name,
     Object? arguments,
     String? restorationId,
-    LocalKey? key,
   }) : super(
-          transitionsBuilder: _transitionsBuilder,
-          transitionDuration: const Duration(microseconds: 1), // hack for #205
+          pageBuilder: (context, animation, secondaryAnimation) => child,
+          transitionsBuilder:
+              (context, animation, secondaryAnimation, lchild) => lchild,
+          transitionDuration: const Duration(microseconds: 1),
           key: key,
           name: name,
           arguments: arguments,
           restorationId: restorationId,
-          child: child,
         );
-
-  static Widget _transitionsBuilder(
-          BuildContext context,
-          Animation<double> animation,
-          Animation<double> secondaryAnimation,
-          Widget child) =>
-      child;
+  final Widget child;
 }

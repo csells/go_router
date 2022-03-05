@@ -152,7 +152,7 @@ class FadeTransitionPage extends CustomTransitionPage<void> {
                   opacity: animation.drive(_curveTween),
                   child: child,
                 ),
-            child: child);
+            pageBuilder: (context, anim1, anim2) => child);
 
   static final _curveTween = CurveTween(curve: Curves.easeIn);
 }

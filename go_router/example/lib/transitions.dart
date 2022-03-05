@@ -25,7 +25,8 @@ class App extends StatelessWidget {
         path: '/fade',
         pageBuilder: (context, state) => CustomTransitionPage<void>(
           key: state.pageKey,
-          child: const ExampleTransitionsScreen(
+          pageBuilder: (context, anim1, anim2) =>
+              const ExampleTransitionsScreen(
             kind: 'fade',
             color: Colors.red,
           ),
@@ -37,7 +38,8 @@ class App extends StatelessWidget {
         path: '/scale',
         pageBuilder: (context, state) => CustomTransitionPage<void>(
           key: state.pageKey,
-          child: const ExampleTransitionsScreen(
+          pageBuilder: (context, anim1, anim2) =>
+              const ExampleTransitionsScreen(
             kind: 'scale',
             color: Colors.green,
           ),
@@ -49,7 +51,8 @@ class App extends StatelessWidget {
         path: '/slide',
         pageBuilder: (context, state) => CustomTransitionPage<void>(
           key: state.pageKey,
-          child: const ExampleTransitionsScreen(
+          pageBuilder: (context, anim1, anim2) =>
+              const ExampleTransitionsScreen(
             kind: 'slide',
             color: Colors.yellow,
           ),
@@ -68,7 +71,8 @@ class App extends StatelessWidget {
         path: '/rotation',
         pageBuilder: (context, state) => CustomTransitionPage<void>(
           key: state.pageKey,
-          child: const ExampleTransitionsScreen(
+          pageBuilder: (context, anim1, anim2) =>
+              const ExampleTransitionsScreen(
             kind: 'rotation',
             color: Colors.purple,
           ),
