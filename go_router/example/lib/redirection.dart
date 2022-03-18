@@ -16,63 +16,69 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) => ChangeNotifierProvider<LoginInfo>.value(
         value: loginInfo,
-        child: MaterialApp.router(
-          routeInformationParser: _router.routeInformationParser,
-          routerDelegate: _router.routerDelegate,
-          title: title,
-          debugShowCheckedModeBanner: false,
-        ),
+        child: Builder(builder: (context) {
+          final router = routerBuilder(context);
+
+          return MaterialApp.router(
+            routeInformationParser: router.routeInformationParser,
+            routerDelegate: router.routerDelegate,
+            title: title,
+            debugShowCheckedModeBanner: false,
+          );
+        }),
       );
-
-  late final _router = GoRouter(
-    routes: [
-      GoRoute(
-        path: '/',
-        builder: (context, state) => HomeScreen(families: Families.data),
-        routes: [
-          GoRoute(
-            path: 'family/:fid',
-            builder: (context, state) => FamilyScreen(
-              family: Families.family(state.params['fid']!),
-            ),
-            routes: [
-              GoRoute(
-                path: 'person/:pid',
-                builder: (context, state) {
-                  final family = Families.family(state.params['fid']!);
-                  final person = family.person(state.params['pid']!);
-                  return PersonScreen(family: family, person: person);
-                },
-              ),
-            ],
-          ),
-        ],
-      ),
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
-      ),
-    ],
-
-    // redirect to the login page if the user is not logged in
-    redirect: (state) {
-      // if the user is not logged in, they need to login
-      final loggedIn = loginInfo.loggedIn;
-      final loggingIn = state.subloc == '/login';
-      if (!loggedIn) return loggingIn ? null : '/login';
-
-      // if the user is logged in but still on the login page, send them to
-      // the home page
-      if (loggingIn) return '/';
-
-      // no need to redirect at all
-      return null;
-    },
-
-    // changes on the listenable will cause the router to refresh it's route
-    refreshListenable: loginInfo,
-  );
 }
+
+GoRouter routerBuilder(BuildContext context, [String? location]) => GoRouter(
+      initialLocation: location ?? '/',
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => HomeScreen(families: Families.data),
+          routes: [
+            GoRoute(
+              path: 'family/:fid',
+              builder: (context, state) => FamilyScreen(
+                family: Families.family(state.params['fid']!),
+              ),
+              routes: [
+                GoRoute(
+                  path: 'person/:pid',
+                  builder: (context, state) {
+                    final family = Families.family(state.params['fid']!);
+                    final person = family.person(state.params['pid']!);
+                    return PersonScreen(family: family, person: person);
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+        GoRoute(
+          path: '/login',
+          builder: (context, state) => const LoginScreen(),
+        ),
+      ],
+
+      // redirect to the login page if the user is not logged in
+      redirect: (state) {
+        final loginInfo = context.read<LoginInfo>();
+        // if the user is not logged in, they need to login
+        final loggedIn = loginInfo.loggedIn;
+        final loggingIn = state.subloc == '/login';
+        if (!loggedIn) return loggingIn ? null : '/login';
+
+        // if the user is logged in but still on the login page, send them to
+        // the home page
+        if (loggingIn) return '/';
+
+        // no need to redirect at all
+        return null;
+      },
+
+      // changes on the listenable will cause the router to refresh it's route
+      refreshListenable: context.read<LoginInfo>(),
+    );
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({Key? key}) : super(key: key);
